@@ -5,19 +5,19 @@ cal_pop_wgt <- function(input_file, reference_index_file, reference_data_file, r
     .Call(`_gauss_cal_pop_wgt`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file)
 }
 
-dist <- function(chr, start_bp, end_bp, wing_size, study_pop, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, dist_af1_cutoff = NULL) {
-    .Call(`_gauss_dist`, chr, start_bp, end_bp, wing_size, study_pop, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, dist_af1_cutoff)
+dist <- function(chr, start_bp, end_bp, wing_size, study_pop, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff = NULL) {
+    .Call(`_gauss_dist`, chr, start_bp, end_bp, wing_size, study_pop, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff)
 }
 
-distmix <- function(chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, dist_af1_cutoff = NULL) {
-    .Call(`_gauss_distmix`, chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, dist_af1_cutoff)
+distmix <- function(chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff = NULL) {
+    .Call(`_gauss_distmix`, chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff)
 }
 
-qcat <- function(chr, start_bp, end_bp, wing_size, study_pop, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, dist_af1_cutoff = NULL) {
-    .Call(`_gauss_qcat`, chr, start_bp, end_bp, wing_size, study_pop, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, dist_af1_cutoff)
+qcat <- function(chr, start_bp, end_bp, wing_size, study_pop, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff = NULL) {
+    .Call(`_gauss_qcat`, chr, start_bp, end_bp, wing_size, study_pop, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff)
 }
 
-qcatmix <- function(chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, dist_af1_cutoff = NULL) {
-    .Call(`_gauss_qcatmix`, chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, dist_af1_cutoff)
+qcatmix <- function(chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff = NULL) {
+    .Call(`_gauss_qcatmix`, chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff)
 }
 

@@ -26,8 +26,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // dist
-DataFrame dist(int chr, long long int start_bp, long long int end_bp, long long int wing_size, std::string study_pop, std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<double> dist_af1_cutoff);
-RcppExport SEXP _gauss_dist(SEXP chrSEXP, SEXP start_bpSEXP, SEXP end_bpSEXP, SEXP wing_sizeSEXP, SEXP study_popSEXP, SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP dist_af1_cutoffSEXP) {
+DataFrame dist(int chr, long long int start_bp, long long int end_bp, long long int wing_size, std::string study_pop, std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<double> af1_cutoff);
+RcppExport SEXP _gauss_dist(SEXP chrSEXP, SEXP start_bpSEXP, SEXP end_bpSEXP, SEXP wing_sizeSEXP, SEXP study_popSEXP, SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP af1_cutoffSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -40,14 +40,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::string >::type reference_index_file(reference_index_fileSEXP);
     Rcpp::traits::input_parameter< std::string >::type reference_data_file(reference_data_fileSEXP);
     Rcpp::traits::input_parameter< std::string >::type reference_pop_desc_file(reference_pop_desc_fileSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<double> >::type dist_af1_cutoff(dist_af1_cutoffSEXP);
-    rcpp_result_gen = Rcpp::wrap(dist(chr, start_bp, end_bp, wing_size, study_pop, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, dist_af1_cutoff));
+    Rcpp::traits::input_parameter< Rcpp::Nullable<double> >::type af1_cutoff(af1_cutoffSEXP);
+    rcpp_result_gen = Rcpp::wrap(dist(chr, start_bp, end_bp, wing_size, study_pop, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff));
     return rcpp_result_gen;
 END_RCPP
 }
 // distmix
-DataFrame distmix(int chr, long long int start_bp, long long int end_bp, long long int wing_size, DataFrame pop_wgt_df, std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<double> dist_af1_cutoff);
-RcppExport SEXP _gauss_distmix(SEXP chrSEXP, SEXP start_bpSEXP, SEXP end_bpSEXP, SEXP wing_sizeSEXP, SEXP pop_wgt_dfSEXP, SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP dist_af1_cutoffSEXP) {
+DataFrame distmix(int chr, long long int start_bp, long long int end_bp, long long int wing_size, DataFrame pop_wgt_df, std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<double> af1_cutoff);
+RcppExport SEXP _gauss_distmix(SEXP chrSEXP, SEXP start_bpSEXP, SEXP end_bpSEXP, SEXP wing_sizeSEXP, SEXP pop_wgt_dfSEXP, SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP af1_cutoffSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -60,14 +60,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::string >::type reference_index_file(reference_index_fileSEXP);
     Rcpp::traits::input_parameter< std::string >::type reference_data_file(reference_data_fileSEXP);
     Rcpp::traits::input_parameter< std::string >::type reference_pop_desc_file(reference_pop_desc_fileSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<double> >::type dist_af1_cutoff(dist_af1_cutoffSEXP);
-    rcpp_result_gen = Rcpp::wrap(distmix(chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, dist_af1_cutoff));
+    Rcpp::traits::input_parameter< Rcpp::Nullable<double> >::type af1_cutoff(af1_cutoffSEXP);
+    rcpp_result_gen = Rcpp::wrap(distmix(chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff));
     return rcpp_result_gen;
 END_RCPP
 }
 // qcat
-DataFrame qcat(int chr, long long int start_bp, long long int end_bp, long long int wing_size, std::string study_pop, std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<double> dist_af1_cutoff);
-RcppExport SEXP _gauss_qcat(SEXP chrSEXP, SEXP start_bpSEXP, SEXP end_bpSEXP, SEXP wing_sizeSEXP, SEXP study_popSEXP, SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP dist_af1_cutoffSEXP) {
+DataFrame qcat(int chr, long long int start_bp, long long int end_bp, long long int wing_size, std::string study_pop, std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<double> af1_cutoff);
+RcppExport SEXP _gauss_qcat(SEXP chrSEXP, SEXP start_bpSEXP, SEXP end_bpSEXP, SEXP wing_sizeSEXP, SEXP study_popSEXP, SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP af1_cutoffSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -80,14 +80,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::string >::type reference_index_file(reference_index_fileSEXP);
     Rcpp::traits::input_parameter< std::string >::type reference_data_file(reference_data_fileSEXP);
     Rcpp::traits::input_parameter< std::string >::type reference_pop_desc_file(reference_pop_desc_fileSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<double> >::type dist_af1_cutoff(dist_af1_cutoffSEXP);
-    rcpp_result_gen = Rcpp::wrap(qcat(chr, start_bp, end_bp, wing_size, study_pop, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, dist_af1_cutoff));
+    Rcpp::traits::input_parameter< Rcpp::Nullable<double> >::type af1_cutoff(af1_cutoffSEXP);
+    rcpp_result_gen = Rcpp::wrap(qcat(chr, start_bp, end_bp, wing_size, study_pop, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff));
     return rcpp_result_gen;
 END_RCPP
 }
 // qcatmix
-DataFrame qcatmix(int chr, long long int start_bp, long long int end_bp, long long int wing_size, DataFrame pop_wgt_df, std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<double> dist_af1_cutoff);
-RcppExport SEXP _gauss_qcatmix(SEXP chrSEXP, SEXP start_bpSEXP, SEXP end_bpSEXP, SEXP wing_sizeSEXP, SEXP pop_wgt_dfSEXP, SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP dist_af1_cutoffSEXP) {
+DataFrame qcatmix(int chr, long long int start_bp, long long int end_bp, long long int wing_size, DataFrame pop_wgt_df, std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<double> af1_cutoff);
+RcppExport SEXP _gauss_qcatmix(SEXP chrSEXP, SEXP start_bpSEXP, SEXP end_bpSEXP, SEXP wing_sizeSEXP, SEXP pop_wgt_dfSEXP, SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP af1_cutoffSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -100,8 +100,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::string >::type reference_index_file(reference_index_fileSEXP);
     Rcpp::traits::input_parameter< std::string >::type reference_data_file(reference_data_fileSEXP);
     Rcpp::traits::input_parameter< std::string >::type reference_pop_desc_file(reference_pop_desc_fileSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<double> >::type dist_af1_cutoff(dist_af1_cutoffSEXP);
-    rcpp_result_gen = Rcpp::wrap(qcatmix(chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, dist_af1_cutoff));
+    Rcpp::traits::input_parameter< Rcpp::Nullable<double> >::type af1_cutoff(af1_cutoffSEXP);
+    rcpp_result_gen = Rcpp::wrap(qcatmix(chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff));
     return rcpp_result_gen;
 END_RCPP
 }

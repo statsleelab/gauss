@@ -1,13 +1,15 @@
 Package: gauss
 Type: Package
-Title: What the Package Does in One 'Title Case' Line
+Title: Genome Analysis Using Summary Statistics
 Version: 1.0
 Date: 2021-10-12
-Author: Your Name
-Maintainer: Your Name <your@email.com>
-Description: One paragraph description of what the package
-      does as one or more full sentences.
+Authors@R: person("Donghyung", "Lee", email = "leed13@miamioh.edu",
+                  role = c("aut", "cre"))
+Description: gauss is a free and open-source R software package, which contains functions 
+  for analyzing summary statistics from large-scale genome-wide association studies (GWAS) 
+  meta-analyses from cohorts of diverse ethnic backgrounds, even including family based GWAS,
+  using a next generation reference panel consists of 32,953 samples of 29 populations.
 License: GPL (>= 2)
 Imports: Rcpp (>= 1.0.7)
-LinkingTo: Rcpp, RcppGSL
+LinkingTo: Rcpp
 RoxygenNote: 7.1.2

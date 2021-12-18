@@ -152,7 +152,6 @@ static const double __ac_HASH_UPPER = 0.77;
 	} kh_##name##_t;													\
 	extern kh_##name##_t *kh_init_##name();								\
 	extern void kh_destroy_##name(kh_##name##_t *h);					\
-	extern void kh_clear_##name(kh_##name##_t *h);						\
 	extern khint_t kh_get_##name(const kh_##name##_t *h, khkey_t key); 	\
 	extern void kh_resize_##name(kh_##name##_t *h, khint_t new_n_buckets); \
 	extern khint_t kh_put_##name(kh_##name##_t *h, khkey_t key, int *ret); \
@@ -174,13 +173,6 @@ static const double __ac_HASH_UPPER = 0.77;
 			free(h->keys); free(h->flags);								\
 			free(h->vals);												\
 			free(h);													\
-		}																\
-	}																	\
-	SCOPE void kh_clear_##name(kh_##name##_t *h)						\
-	{																	\
-		if (h && h->flags) {											\
-			memset(h->flags, 0xaa, ((h->n_buckets>>4) + 1) * sizeof(khint32_t)); \
-			h->size = h->n_occupied = 0;								\
 		}																\
 	}																	\
 	SCOPE khint_t kh_get_##name(const kh_##name##_t *h, khkey_t key) 	\
@@ -379,7 +371,9 @@ static inline khint_t __ac_X31_hash_string(const char *s)
   @param  name  Name of the hash table [symbol]
   @param  h     Pointer to the hash table [khash_t(name)*]
  */
-#define kh_clear(name, h) kh_clear_##name(h)
+
+// not used in gauss
+//#define kh_clear(name, h) kh_clear_##name(h)
 
 /*! @function
   @abstract     Resize a hash table.

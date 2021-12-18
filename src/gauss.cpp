@@ -678,7 +678,7 @@ void MakeGeneStartEndVec(std::vector<StartEnd>& gene_start_end_vec, std::vector<
 }
 */
 
-
+/*
 void ExecuteJepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
 
   std::map<MapKey, Snp*, LessThanMapKey>::iterator it_sm;
@@ -733,7 +733,7 @@ void ExecuteJepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& ar
   bgzf_close(fp); //closes BGZF file connnection.
   out_result.close(); // closes output file connection.
 }
-
+*/
 
 /*
 void ExecuteQcat(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){

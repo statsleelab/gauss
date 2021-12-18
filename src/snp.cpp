@@ -85,13 +85,13 @@ void Snp::PrintDistResult(std::ofstream& outfile){
 
 void Snp::PrintQcatResult(){
   std::cout<<rsid_<<" "<<chr_<<" "<<bp_<<" "<<a1_<<" "<<a2_<<" "<<af1ref_<<" ";
-  std::cout<<z_<<" "<<qcat_chisq_<<" "<<qcat_pval_<<" "<<type_<<std::endl;
+  std::cout<<z_<<" "<<qcat_chisq_<<" "<<type_<<std::endl;
 }
 
 
 void Snp::PrintQcatResult(std::ofstream& outfile){
   outfile<<rsid_<<" "<<chr_<<" "<<bp_<<" "<<a1_<<" "<<a2_<<" "<<af1ref_<<" ";
-  outfile<<z_<<" "<<qcat_chisq_<<" "<<qcat_pval_<<" "<<type_<<std::endl;
+  outfile<<z_<<" "<<qcat_chisq_<<" "<<type_<<std::endl;
 }
 
 

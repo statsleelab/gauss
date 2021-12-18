@@ -10,6 +10,8 @@ Description: gauss is a free and open-source R software package, which contains 
   meta-analyses from cohorts of diverse ethnic backgrounds, even including family based GWAS,
   using a next generation reference panel consists of 32,953 samples of 29 populations.
 License: GPL (>= 2)
-Imports: Rcpp (>= 1.0.7)
-LinkingTo: Rcpp
+Imports: Rcpp (>= 1.0.7),
+         RcppGSL
+LinkingTo: Rcpp, 
+           RcppGSL
 RoxygenNote: 7.1.2

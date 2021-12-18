@@ -34,14 +34,16 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "bgzf.h"
-
 #include "khash.h"
+
+
 typedef struct {
 	int size;
 	uint8_t *block;
 	int64_t end_offset;
 } cache_t;
 KHASH_MAP_INIT_INT64(cache, cache_t)
+
 
 #if defined(_WIN32) || defined(_MSC_VER)
 #define ftello(fp) ftell(fp)
@@ -272,7 +274,7 @@ deflate_block(BGZF* fp, int block_length)
 
     // Init gzip header
     buffer[0] = GZIP_ID1;
-    buffer[1] = GZIP_ID2;
+    buffer[1] = (char)GZIP_ID2;
     buffer[2] = CM_DEFLATE;
     buffer[3] = FLG_FEXTRA;
     buffer[4] = 0; // mtime
@@ -280,7 +282,7 @@ deflate_block(BGZF* fp, int block_length)
     buffer[6] = 0;
     buffer[7] = 0;
     buffer[8] = 0;
-    buffer[9] = OS_UNKNOWN;
+    buffer[9] = (char)OS_UNKNOWN;
     buffer[10] = BGZF_XLEN;
     buffer[11] = 0;
     buffer[12] = BGZF_ID1;

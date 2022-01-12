@@ -17,6 +17,14 @@ void cal_pop_wgt_vec(std::vector<Snp*>& snp_vec, Arguments& args);
 void read_input_cpw(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
 void read_ref_index_cpw(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
 
+
+//' Calculate population weights using RAF
+//' 
+//' @param input_file file name of input data containing rsid, chr, bp, a1, a2, and af1 
+//' @param reference_index_file file name of reference panel index data
+//' @param reference_data_file  file name of reference panel data
+//' @param reference_pop_desc_file file name of reference panel population description data
+//' @return R data frame containing population IDs and weights 
 // [[Rcpp::export]]
 DataFrame cal_pop_wgt(std::string input_file, 
                       std::string reference_index_file,

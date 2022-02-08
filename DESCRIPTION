@@ -16,3 +16,9 @@ LinkingTo: Rcpp,
            RcppGSL
 Encoding: UTF-8
 RoxygenNote: 7.1.2
+URL: https://github.com/statsleelab/gauss
+BugReports: https://github.com/statsleelab/gauss/issues
+Suggests: 
+    rmarkdown,
+    knitr
+VignetteBuilder: knitr

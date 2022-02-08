@@ -71,14 +71,14 @@ DataFrame distmix(int chr,
   
   std::map<MapKey, Snp*, LessThanMapKey> snp_map;
   ReadInput(snp_map, args);
-  //std::cout<<"size: "<< snp_map.size() <<std::endl;
+  //Rcpp::Rcout<<"size: "<< snp_map.size() <<std::endl;
   ReadReferenceIndex(snp_map, args);
-  //std::cout<<"size: "<< snp_map.size() <<std::endl;
+  //Rcpp::Rcout<<"size: "<< snp_map.size() <<std::endl;
   
   // make a snp vector containing all SNPs
   std::vector<Snp*> snp_vec;
   MakeSnpVecMix(snp_vec, snp_map, args);
-  //std::cout<<"size: "<< snp_vec.size() <<std::endl;
+  //Rcpp::Rcout<<"size: "<< snp_vec.size() <<std::endl;
   ReadGenotype(snp_vec, args);
 
   // run DISTMIX imputation
@@ -154,9 +154,9 @@ void run_distmix(std::vector<Snp*>& snp_vec, Arguments& args){
   
   if(sliding_window_measured.size() <= args.min_num_measured_snp || 
      sliding_window_unmeasured.size() <= args.min_num_unmeasured_snp){
-    std::cout<<std::endl;
-    std::cout<<"Number of measured SNPs: "<<num_measured<<std::endl;
-    std::cout<<"Number of unmeasured SNPs: "<<num_unmeasured<<std::endl;
+    Rcpp::Rcout<<std::endl;
+    Rcpp::Rcout<<"Number of measured SNPs: "<<num_measured<<std::endl;
+    Rcpp::Rcout<<"Number of unmeasured SNPs: "<<num_unmeasured<<std::endl;
     Rcpp::stop("Not enough number of SNPs loaded - DISTMIX not performed");
   }
   
@@ -187,7 +187,7 @@ void run_distmix(std::vector<Snp*>& snp_vec, Arguments& args){
     gsl_vector_set(SNP_STD_VEC, i + num_measured, std::sqrt(v));
   }
   // Init B11 matrix
-  std::cout<<"Computing correlations between variants..."<<std::endl;
+  Rcpp::Rcout<<"Computing correlations between variants..."<<std::endl;
   for(size_t i=0; i<B11->size1; i++){
     gsl_matrix_set(B11, i, i, 1.0 + args.lambda); //add LAMBDA here (ridge regression trick)
     double stdi = gsl_vector_get(SNP_STD_VEC, i);
@@ -204,7 +204,7 @@ void run_distmix(std::vector<Snp*>& snp_vec, Arguments& args){
   InvMat(B11Inv, B11);
   
   // Cal Z-score and Info
-  std::cout<<"Imputing summary statistics of unmeasured SNPs..."<<std::endl;
+  Rcpp::Rcout<<"Imputing summary statistics of unmeasured SNPs..."<<std::endl;
   double prog_prev = 0;
   double prog = 0;
   for(size_t i=0; i<num_unmeasured; i++){
@@ -248,10 +248,10 @@ void run_distmix(std::vector<Snp*>& snp_vec, Arguments& args){
   //////////////////////////
   // Imputation is done ! //
   //////////////////////////
-  std::cout<<std::endl;
-  std::cout<<"Chromosome " <<args.chr<<" "<<args.start_bp<<"-"<<args.end_bp<<" locus successfully imputed!"<<std::endl; 		
-  std::cout<<"Number of measured SNPs: "<<num_measured<<std::endl;
-  std::cout<<"Number of imputed SNPs: "<<num_unmeasured<<std::endl;
+  Rcpp::Rcout<<std::endl;
+  Rcpp::Rcout<<"Chromosome " <<args.chr<<" "<<args.start_bp<<"-"<<args.end_bp<<" locus successfully imputed!"<<std::endl; 		
+  Rcpp::Rcout<<"Number of measured SNPs: "<<num_measured<<std::endl;
+  Rcpp::Rcout<<"Number of imputed SNPs: "<<num_unmeasured<<std::endl;
 
   //Delete sliding_window_measured.
   sliding_window_measured.clear();

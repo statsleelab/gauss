@@ -36,76 +36,76 @@ Arguments::Arguments(){
 
 void Arguments::PrintArguments(){
 
-  std::cout << "chromosome: "<< chr << std::endl;
-  std::cout << "start_bp: " << start_bp <<std::endl;
-  std::cout << "end_bp: " << end_bp << std::endl;
-  std::cout << "wing_size: "<< wing_size << std::endl;
+  Rcpp::Rcout << "chromosome: "<< chr << std::endl;
+  Rcpp::Rcout << "start_bp: " << start_bp <<std::endl;
+  Rcpp::Rcout << "end_bp: " << end_bp << std::endl;
+  Rcpp::Rcout << "wing_size: "<< wing_size << std::endl;
 
-  std::cout << "input_file: "<< input_file << std::endl;
-  std::cout << "reference_index_file: "<< reference_index_file << std::endl;
-  std::cout << "reference_data_file: "<< reference_data_file << std::endl;
-  std::cout << "reference_pop_desc_file: "<< reference_pop_desc_file << std::endl;
+  Rcpp::Rcout << "input_file: "<< input_file << std::endl;
+  Rcpp::Rcout << "reference_index_file: "<< reference_index_file << std::endl;
+  Rcpp::Rcout << "reference_data_file: "<< reference_data_file << std::endl;
+  Rcpp::Rcout << "reference_pop_desc_file: "<< reference_pop_desc_file << std::endl;
 
   //JEPEGMIX
-  //std::cout << "annotation: "<<annotation_file << std::endl;
+  //Rcpp::Rcout << "annotation: "<<annotation_file << std::endl;
 
   //Hidden
-  std::cout << "lambda: " << lambda << std::endl;
-  std::cout << "min_abs_eig: " << min_abs_eig << std::endl;
-  std::cout << "eig_cutoff: " << eig_cutoff << std::endl;
+  Rcpp::Rcout << "lambda: " << lambda << std::endl;
+  Rcpp::Rcout << "min_abs_eig: " << min_abs_eig << std::endl;
+  Rcpp::Rcout << "eig_cutoff: " << eig_cutoff << std::endl;
 
   // for mix
-  std::cout << "mix_af1_cutoff: " << mix_af1_cutoff << std::endl;
-  std::cout << "interval: " << interval << std::endl; 
+  Rcpp::Rcout << "mix_af1_cutoff: " << mix_af1_cutoff << std::endl;
+  Rcpp::Rcout << "interval: " << interval << std::endl; 
 
-  std::cout << "ref_pop_vec: ";
+  Rcpp::Rcout << "ref_pop_vec: ";
   for(int i=0; i<ref_pop_vec.size(); i++){
-    std::cout << ref_pop_vec[i] << " ";
+    Rcpp::Rcout << ref_pop_vec[i] << " ";
   }
-  std::cout<<std::endl;
-  std::cout << "ref_pop_size_vec: ";
+  Rcpp::Rcout<<std::endl;
+  Rcpp::Rcout << "ref_pop_size_vec: ";
   for(int i=0; i<ref_pop_size_vec.size(); i++){
-    std::cout << ref_pop_size_vec[i] << " ";
+    Rcpp::Rcout << ref_pop_size_vec[i] << " ";
   }
-  std::cout<<std::endl;
-  std::cout << "ref_sup_pop_vec: ";
+  Rcpp::Rcout<<std::endl;
+  Rcpp::Rcout << "ref_sup_pop_vec: ";
   for(int i=0; i<ref_sup_pop_vec.size(); i++){
-    std::cout << ref_sup_pop_vec[i] << " ";
+    Rcpp::Rcout << ref_sup_pop_vec[i] << " ";
   }
-  std::cout<<std::endl;
-  std::cout << "pop_flag_vec: ";
+  Rcpp::Rcout<<std::endl;
+  Rcpp::Rcout << "pop_flag_vec: ";
   for(int i=0; i<pop_flag_vec.size(); i++){
-    std::cout << pop_flag_vec[i] << " ";
+    Rcpp::Rcout << pop_flag_vec[i] << " ";
   }
-  std::cout<<std::endl;
-  std::cout << "pop_wgt_vec: ";
+  Rcpp::Rcout<<std::endl;
+  Rcpp::Rcout << "pop_wgt_vec: ";
   for(int i=0; i<pop_wgt_vec.size(); i++){
-    std::cout << pop_wgt_vec[i] << " ";
+    Rcpp::Rcout << pop_wgt_vec[i] << " ";
   }
-  std::cout<<std::endl;
-  std::cout << "pop_wgt_map: ";
+  Rcpp::Rcout<<std::endl;
+  Rcpp::Rcout << "pop_wgt_map: ";
   for(std::map<std::string, double>::iterator it = pop_wgt_map.begin(); it != pop_wgt_map.end(); ++it){
-    std::cout<<it->first<<" "<<it->second<<std::endl;
+    Rcpp::Rcout<<it->first<<" "<<it->second<<std::endl;
   }
-  std::cout<<std::endl;
-  std::cout << "sum_pop_wgt: " << sum_pop_wgt << std::endl;
-  std::cout << "num_pops: " << num_pops << std::endl; 
+  Rcpp::Rcout<<std::endl;
+  Rcpp::Rcout << "sum_pop_wgt: " << sum_pop_wgt << std::endl;
+  Rcpp::Rcout << "num_pops: " << num_pops << std::endl; 
   
-  std::cout << "af1_cutoff: " << af1_cutoff << std::endl;
+  Rcpp::Rcout << "af1_cutoff: " << af1_cutoff << std::endl;
 
   // for JEPEG
-  std::cout << "total_num_categ: " << total_num_categ << std::endl;
-  std::cout << "categ_cor_cutoff: " << categ_cor_cutoff << std::endl;
-  std::cout << "denorm_norm_w: " << denorm_norm_w << std::endl;
-  std::cout << "imp_info_cutoff: " << imp_info_cutoff << std::endl;
+  Rcpp::Rcout << "total_num_categ: " << total_num_categ << std::endl;
+  Rcpp::Rcout << "categ_cor_cutoff: " << categ_cor_cutoff << std::endl;
+  Rcpp::Rcout << "denorm_norm_w: " << denorm_norm_w << std::endl;
+  Rcpp::Rcout << "imp_info_cutoff: " << imp_info_cutoff << std::endl;
   
 }
 
 
 void ReadInput(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
   
-  std::cout<<"Reading input...";
-  std::cout.flush();
+  Rcpp::Rcout<<"Reading input...";
+  Rcpp::Rcout.flush();
 
   std::string input_file = args.input_file;
   std::ifstream in_input(input_file.c_str());
@@ -147,13 +147,13 @@ void ReadInput(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args)
     snp_map[mkey]=snp;
   }//while
   in_input.close();
-  std::cout<<std::endl;
+  Rcpp::Rcout<<std::endl;
 }
 
 
 void ReadReferenceIndex(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
-  std::cout<<"Reading reference index...";
-  std::cout.flush();
+  Rcpp::Rcout<<"Reading reference index...";
+  Rcpp::Rcout.flush();
   
   std::map<MapKey, Snp*, LessThanMapKey>::iterator it1;
   std::map<MapKey, Snp*, LessThanMapKey>::iterator it2;
@@ -237,7 +237,7 @@ void ReadReferenceIndex(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Argumen
   }//while
   
   bgzf_close(fp);
-  std::cout<<std::endl;
+  Rcpp::Rcout<<std::endl;
 }
 
 
@@ -245,7 +245,7 @@ void ReadReferenceIndex(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Argumen
 void MakeSnpVec(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
   BGZF* fp = bgzf_open(args.reference_data_file.c_str(), "r");
   if(fp == NULL){
-    std::cout<<std::endl;
+    Rcpp::Rcout<<std::endl;
     Rcpp::stop("ERROR: can't open reference data file '"+args.reference_data_file+"'");
   }
   std::map<MapKey, Snp*, LessThanMapKey>::iterator it_sm;
@@ -285,7 +285,7 @@ void MakeSnpVecMix(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMa
   //opens reference genotype matrix file (BGZF)
   BGZF* fp = bgzf_open(args.reference_data_file.c_str(), "r");
   if(fp == NULL){
-    std::cout<<std::endl;
+    Rcpp::Rcout<<std::endl;
     Rcpp::stop("ERROR: can't open reference data file '"+args.reference_data_file+"'");
   }
   
@@ -313,7 +313,7 @@ void MakeSnpVecMix(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMa
       af1_mix += af1_vec[k]*args.pop_wgt_vec[k];
     }
     if( (af1_mix > args.af1_cutoff) && (af1_mix < (1-args.af1_cutoff)) ){
-      //std::cout<<"af1_mix: "<<af1_mix<<", af1_cutoff: "<<args.af1_cutoff<<std::endl; 
+      //Rcpp::Rcout<<"af1_mix: "<<af1_mix<<", af1_cutoff: "<<args.af1_cutoff<<std::endl; 
       (it_sm->second)->SetAf1Mix(af1_mix);
       snp_vec.push_back(it_sm->second);
     }
@@ -325,7 +325,7 @@ void ReadGenotype(std::vector<Snp*>& snp_vec, Arguments& args){
   //opens reference genotype matrix file (BGZF)
   BGZF* fp = bgzf_open(args.reference_data_file.c_str(), "r");
   if(fp == NULL){
-    std::cout<<std::endl;
+    Rcpp::Rcout<<std::endl;
     Rcpp::stop("ERROR: can't open reference data file '"+args.reference_data_file+"'");
   }
   for(std::vector<Snp*>::iterator it_sv = snp_vec.begin(); it_sv != snp_vec.end(); ++it_sv){
@@ -367,7 +367,7 @@ void read_ref_desc(Arguments& args){
   std::ifstream in_ref_desc(ref_desc_file.c_str());
   
   if(!in_ref_desc){
-    std::cout<<std::endl;
+    Rcpp::Rcout<<std::endl;
     Rcpp::stop("ERROR: can't open reference population description file '"+ref_desc_file+"'");
   }
   
@@ -387,7 +387,7 @@ void read_ref_desc(Arguments& args){
   args.num_pops=args.ref_pop_vec.size();
   
   in_ref_desc.close();
-  std::cout<<std::endl;
+  Rcpp::Rcout<<std::endl;
 }
 
 // used in DIST 
@@ -398,10 +398,10 @@ void init_pop_flag_vec(Arguments& args){
   
 #ifdef init_pop_flag_vec_test
   for(int i=0; i<args.num_pops; i++){
-    std::cout<<args.ref_pop_vec[i]<<" "<<args.ref_pop_size_vec[i]<<" "<<args.ref_sup_pop_vec[i]<<std::endl;
+    Rcpp::Rcout<<args.ref_pop_vec[i]<<" "<<args.ref_pop_size_vec[i]<<" "<<args.ref_sup_pop_vec[i]<<std::endl;
   }
-  std::cout<<"in_pop: "<<in_pop<<std::endl;
-  std::cout<<"in_sup_pop: "<<in_sup_pop<<std::endl;
+  Rcpp::Rcout<<"in_pop: "<<in_pop<<std::endl;
+  Rcpp::Rcout<<"in_sup_pop: "<<in_sup_pop<<std::endl;
 #endif
   
   std::vector<std::string> pop_vec;
@@ -411,7 +411,7 @@ void init_pop_flag_vec(Arguments& args){
     pop_vec = args.ref_sup_pop_vec;
   
   if(in_pop==0 && in_sup_pop==0){
-    std::cout<<std::endl;
+    Rcpp::Rcout<<std::endl;
     Rcpp::stop("ERROR: invalid population name '"+args.study_pop+"'");
   }
   
@@ -444,15 +444,15 @@ void init_pop_flag_wgt_vec(Arguments& args){
 
   /*
    void ReadPopulationWeight(Arguments& args){
-   std::cout<<"Reading population weight data...";
-   std::cout.flush();  
+   Rcpp::Rcout<<"Reading population weight data...";
+   Rcpp::Rcout.flush();  
    
-   std::cout<<std::endl;
+   Rcpp::Rcout<<std::endl;
    
    std::string pop_wgt_file = args.pop_wgt_file;
    std::ifstream in_pop_wgt(pop_wgt_file.c_str());
    if(!in_pop_wgt){
-   std::cout<<"ERROR: can't open population weight file '"<<pop_wgt_file<<"'"<<std::endl;
+   Rcpp::Rcout<<"ERROR: can't open population weight file '"<<pop_wgt_file<<"'"<<std::endl;
    exit(EXIT_FAILURE);
    }
    
@@ -465,7 +465,7 @@ void init_pop_flag_wgt_vec(Arguments& args){
    std::istringstream buffer(line);
    buffer >> pop >> wgt;
 #ifdef ReadPopulationWeight_Debug    
-   std::cout<<"pop: "<<pop<<"  wgt: "<<wgt<<std::endl;
+   Rcpp::Rcout<<"pop: "<<pop<<"  wgt: "<<wgt<<std::endl;
 #endif
    //validate population name
    boost::regex pattern ("asw|ceu|chb|chs|clm|fin|gbr|ibs|jpt|lwk|mxl|pur|tsi|yri");
@@ -474,10 +474,10 @@ void init_pop_flag_wgt_vec(Arguments& args){
    std::string pop_low = pop;
    std::transform(pop_low.begin(), pop_low.end(), pop_low.begin(), ::tolower); //make capital 
    if(!boost::regex_match(pop_low, matches, pattern)){
-   std::cout << "WARNING: invalid population name '" << pop << "'" << std::endl;
+   Rcpp::Rcout << "WARNING: invalid population name '" << pop << "'" << std::endl;
    } else {
    if(wgt < 0 || wgt > 1.5){
-   std::cout << "WARNING: invalid population wgt '" << wgt << "'" << std::endl;
+   Rcpp::Rcout << "WARNING: invalid population wgt '" << wgt << "'" << std::endl;
    } else {
    pop_wgt_map[pop_low]=wgt; //add pop and wgt to pop_wgt_map
    
@@ -505,11 +505,11 @@ void init_pop_flag_wgt_vec(Arguments& args){
    
 #ifdef ReadPopulationWeight_Debug    
    //print pop_wgt_map
-   std::cout << "pop_wgt_map: "<< std::endl;
+   Rcpp::Rcout << "pop_wgt_map: "<< std::endl;
    for(std::map< std::string, double >::iterator it = pop_wgt_map.begin(); it != pop_wgt_map.end(); ++it){
-   std::cout<<it->first<<" "<<it->second<<std::endl;
+   Rcpp::Rcout<<it->first<<" "<<it->second<<std::endl;
    }
-   std::cout<<std::endl;  
+   Rcpp::Rcout<<std::endl;  
 #endif
    
    //init pop_wgt_vec
@@ -521,17 +521,17 @@ void init_pop_flag_wgt_vec(Arguments& args){
    
 #ifdef VERBOSE
    if(sum_pop_wgt > 1.0){
-   std::cout << "WARNING: sum of all population weights exceeds one" << std::endl;
+   Rcpp::Rcout << "WARNING: sum of all population weights exceeds one" << std::endl;
    }
 #endif
    if(args.pop_wgt_vec.size() < 1){
-   std::cout << "in option 'populationWeight': at least one population needed" << std::endl;
+   Rcpp::Rcout << "in option 'populationWeight': at least one population needed" << std::endl;
    exit(EXIT_FAILURE); 
    }
    args.sum_pop_wgt = sum_pop_wgt;
    args.num_pops = args.pop_wgt_vec.size();
    
-   std::cout<<std::endl;
+   Rcpp::Rcout<<std::endl;
    }
 */  
 
@@ -540,8 +540,8 @@ void init_pop_flag_wgt_vec(Arguments& args){
 
 /*
 void ReadAnnotation(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
-  std::cout<<"Reading SNP Annotation data...";
-  std::cout.flush();
+  Rcpp::Rcout<<"Reading SNP Annotation data...";
+  Rcpp::Rcout.flush();
 
   std::map<MapKey, Snp*, LessThanMapKey>::iterator it1;
   std::map<MapKey, Snp*, LessThanMapKey>::iterator it2;
@@ -549,7 +549,7 @@ void ReadAnnotation(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& 
   std::string annotation_file = args.annotation_file;
   std::ifstream in_annotation(annotation_file.c_str());
   if(!in_annotation){
-    std::cout << "ERROR: can't open snp annotation data file '"<<annotation_file<<"'"<<std::endl;
+    Rcpp::Rcout << "ERROR: can't open snp annotation data file '"<<annotation_file<<"'"<<std::endl;
     exit(EXIT_FAILURE);
   }
   std::string line;
@@ -615,7 +615,7 @@ void ReadAnnotation(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& 
   }//while
 
   in_annotation.close();
-  std::cout<<std::endl;
+  Rcpp::Rcout<<std::endl;
 } 
 
 void DeleteUnusedSnp(std::map<MapKey, Snp*, LessThanMapKey>& snp_map){
@@ -688,21 +688,21 @@ void ExecuteJepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& ar
   //opens reference genotype matrix file (BGZF)
   BGZF* fp = bgzf_open(args.reference_file.c_str(), "r");
   if(fp == NULL){
-    std::cout<<std::endl;
-    std::cout<<"Error: can't open reference data file '" << args.reference_file << "'" <<std::endl;
+    Rcpp::Rcout<<std::endl;
+    Rcpp::Rcout<<"Error: can't open reference data file '" << args.reference_file << "'" <<std::endl;
     exit(EXIT_FAILURE);
   }
   //opens output data file.
   std::ofstream out_result;
   out_result.open(args.output_file.c_str());
   if(!out_result){
-    std::cout<<"Error: can't open output data file '" << args.output_file << "'" << std::endl;
+    Rcpp::Rcout<<"Error: can't open output data file '" << args.output_file << "'" << std::endl;
     exit(EXIT_FAILURE);
   }
 
   ReadAnnotation(snp_map, args);
-  std::cout<<"snp_map size : "<<snp_map.size()<<std::endl;
-  std::cout<<"snp_vec size (before adding): "<<snp_vec.size()<<std::endl;
+  Rcpp::Rcout<<"snp_map size : "<<snp_map.size()<<std::endl;
+  Rcpp::Rcout<<"snp_vec size (before adding): "<<snp_vec.size()<<std::endl;
   for(it_sm = snp_map.begin(); it_sm != snp_map.end(); ++it_sm){
     if( (it_sm->second)->GetGeneid() != "." && 
 	(it_sm->second)->GetType() == 1 &&
@@ -711,7 +711,7 @@ void ExecuteJepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& ar
       //(it_sm->second)->PrintSnpInfo();
     }
   }
-  std::cout<<"snp_vec size  (after adding): "<<snp_vec.size()<<std::endl;
+  Rcpp::Rcout<<"snp_vec size  (after adding): "<<snp_vec.size()<<std::endl;
   
   //Sort snp_vec by geneid
   //TODO: fix LessThanGeneid() to sort snps by (geneid, chr, bp)
@@ -746,32 +746,32 @@ void ExecuteQcat(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& arg
   //opens reference genotype matrix file (BGZF)
   BGZF* fp = bgzf_open(args.reference_file.c_str(), "r");
   if(fp == NULL){
-    std::cout<<std::endl;
-    std::cout<<"Error: can't open reference data file '" << args.reference_file << "'" <<std::endl;
+    Rcpp::Rcout<<std::endl;
+    Rcpp::Rcout<<"Error: can't open reference data file '" << args.reference_file << "'" <<std::endl;
     exit(EXIT_FAILURE);
   }
   //opens output data file.
   std::ofstream out_result;
   out_result.open(args.output_file.c_str());
   if(!out_result){
-    std::cout<<"Error: can't open output data file '" << args.output_file << "'" << std::endl;
+    Rcpp::Rcout<<"Error: can't open output data file '" << args.output_file << "'" << std::endl;
     exit(EXIT_FAILURE);
   }
 
-  //std::cout<<"ExecuteQcat 1"<<std::endl;
+  //Rcpp::Rcout<<"ExecuteQcat 1"<<std::endl;
 
   MakeSnpVecMix(snp_vec, snp_map, args, fp);
 
-  //std::cout<<"Num of SNPs for Imputation: "<< snp_vec.size() <<std::endl;  
+  //Rcpp::Rcout<<"Num of SNPs for Imputation: "<< snp_vec.size() <<std::endl;  
 
 #ifdef main_Debug
   for(std::vector<Snp*>::iterator it_sv = snp_vec.begin(); it_sv != snp_vec.end(); ++it_sv){
     (*it_sv)->PrintQcatResult();
   }
 #endif
-  //std::cout<<"ExecuteQcat 2"<<std::endl;
+  //Rcpp::Rcout<<"ExecuteQcat 2"<<std::endl;
   MakeChrArmStartEndVec(chr_arm_start_end_vec, snp_vec);
-  //std::cout<<"ExecuteQcat 3"<<std::endl;
+  //Rcpp::Rcout<<"ExecuteQcat 3"<<std::endl;
 
   //out_result << "rsid chr bp a1 a2 waf1 af1 z info pval type"<<std::endl; //print output header.
   out_result << "rsid chr bp a1 a2 waf1 af1 assoc_pval qcat_chisq qcat_pval type"<<std::endl; //print output header.
@@ -782,7 +782,7 @@ void ExecuteQcat(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& arg
     qcat.PrintQcatResult(out_result, chr_arm_snp_vec);
     //qcat.PrintQcatResult(chr_arm_snp_vec);
   }
-  //std::cout<<"ExecuteQcat 4"<<std::endl; 
+  //Rcpp::Rcout<<"ExecuteQcat 4"<<std::endl; 
 
   //closes file connections
   bgzf_close(fp); //closes BGZF file connnection.
@@ -794,9 +794,9 @@ void ExecuteQcat(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& arg
 void ExecuteQcatLocal(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
 
 #ifdef ExecuteQcatLocal_Debug
-  std::cout<<std::endl;
-  std::cout<<"========================"<<std::endl;
-  std::cout<<"ExecuteQcatLocal() Start"<<std::endl;
+  Rcpp::Rcout<<std::endl;
+  Rcpp::Rcout<<"========================"<<std::endl;
+  Rcpp::Rcout<<"ExecuteQcatLocal() Start"<<std::endl;
 #endif
    
   std::vector<Snp*> snp_vec;
@@ -805,30 +805,30 @@ void ExecuteQcatLocal(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments
   //opens reference genotype matrix file (BGZF)
   BGZF* fp = bgzf_open(args.reference_file.c_str(), "r");
   if(fp == NULL){
-    std::cout<<std::endl;
-    std::cout<<"Error: can't open reference data file '" << args.reference_file << "'" <<std::endl;
+    Rcpp::Rcout<<std::endl;
+    Rcpp::Rcout<<"Error: can't open reference data file '" << args.reference_file << "'" <<std::endl;
     exit(EXIT_FAILURE);
   }
   //opens output data file.
   std::ofstream out_result;
   out_result.open(args.output_file.c_str());
   if(!out_result){
-    std::cout<<"Error: can't open output data file '" << args.output_file << "'" << std::endl;
+    Rcpp::Rcout<<"Error: can't open output data file '" << args.output_file << "'" << std::endl;
     exit(EXIT_FAILURE);
   }
 
 #ifdef ExecuteQcatLocal_Debug
-  std::cout<<"Before MakeSnpVecMix()"<<std::endl;
+  Rcpp::Rcout<<"Before MakeSnpVecMix()"<<std::endl;
 #endif
   MakeSnpVecMix(snp_vec, snp_map, args, fp);
 
 #ifdef ExecuteQcatLocal_Debug
-  std::cout<<"After MakeSnpVecMix()"<<std::endl;
+  Rcpp::Rcout<<"After MakeSnpVecMix()"<<std::endl;
 #endif
 
 #ifdef ExecuteQcatLocal_Debug
-  std::cout<<"============="<<std::endl;
-  std::cout<<"snp_vec print"<<std::endl;
+  Rcpp::Rcout<<"============="<<std::endl;
+  Rcpp::Rcout<<"snp_vec print"<<std::endl;
   for(std::vector<Snp*>::iterator it_sv = snp_vec.begin(); it_sv != snp_vec.end(); ++it_sv){
     (*it_sv)->PrintSnpInfo();
   }
@@ -846,9 +846,9 @@ void ExecuteQcatLocal(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments
   out_result.close(); // closes output file connection.
 
 #ifdef ExecuteQcatLocal_Debug
-  std::cout<<std::endl;
-  std::cout<<"ExecuteQcatLocal() End"<<std::endl;
-  std::cout<<"======================"<<std::endl;
+  Rcpp::Rcout<<std::endl;
+  Rcpp::Rcout<<"ExecuteQcatLocal() End"<<std::endl;
+  Rcpp::Rcout<<"======================"<<std::endl;
 #endif
 }
 
@@ -862,23 +862,23 @@ void ExecuteDistJepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments
   //opens reference genotype matrix file (BGZF)
   BGZF* fp = bgzf_open(args.reference_file.c_str(), "r");
   if(fp == NULL){
-    std::cout<<std::endl;
-    std::cout<<"Error: can't open reference data file '" << args.reference_file << "'" <<std::endl;
+    Rcpp::Rcout<<std::endl;
+    Rcpp::Rcout<<"Error: can't open reference data file '" << args.reference_file << "'" <<std::endl;
     exit(EXIT_FAILURE);
   }
   //opens output data file.
   std::ofstream out_result;
   out_result.open(args.output_file.c_str());
   if(!out_result){
-    std::cout<<"Error: can't open output data file '" << args.output_file << "'" << std::endl;
+    Rcpp::Rcout<<"Error: can't open output data file '" << args.output_file << "'" << std::endl;
     exit(EXIT_FAILURE);
   }
   
   ReadAnnotation(snp_map, args);
   //Deletes all unmeasured SNPs without geneid from snp_map.
-  std::cout<<"snp_map size (before deleting): "<<snp_map.size()<<std::endl;
+  Rcpp::Rcout<<"snp_map size (before deleting): "<<snp_map.size()<<std::endl;
   DeleteUnusedSnp(snp_map);
-  std::cout<<"snp_map size  (after deleting): "<<snp_map.size()<<std::endl;
+  Rcpp::Rcout<<"snp_map size  (after deleting): "<<snp_map.size()<<std::endl;
   
   MakeSnpVecMix(snp_vec, snp_map, args, fp);
   

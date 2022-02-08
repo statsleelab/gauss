@@ -46,16 +46,16 @@ void Snp::RmvCateg(int categ_num){
 }
 
 void Snp::PrintSnpInfo(){
-  std::cout<<rsid_<<" "<<chr_<<" "<<bp_<<" "<<a1_<<" "<<a2_<<" "<<af1study_<<" "<<af1ref_<<" ";
-  std::cout<<z_<<" "<<info_<<" "<<type_<<" "<<fpos_<<" "<<flip_<<" "<<geneid_<<std::endl;
+  Rcpp::Rcout<<rsid_<<" "<<chr_<<" "<<bp_<<" "<<a1_<<" "<<a2_<<" "<<af1study_<<" "<<af1ref_<<" ";
+  Rcpp::Rcout<<z_<<" "<<info_<<" "<<type_<<" "<<fpos_<<" "<<flip_<<" "<<geneid_<<std::endl;
   //print categ_map_
   for(std::map< int, double >::iterator it = categ_map_.begin(); it != categ_map_.end(); ++it){
-    std::cout<<it->first<<" "<<it->second<<" ";
+    Rcpp::Rcout<<it->first<<" "<<it->second<<" ";
   }
-  std::cout<<std::endl;  
+  Rcpp::Rcout<<std::endl;  
   //print genotype strings
   for(std::vector<std::string>::iterator it = genotype_vec_.begin(); it != genotype_vec_.end(); ++it){
-    std::cout<<*it<<std::endl;
+    Rcpp::Rcout<<*it<<std::endl;
   }
 }
 
@@ -74,8 +74,8 @@ void Snp::PrintSnpInfo(std::ofstream& outfile){
 }
 
 void Snp::PrintDistResult(){
-  std::cout<<rsid_<<" "<<chr_<<" "<<bp_<<" "<<a1_<<" "<<a2_<<" "<<af1ref_<<" ";
-  std::cout<<z_<<" "<<info_<<" "<<type_<<std::endl;
+  Rcpp::Rcout<<rsid_<<" "<<chr_<<" "<<bp_<<" "<<a1_<<" "<<a2_<<" "<<af1ref_<<" ";
+  Rcpp::Rcout<<z_<<" "<<info_<<" "<<type_<<std::endl;
 }
 
 void Snp::PrintDistResult(std::ofstream& outfile){
@@ -84,8 +84,8 @@ void Snp::PrintDistResult(std::ofstream& outfile){
 }
 
 void Snp::PrintQcatResult(){
-  std::cout<<rsid_<<" "<<chr_<<" "<<bp_<<" "<<a1_<<" "<<a2_<<" "<<af1ref_<<" ";
-  std::cout<<z_<<" "<<qcat_chisq_<<" "<<type_<<std::endl;
+  Rcpp::Rcout<<rsid_<<" "<<chr_<<" "<<bp_<<" "<<a1_<<" "<<a2_<<" "<<af1ref_<<" ";
+  Rcpp::Rcout<<z_<<" "<<qcat_chisq_<<" "<<type_<<std::endl;
 }
 
 

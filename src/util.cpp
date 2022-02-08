@@ -341,8 +341,8 @@ void MakePosDef(gsl_matrix* m1, double min_abs_eig){
 
 int RmvPC(gsl_matrix* m1, double eig_cutoff){
 #ifdef RmvPC_Debug
-  std::cout<<std::endl;
-  std::cout<<"RmvPC start!"<<std::endl;
+  Rcpp::Rcout<<std::endl;
+  Rcpp::Rcout<<"RmvPC start!"<<std::endl;
 #endif
   
   int size = m1->size1;
@@ -363,9 +363,9 @@ int RmvPC(gsl_matrix* m1, double eig_cutoff){
   gsl_matrix* eig_vec_trans = gsl_matrix_calloc(1, size);
   
 #ifdef RmvPC_Debug
-  std::cout<<std::endl;
-  std::cout<<"min_eig_val: "<<gsl_vector_get(eig_vals,0)<<std::endl;
-  std::cout<<"eig_cutoff: "<<eig_cutoff<<std::endl;
+  Rcpp::Rcout<<std::endl;
+  Rcpp::Rcout<<"min_eig_val: "<<gsl_vector_get(eig_vals,0)<<std::endl;
+  Rcpp::Rcout<<"eig_cutoff: "<<eig_cutoff<<std::endl;
 #endif
   
   if(gsl_vector_get(eig_vals,0) < eig_cutoff){  // if the smallest eig value is less than eig_cutoff, investigate all eig values.
@@ -393,8 +393,8 @@ int RmvPC(gsl_matrix* m1, double eig_cutoff){
 
 int CountPC(gsl_matrix* m1, double eig_cutoff){
 #ifdef CountPC_Debug
-  std::cout<<std::endl;
-  std::cout<<"CountPC start!"<<std::endl;
+  Rcpp::Rcout<<std::endl;
+  Rcpp::Rcout<<"CountPC start!"<<std::endl;
 #endif
   
   int size = m1->size1;
@@ -415,9 +415,9 @@ int CountPC(gsl_matrix* m1, double eig_cutoff){
   //gsl_matrix* eig_vec_trans = gsl_matrix_calloc(1, size);
   
 #ifdef RmvPC_Debug
-  std::cout<<std::endl;
-  std::cout<<"min_eig_val: "<<gsl_vector_get(eig_vals,0)<<std::endl;
-  std::cout<<"eig_cutoff: "<<eig_cutoff<<std::endl;
+  Rcpp::Rcout<<std::endl;
+  Rcpp::Rcout<<"min_eig_val: "<<gsl_vector_get(eig_vals,0)<<std::endl;
+  Rcpp::Rcout<<"eig_cutoff: "<<eig_cutoff<<std::endl;
 #endif
   
   if(gsl_vector_get(eig_vals,0) < eig_cutoff){  // if the smallest eig value is less than eig_cutoff, investigate all eig values.
@@ -439,9 +439,9 @@ int CountPC(gsl_matrix* m1, double eig_cutoff){
 
 void PrintVector(gsl_vector* x){
   for(size_t i=0 ; i<x->size ; i++){
-    std::cout<<" "<<gsl_vector_get(x,i);
+    Rcpp::Rcout<<" "<<gsl_vector_get(x,i);
   }
-  std::cout<<std::endl;
+  Rcpp::Rcout<<std::endl;
 }
 
 void PrintVector(gsl_vector* x, std::ofstream& outFile){
@@ -453,26 +453,26 @@ void PrintVector(gsl_vector* x, std::ofstream& outFile){
 
 void PrintVector(std::vector<bool>& x){
   for(size_t i=0 ; i<x.size() ; i++){
-    std::cout<<" "<<x[i];
+    Rcpp::Rcout<<" "<<x[i];
   }
-  std::cout<<std::endl;
+  Rcpp::Rcout<<std::endl;
 }
 
 void PrintVector(std::vector<int>& x){
   for(size_t i=0 ; i<x.size() ; i++){
-    std::cout<<" "<<x[i];
+    Rcpp::Rcout<<" "<<x[i];
   }
-  std::cout<<std::endl;
+  Rcpp::Rcout<<std::endl;
 }
 
 void PrintMatrix(gsl_matrix* x){
   for(size_t i=0 ; i< x->size1 ; i++){
     for(size_t j=0 ; j<x->size2 ; j++){
-      std::cout<<" "<<gsl_matrix_get(x,i,j);
+      Rcpp::Rcout<<" "<<gsl_matrix_get(x,i,j);
     }
-    std::cout<<std::endl;  
+    Rcpp::Rcout<<std::endl;  
   }
-  std::cout<<std::endl;
+  Rcpp::Rcout<<std::endl;
 }
 
 void PrintMatrix(gsl_matrix* x, std::ofstream& outFile){
@@ -506,7 +506,7 @@ void LoadProgressBar( int percent ){
       bar.replace(i,1," ");
     }
   }
-  std::cout<< "\r" <<percent << "%  " <<"[" << bar << "] " <<std::flush;
+  Rcpp::Rcout<< "\r" <<percent << "%  " <<"[" << bar << "] " <<std::flush;
 }
 
 void FlipGenotype(std::string& genotype){
@@ -542,8 +542,7 @@ int BgzfGetLine(BGZF* fp, std::string& line){
     i++;
     c = bgzf_getc(fp);
     if(c == -2){
-      std::cout<<"Error: can't read "<<i<<"-th character"<<std::endl;
-      exit(EXIT_FAILURE);
+      Rcpp::stop("Error: can't read "+ std::to_string(i) +"-th character");
     }
     if(c == -1){ // end of file                                                                                 
       break;
@@ -564,10 +563,10 @@ void CalPopWgtVec(std::vector<Snp*>& snp_vec, BGZF* fp, Options& opts){
   int interval = opts.interval;
   
 #ifdef CalPopWgt_Debug
-  //std::cout<<"CalPopWgtVec 1"<<std::endl;
-  std::cout<<"snp_vec size: "<<size<<std::endl;
-  std::cout<<"interval: "<<interval<<std::endl;
-  std::cout<<"num_pops: "<<opts.num_pops<<std::endl;  
+  //Rcpp::Rcout<<"CalPopWgtVec 1"<<std::endl;
+  Rcpp::Rcout<<"snp_vec size: "<<size<<std::endl;
+  Rcpp::Rcout<<"interval: "<<interval<<std::endl;
+  Rcpp::Rcout<<"num_pops: "<<opts.num_pops<<std::endl;  
 #endif
   
   gsl_matrix* af1_cor_mat = gsl_matrix_calloc(opts.num_pops+1, opts.num_pops+1);
@@ -577,7 +576,7 @@ void CalPopWgtVec(std::vector<Snp*>& snp_vec, BGZF* fp, Options& opts){
   gsl_matrix_view Cxx;
   gsl_matrix* CxxInv = gsl_matrix_calloc(opts.num_pops, opts.num_pops);
   
-  //std::cout<<"CalPopWgtVec 2"<<std::endl;
+  //Rcpp::Rcout<<"CalPopWgtVec 2"<<std::endl;
   
   for(int i=0; i<interval; i++){
     std::vector<Snp*> snp_subvec;
@@ -590,12 +589,12 @@ void CalPopWgtVec(std::vector<Snp*>& snp_vec, BGZF* fp, Options& opts){
       }
     }
     int snp_subvec_size = snp_subvec.size();
-    //std::cout<<"snp_subvec_size: "<<snp_subvec_size<<std::endl;  
+    //Rcpp::Rcout<<"snp_subvec_size: "<<snp_subvec_size<<std::endl;  
     gsl_matrix* af1_mat = gsl_matrix_calloc(snp_subvec_size, opts.num_pops+1);
     for(int j=0; j<snp_subvec_size; j++){
       gsl_matrix_set(af1_mat, j, 0, snp_subvec[j]->GetAf1study());    
       
-      //std::cout<<"af1study :"<<snp_subvec[j]->GetAf1study();
+      //Rcpp::Rcout<<"af1study :"<<snp_subvec[j]->GetAf1study();
       
       std::string line;
       bgzf_seek(fp, (*snp_subvec[j]).GetFpos(), SEEK_SET);
@@ -614,16 +613,16 @@ void CalPopWgtVec(std::vector<Snp*>& snp_vec, BGZF* fp, Options& opts){
         if(opts.pop_flag_vec[k]){
           gsl_matrix_set(af1_mat, j, kk, af1);
           kk++;
-          //std::cout<<" "<<af1<<" ";
+          //Rcpp::Rcout<<" "<<af1<<" ";
         }
       }
-      //std::cout<<std::endl;
+      //Rcpp::Rcout<<std::endl;
     }
     
 #ifdef CalPopWgt_Debug
-    std::cout<<"af1_mat:"<<std::endl;
+    Rcpp::Rcout<<"af1_mat:"<<std::endl;
     PrintMatrix(af1_mat);
-    std::cout<<std::endl;
+    Rcpp::Rcout<<std::endl;
 #endif
     
     //Calculate corr matrix of afs.
@@ -631,9 +630,9 @@ void CalPopWgtVec(std::vector<Snp*>& snp_vec, BGZF* fp, Options& opts){
     CalCovMat(af1_cor_mat, af1_mat);
     
 #ifdef CalPopWgt_Debug
-    std::cout<<"af1_cor_mat:"<<std::endl;
+    Rcpp::Rcout<<"af1_cor_mat:"<<std::endl;
     PrintMatrix(af1_cor_mat);
-    std::cout<<std::endl;
+    Rcpp::Rcout<<std::endl;
 #endif
     
     //Calculate W
@@ -644,21 +643,21 @@ void CalPopWgtVec(std::vector<Snp*>& snp_vec, BGZF* fp, Options& opts){
     MpMatMat(W_mat_i, CxxInv, &Cxy.matrix);
     
 #ifdef CalPopWgt_Debug
-    std::cout<<"Cxy:"<<std::endl;
+    Rcpp::Rcout<<"Cxy:"<<std::endl;
     PrintMatrix(&Cxy.matrix);
-    std::cout<<std::endl;
+    Rcpp::Rcout<<std::endl;
     
-    std::cout<<"Cxx:"<<std::endl;
+    Rcpp::Rcout<<"Cxx:"<<std::endl;
     PrintMatrix(&Cxx.matrix);
-    std::cout<<std::endl;
+    Rcpp::Rcout<<std::endl;
     
-    std::cout<<"CxxInv:"<<std::endl;
+    Rcpp::Rcout<<"CxxInv:"<<std::endl;
     PrintMatrix(CxxInv);
-    std::cout<<std::endl;
+    Rcpp::Rcout<<std::endl;
     
-    std::cout<<"W_mat_i:"<<std::endl;
+    Rcpp::Rcout<<"W_mat_i:"<<std::endl;
     PrintMatrix(W_mat_i);
-    std::cout<<std::endl;
+    Rcpp::Rcout<<std::endl;
 #endif
     
     for(int j=0; j<opts.num_pops; j++){
@@ -667,9 +666,9 @@ void CalPopWgtVec(std::vector<Snp*>& snp_vec, BGZF* fp, Options& opts){
     }
     
 #ifdef CalPopWgt_Debug
-    std::cout<<"W_mat:"<<std::endl;
+    Rcpp::Rcout<<"W_mat:"<<std::endl;
     PrintMatrix(W_mat);
-    std::cout<<std::endl;
+    Rcpp::Rcout<<std::endl;
 #endif
     
     gsl_matrix_free(af1_mat);
@@ -725,9 +724,9 @@ void CalPopWgtVec(std::vector<Snp*>& snp_vec, BGZF* fp, Options& opts){
 //   }
 
 #ifdef CalPopWgt_Debug
-  std::cout<<"sum_pop_wgt: "<< sum_pop_wgt << std::endl;
-  //std::cout<<"wgt_sum before: "<< wgt_sum << std::endl;
-  //std::cout<<"wgt_sum after : "<< wgt_sum_after << std::endl;
+  Rcpp::Rcout<<"sum_pop_wgt: "<< sum_pop_wgt << std::endl;
+  //Rcpp::Rcout<<"wgt_sum before: "<< wgt_sum << std::endl;
+  //Rcpp::Rcout<<"wgt_sum after : "<< wgt_sum_after << std::endl;
 #endif
   
 ///   double wgt_sum = 0.0;
@@ -743,8 +742,8 @@ void CalPopWgtVec(std::vector<Snp*>& snp_vec, BGZF* fp, Options& opts){
 ///   wgt_sum_after += wval;
 ///   }
    
-///   std::cout<<"wgt_sum before: "<< wgt_sum << std::endl;
-///   std::cout<<"wgt_sum after : "<< wgt_sum_after << std::endl;
+///   Rcpp::Rcout<<"wgt_sum before: "<< wgt_sum << std::endl;
+///   Rcpp::Rcout<<"wgt_sum after : "<< wgt_sum_after << std::endl;
 
   
   gsl_matrix_free(af1_cor_mat);

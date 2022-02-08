@@ -63,9 +63,9 @@ DataFrame dist(int chr,
   
   std::map<MapKey, Snp*, LessThanMapKey> snp_map;
   ReadInput(snp_map, args);
-  //std::cout<<"size: "<< snp_map.size() <<std::endl;
+  //Rcpp::Rcout<<"size: "<< snp_map.size() <<std::endl;
   ReadReferenceIndex(snp_map, args);
-  //std::cout<<"size: "<< snp_map.size() <<std::endl;
+  //Rcpp::Rcout<<"size: "<< snp_map.size() <<std::endl;
   
   // make a snp vector containing all SNPs
   std::vector<Snp*> snp_vec;
@@ -145,9 +145,9 @@ void run_dist(std::vector<Snp*>& snp_vec, Arguments& args){
 
   if(sliding_window_measured.size() <= args.min_num_measured_snp || 
      sliding_window_unmeasured.size() <= args.min_num_unmeasured_snp){
-    std::cout<<std::endl;
-    std::cout<<"Number of measured SNPs: "<<num_measured<<std::endl;
-    std::cout<<"Number of unmeasured SNPs: "<<num_unmeasured<<std::endl;
+    Rcpp::Rcout<<std::endl;
+    Rcpp::Rcout<<"Number of measured SNPs: "<<num_measured<<std::endl;
+    Rcpp::Rcout<<"Number of unmeasured SNPs: "<<num_unmeasured<<std::endl;
     Rcpp::stop("Not enough number of SNPs loaded - DIST not performed");
   }
   
@@ -168,7 +168,7 @@ void run_dist(std::vector<Snp*>& snp_vec, Arguments& args){
     gsl_matrix_set(Z1, i, 0, (*sliding_window_measured[i]).GetZ());
   }	
   // Init B11 matrix
-  std::cout<<"Computing correlations between variants..."<<std::endl;
+  Rcpp::Rcout<<"Computing correlations between variants..."<<std::endl;
   for(size_t i=0; i<B11->size1; i++){
     gsl_matrix_set(B11, i, i, 1.0 + args.lambda); //add LAMBDA here (ridge regression trick)
     for(size_t j=i+1; j<B11->size1; j++){
@@ -182,7 +182,7 @@ void run_dist(std::vector<Snp*>& snp_vec, Arguments& args){
   MakePosDef(B11, args.min_abs_eig);
   InvMat(B11Inv, B11);
   
-  std::cout<<"Imputing summary statistics of unmeasured SNPs..."<<std::endl;
+  Rcpp::Rcout<<"Imputing summary statistics of unmeasured SNPs..."<<std::endl;
   double prog_prev = 0;
   double prog = 0;
   for(size_t i=0; i<num_unmeasured; i++){ 
@@ -219,11 +219,11 @@ void run_dist(std::vector<Snp*>& snp_vec, Arguments& args){
   //////////////////////////
   // Imputation is done ! //
   //////////////////////////
-  std::cout<<std::endl;
-  std::cout<<"Chromosome " <<args.chr<<" "<<args.start_bp<<"-"<<args.end_bp<<" locus successfully imputed!"<<std::endl; 		
-  std::cout<<"Number of measured SNPs: "<<num_measured<<std::endl;
-  std::cout<<"Number of imputed SNPs: "<<num_unmeasured<<std::endl;
-  std::cout<<"Reference Panel: "<<args.study_pop<<", # of samples = "<<args.num_samples<<std::endl;
+  Rcpp::Rcout<<std::endl;
+  Rcpp::Rcout<<"Chromosome " <<args.chr<<" "<<args.start_bp<<"-"<<args.end_bp<<" locus successfully imputed!"<<std::endl; 		
+  Rcpp::Rcout<<"Number of measured SNPs: "<<num_measured<<std::endl;
+  Rcpp::Rcout<<"Number of imputed SNPs: "<<num_unmeasured<<std::endl;
+  Rcpp::Rcout<<"Reference Panel: "<<args.study_pop<<", # of samples = "<<args.num_samples<<std::endl;
   
   //Delete sliding_window_measured.
   sliding_window_measured.clear();

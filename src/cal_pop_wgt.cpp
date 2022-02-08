@@ -52,7 +52,7 @@ DataFrame cal_pop_wgt(std::string input_file,
   read_ref_index_cpw(measured_snp_map, args);
   
 #ifdef CPW_Debug    
-  std::cout<<"Measured snp map size: "<< measured_snp_map.size() <<std::endl;
+  Rcpp::Rcout<<"Measured snp map size: "<< measured_snp_map.size() <<std::endl;
 #endif
   
   for(it_msm = measured_snp_map.begin(); it_msm != measured_snp_map.end(); ++it_msm){
@@ -63,7 +63,7 @@ DataFrame cal_pop_wgt(std::string input_file,
   }
   
 #ifdef CPW_Debug  
-  std::cout<<"Num of measured SNPs used for calculations: "<< measured_snp_vec.size() <<std::endl;
+  Rcpp::Rcout<<"Num of measured SNPs used for calculations: "<< measured_snp_vec.size() <<std::endl;
 #endif
   
   cal_pop_wgt_vec(measured_snp_vec, args);
@@ -102,9 +102,9 @@ void cal_pop_wgt_vec(std::vector<Snp*>& snp_vec, Arguments& args){
   int size = snp_vec.size(); 
   int interval = args.interval;
   
-  std::cout<<"Num of SNPs: "<<size<<std::endl;
-  std::cout<<"Interval length: "<<interval<<std::endl;
-  std::cout<<"Num of populations: "<<args.num_pops<<std::endl;
+  Rcpp::Rcout<<"Num of SNPs: "<<size<<std::endl;
+  Rcpp::Rcout<<"Interval length: "<<interval<<std::endl;
+  Rcpp::Rcout<<"Num of populations: "<<args.num_pops<<std::endl;
 
   gsl_matrix* af1_cor_mat = gsl_matrix_calloc(args.num_pops+1, args.num_pops+1);
   gsl_matrix* W_mat_i = gsl_matrix_calloc(args.num_pops, 1);
@@ -116,11 +116,11 @@ void cal_pop_wgt_vec(std::vector<Snp*>& snp_vec, Arguments& args){
   //opens reference genotype matrix file (BGZF)
   BGZF* fp = bgzf_open(args.reference_data_file.c_str(), "r");
   if(fp == NULL){
-    std::cout<<std::endl;
+    Rcpp::Rcout<<std::endl;
     Rcpp::stop("ERROR: can't open reference data file '"+args.reference_data_file+"'");
   }
   
-  std::cout<<"Calculating population weights..."<<std::endl;
+  Rcpp::Rcout<<"Calculating population weights..."<<std::endl;
   for(int i=0; i<interval; i++){
     std::vector<Snp*> snp_subvec;
     for(int j=0;;j++){
@@ -132,29 +132,29 @@ void cal_pop_wgt_vec(std::vector<Snp*>& snp_vec, Arguments& args){
       }
     }
     int snp_subvec_size = snp_subvec.size();
-    //std::cout<<"snp_subvec_size: "<<snp_subvec_size<<std::endl;
+    //Rcpp::Rcout<<"snp_subvec_size: "<<snp_subvec_size<<std::endl;
     
     gsl_matrix* af1_mat = gsl_matrix_calloc(snp_subvec_size, args.num_pops+1);
     for(int j=0; j<snp_subvec_size; j++){
       gsl_matrix_set(af1_mat, j, 0, snp_subvec[j]->GetAf1Study());    
-      //std::cout<<"af1study :"<<snp_subvec[j]->GetAf1Study();
+      //Rcpp::Rcout<<"af1study :"<<snp_subvec[j]->GetAf1Study();
       std::string line;
       bgzf_seek(fp, (*snp_subvec[j]).GetFpos(), SEEK_SET);
       BgzfGetLine(fp, line);
-      //std::cout<<line<<std::endl;
+      //Rcpp::Rcout<<line<<std::endl;
       std::istringstream buffer(line);
       //skipping genotypes
       for(int k=0; k<args.num_pops; k++){
         std::string tmp;
         buffer >> tmp;
-        //std::cout<<tmp<<std::endl;
+        //Rcpp::Rcout<<tmp<<std::endl;
       }
       //reading allele frequencies
       int kk=1;
       for(int k=0; k<args.num_pops; k++){
         double af1;
         buffer >> af1;
-        //std::cout<<af1<<std::endl;
+        //Rcpp::Rcout<<af1<<std::endl;
         gsl_matrix_set(af1_mat, j, kk, af1);
         kk++;
       }
@@ -206,18 +206,18 @@ void cal_pop_wgt_vec(std::vector<Snp*>& snp_vec, Arguments& args){
   
   //closes file connections
   bgzf_close(fp); //closes BGZF file connnection.
-  std::cout<<std::endl;
+  Rcpp::Rcout<<std::endl;
 }
 
 
 void read_input_cpw(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
-  std::cout<<"Reading input...";
-  std::cout.flush();
+  Rcpp::Rcout<<"Reading input...";
+  Rcpp::Rcout.flush();
   
   std::string input_file = args.input_file;
   std::ifstream in_input(input_file.c_str());
   if(!in_input){
-    std::cout<<std::endl;
+    Rcpp::Rcout<<std::endl;
     Rcpp::stop("ERROR: can't open input file '"+input_file+"'");
   }
   
@@ -245,19 +245,19 @@ void read_input_cpw(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& 
     snp_map[mkey]=snp;
   }//while
   in_input.close();
-  std::cout<<std::endl;
+  Rcpp::Rcout<<std::endl;
 }
 
 void read_ref_index_cpw(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
-  std::cout<<"Reading reference index...";
-  std::cout.flush();
+  Rcpp::Rcout<<"Reading reference index...";
+  Rcpp::Rcout.flush();
   
   std::map<MapKey, Snp*, LessThanMapKey>::iterator it1;
   std::map<MapKey, Snp*, LessThanMapKey>::iterator it2;
   std::string reference_index_file = args.reference_index_file;
   BGZF* fp = bgzf_open(reference_index_file.c_str(), "r");
   if(!fp){
-    std::cout<<std::endl;
+    Rcpp::Rcout<<std::endl;
     Rcpp::stop("ERROR: can't open reference index file '"+reference_index_file+"'");
   }
   
@@ -306,11 +306,11 @@ void read_ref_index_cpw(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Argumen
       snp_map.erase(it2);              //delete snp with the old key. 
       
     } else if(it1 != snp_map.end() && it2 != snp_map.end()){ //Throw error message! This should not happen.
-      std::cout<<std::endl;
+      Rcpp::Rcout<<std::endl;
       Rcpp::stop("ERROR: input file contains duplicates");
     }//if
     
   }//while
   bgzf_close(fp);
-  std::cout<<std::endl;
+  Rcpp::Rcout<<std::endl;
 }

@@ -71,14 +71,14 @@ DataFrame qcatmix(int chr,
   
   std::map<MapKey, Snp*, LessThanMapKey> snp_map;
   ReadInput(snp_map, args);
-  //std::cout<<"size: "<< snp_map.size() <<std::endl;
+  //Rcpp::Rcout<<"size: "<< snp_map.size() <<std::endl;
   ReadReferenceIndex(snp_map, args);
-  //std::cout<<"size: "<< snp_map.size() <<std::endl;
+  //Rcpp::Rcout<<"size: "<< snp_map.size() <<std::endl;
   
   // make a snp vector containing all SNPs
   std::vector<Snp*> snp_vec;
   MakeSnpVecMix(snp_vec, snp_map, args);
-  //std::cout<<"size: "<< snp_vec.size() <<std::endl;
+  //Rcpp::Rcout<<"size: "<< snp_vec.size() <<std::endl;
   ReadGenotype(snp_vec, args);
 
   // run QCATMIX 
@@ -162,9 +162,9 @@ void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args){
   
   if(num_measured_ext <= args.min_num_measured_snp || 
      num_unmeasured_pred <= args.min_num_unmeasured_snp){
-    std::cout<<std::endl;
-    std::cout<<"Number of measured SNPs: "<<num_measured_ext<<std::endl;
-    std::cout<<"Number of unmeasured SNPs: "<<num_unmeasured_pred<<std::endl;
+    Rcpp::Rcout<<std::endl;
+    Rcpp::Rcout<<"Number of measured SNPs: "<<num_measured_ext<<std::endl;
+    Rcpp::Rcout<<"Number of unmeasured SNPs: "<<num_unmeasured_pred<<std::endl;
     Rcpp::stop("Not enough number of SNPs loaded - QCAT performed");
   }
   
@@ -198,7 +198,7 @@ void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args){
     gsl_vector_set(SNP_STD_VEC, i + num_measured_ext, std::sqrt(v));
   }
   // Init B11 matrix
-  std::cout<<"Computing correlations between variants..."<<std::endl;
+  Rcpp::Rcout<<"Computing correlations between variants..."<<std::endl;
   for(size_t i=0; i<B11->size1; i++){
     gsl_matrix_set(B11, i, i, 1.0 + args.lambda); //add LAMBDA here (ridge regression trick)
     double stdi = gsl_vector_get(SNP_STD_VEC, i);
@@ -234,7 +234,7 @@ void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args){
   //double varLInvZ1 = CalVar(gsl_matrix_column(LInvZ1,0));  
 
   //Testing measured SNPs in the prediction window    
-  std::cout<<"Testing measured variants..."<<std::endl;
+  Rcpp::Rcout<<"Testing measured variants..."<<std::endl;
   for(size_t i=0; i<num_measured_pred; i++){        
     gsl_matrix_view b11 = gsl_matrix_submatrix(B11, i+num_measured_headwing, 0, 1, num_measured_ext); //extract ith row vector b11 (as matrix image) from B11.
     gsl_matrix_transpose_memcpy(b11t, &b11.matrix);
@@ -246,8 +246,8 @@ void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args){
     (*sliding_window_measured_ext[i+num_measured_headwing]).SetQcatChisq(chisq);
   }
   
-  std::cout<<std::endl;
-  std::cout<<"Testing unmeasured variants..."<<std::endl;
+  Rcpp::Rcout<<std::endl;
+  Rcpp::Rcout<<"Testing unmeasured variants..."<<std::endl;
   for(size_t i=0; i<num_unmeasured_pred; i++){  // for loop, unmeasured SNPs in the prediction window. 
     gsl_matrix_view b21 = gsl_matrix_submatrix(B21, i, 0, 1, num_measured_ext); //extract ith row vector b21 (as matrix image) from B21.
     gsl_matrix_transpose_memcpy(b21t, &b21.matrix);
@@ -274,9 +274,9 @@ void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args){
   ////////////////////
   // QCAT is done ! //
   ////////////////////
-  std::cout<<std::endl;
-  std::cout<<"Chromosome " <<args.chr<<" "<<args.start_bp<<"-"<<args.end_bp<<" locus successfully tested!"<<std::endl; 		
-  std::cout<<"Number of tested SNPs: "<<num_unmeasured_pred+num_measured_pred<<std::endl;
+  Rcpp::Rcout<<std::endl;
+  Rcpp::Rcout<<"Chromosome " <<args.chr<<" "<<args.start_bp<<"-"<<args.end_bp<<" locus successfully tested!"<<std::endl; 		
+  Rcpp::Rcout<<"Number of tested SNPs: "<<num_unmeasured_pred+num_measured_pred<<std::endl;
 
   //Delete sliding_window_measured_ext.
   sliding_window_measured_ext.clear();

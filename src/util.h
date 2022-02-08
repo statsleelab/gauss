@@ -1,21 +1,18 @@
 //GAUSS : Genome Analysis Using Summary Statistics
 //util.h
 
-// Tell Rcpp to rely on the RcppGSL package to find GSL library and headers
-
-
 #ifndef UTIL_H
 #define UTIL_H
 
 //#include <RcppGSL.h>
-#include "Rcpp.h"
+#include <Rcpp.h>
 
 // forward declaration
 //struct BGZF;
 
-struct Options;
+//struct Options;
 //struct LessThanMapKey;
-class Snp;
+//class Snp;
 //class MapKey;
  
 #include <string>
@@ -26,7 +23,7 @@ class Snp;
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 
-#include "bgzf.h" //not working need to find other library
+#include "bgzf.h"
 
 double CalCor(std::vector<std::string>& x, std::vector<std::string>& y); 
 double CalWgtCov(std::vector<std::string>& x, std::vector<std::string>& y, std::vector<double>& pop_wgt_vec); 

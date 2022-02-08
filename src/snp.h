@@ -1,9 +1,10 @@
 //GAUSS : Genome Analysis Using Summary Statistics
 //snp.h
 
-#ifndef SNP_H
+#ifndef SNP_H //header guards
 #define SNP_H
 
+#include <Rcpp.h>
 #include <string>
 #include <map>
 #include <vector>

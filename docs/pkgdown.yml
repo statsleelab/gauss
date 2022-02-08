@@ -1,0 +1,7 @@
+pandoc: 2.3.1
+pkgdown: 2.0.1
+pkgdown_sha: ~
+articles:
+  dist_example: dist_example.html
+last_built: 2022-02-08T06:35Z
+

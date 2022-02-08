@@ -8,5 +8,4 @@ src/*.dll
 src/etc
 R/test
 
-docs
 inst/doc

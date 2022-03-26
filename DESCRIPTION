@@ -21,4 +21,4 @@ BugReports: https://github.com/statsleelab/gauss/issues
 Suggests: 
     rmarkdown,
     knitr
-VignetteBuilder: knitr
+

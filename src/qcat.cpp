@@ -196,14 +196,21 @@ void run_qcat(std::vector<Snp*>& snp_vec, Arguments& args){
   }
   
   //int num_eig = RmvPC(B11, args.eig_cutoff); //rmv PCs with eig value less than eig_cutoff
-  int num_eig = CountPC(B11, args.eig_cutoff); //rmv PCs with eig value less than eig_cutoff
+  int num_eig = CountPC(B11, args.eig_cutoff); //count num of eigen values > eig_cutoff
   CholeskyMat(L, B11); //Cholesky decomposion to get the square root (lower triangular matrix L) of B11.
   
   //MakePosDef(L, min_abs_eig_);
   InvMat(LInv, L);  
   MpMatMat(LInvZ1, LInv, Z1); // Cholesky transformation to uncorrelate Z1.
-  //double varZ1 = CalVar(gsl_matrix_column(Z1,0));
-  //double varLInvZ1 = CalVar(gsl_matrix_column(LInvZ1,0));  
+  
+  // for testing
+  double varZ1 = CalVar(gsl_matrix_column(Z1,0));
+  double varLInvZ1 = CalVar(gsl_matrix_column(LInvZ1,0));  
+  Rcpp::Rcout<<"VarZ1: "<<varZ1<<std::endl;
+  Rcpp::Rcout<<"VarLInvZ1: "<<varLInvZ1<<std::endl;
+  Rcpp::Rcout<<"num_eig: "<<num_eig<<std::endl;
+  // for testing
+  
   
   //Testing measured SNPs in the prediction window    
   Rcpp::Rcout<<"Testing measured variants..."<<std::endl;

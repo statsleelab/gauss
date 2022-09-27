@@ -24,12 +24,14 @@ void read_ref_index_cpw(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Argumen
 //' @param reference_index_file file name of reference panel index data
 //' @param reference_data_file  file name of reference panel data
 //' @param reference_pop_desc_file file name of reference panel population description data
+//' @param interval number of non-overlapping SNP sets used in calculating population weights 
 //' @return R data frame containing population IDs and weights 
 // [[Rcpp::export]]
-DataFrame cal_pop_wgt(std::string input_file, 
+DataFrame cal_pop_wgt(std::string input_file,
                       std::string reference_index_file,
                       std::string reference_data_file,
-                      std::string reference_pop_desc_file){
+                      std::string reference_pop_desc_file,
+                      Rcpp::Nullable<int> interval = R_NilValue){
   
   Arguments args;
   args.input_file = input_file;
@@ -37,6 +39,13 @@ DataFrame cal_pop_wgt(std::string input_file,
   args.reference_data_file = reference_data_file;
   args.reference_pop_desc_file = reference_pop_desc_file;
   //args.interval = 1000;
+  
+  if(interval.isNotNull()){
+    args.interval = Rcpp::as<int>(interval);
+  } else {
+    args.interval = 1000;
+  }
+  
   
   read_ref_desc(args);
   

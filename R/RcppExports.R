@@ -7,9 +7,10 @@
 #' @param reference_index_file file name of reference panel index data
 #' @param reference_data_file  file name of reference panel data
 #' @param reference_pop_desc_file file name of reference panel population description data
+#' @param interval number of non-overlapping SNP sets used in calculating population weights 
 #' @return R data frame containing population IDs and weights 
-cal_pop_wgt <- function(input_file, reference_index_file, reference_data_file, reference_pop_desc_file) {
-    .Call(`_gauss_cal_pop_wgt`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file)
+cal_pop_wgt <- function(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval = NULL) {
+    .Call(`_gauss_cal_pop_wgt`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval)
 }
 
 #' Direct imputation of summary statistics for unmeasured SNPs from ethnically homogeneous cohorts

@@ -12,8 +12,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // cal_pop_wgt
-DataFrame cal_pop_wgt(std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file);
-RcppExport SEXP _gauss_cal_pop_wgt(SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP) {
+DataFrame cal_pop_wgt(std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<int> interval);
+RcppExport SEXP _gauss_cal_pop_wgt(SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP intervalSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -21,7 +21,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::string >::type reference_index_file(reference_index_fileSEXP);
     Rcpp::traits::input_parameter< std::string >::type reference_data_file(reference_data_fileSEXP);
     Rcpp::traits::input_parameter< std::string >::type reference_pop_desc_file(reference_pop_desc_fileSEXP);
-    rcpp_result_gen = Rcpp::wrap(cal_pop_wgt(input_file, reference_index_file, reference_data_file, reference_pop_desc_file));
+    Rcpp::traits::input_parameter< Rcpp::Nullable<int> >::type interval(intervalSEXP);
+    rcpp_result_gen = Rcpp::wrap(cal_pop_wgt(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -107,7 +108,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_gauss_cal_pop_wgt", (DL_FUNC) &_gauss_cal_pop_wgt, 4},
+    {"_gauss_cal_pop_wgt", (DL_FUNC) &_gauss_cal_pop_wgt, 5},
     {"_gauss_dist", (DL_FUNC) &_gauss_dist, 10},
     {"_gauss_distmix", (DL_FUNC) &_gauss_distmix, 10},
     {"_gauss_qcat", (DL_FUNC) &_gauss_qcat, 10},

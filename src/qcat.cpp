@@ -149,12 +149,11 @@ void run_qcat(std::vector<Snp*>& snp_vec, Arguments& args){
   int num_measured_ext = sliding_window_measured_ext.size();      // # of measured SNPs in ext win
   int num_unmeasured_pred = sliding_window_unmeasured_pred.size();// # of unmeasured SNPs in pred win
   
-  if(num_measured_ext <= args.min_num_measured_snp || 
-     num_unmeasured_pred <= args.min_num_unmeasured_snp){
+  if(num_measured_ext <= args.min_num_measured_snp){
     Rcpp::Rcout<<std::endl;
     Rcpp::Rcout<<"Number of measured SNPs: "<<num_measured_ext<<std::endl;
     Rcpp::Rcout<<"Number of unmeasured SNPs: "<<num_unmeasured_pred<<std::endl;
-    Rcpp::stop("Not enough number of SNPs loaded - QCAT performed");
+    Rcpp::stop("Not enough number of SNPs loaded - QCAT not performed");
   }
   
   //////////////////////////

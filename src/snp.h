@@ -28,6 +28,8 @@ public:
   double GetZ() {return z_; }
   double GetInfo() {return info_; }
 
+  int GetQcatM() { return qcat_m_; }   // QCAT M
+  double GetQcatT() {return qcat_t_; } // QCAT T;
   double GetQcatChisq() { return qcat_chisq_; } //QCAT chisq;
   
   int GetType() const {return type_;}
@@ -52,6 +54,8 @@ public:
   void SetZ(double z) { z_ = z; }
   void SetInfo(double info) { info_ = info; }
 
+  void SetQcatM(int qcat_m) { qcat_m_ = qcat_m; } // M (num_eig) in QCAT
+  void SetQcatT(double qcat_t) { qcat_t_ = qcat_t; } // T score in QCAT
   void SetQcatChisq(double qcat_chisq) { qcat_chisq_ = qcat_chisq; } //QCAT
 
   void SetType(int type) { type_ = type; } //0: unmeasured/ref, 1: measured/ref, 2: measured/no ref
@@ -92,6 +96,8 @@ private:
   double z_;
   double info_;
 
+  int qcat_m_;
+  double qcat_t_;
   double qcat_chisq_;
 
   int type_; // 0:unmeasured snp/1KG, 1:measured snp/1KG, 2:measured snp/No 1KG.

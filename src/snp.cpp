@@ -23,6 +23,8 @@ Snp::Snp()
 	z_ = 0.0;
 	info_ = -1.0;
 
+	qcat_m_ = 0;
+	qcat_t_ = 0.0;
 	qcat_chisq_ = 0.0;
 
 	type_ = -1;

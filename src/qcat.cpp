@@ -84,6 +84,8 @@ DataFrame qcat(int chr,
   StringVector a2_vec;
   NumericVector af1ref_vec;
   NumericVector z_vec;
+  IntegerVector qcat_m_vec;
+  NumericVector qcat_t_vec;
   NumericVector qcat_chisq_vec;
   NumericVector qcat_pval_vec;
   IntegerVector type_vec;
@@ -98,6 +100,8 @@ DataFrame qcat(int chr,
       a2_vec.push_back((*it_sv)->GetA2());
       af1ref_vec.push_back((*it_sv)->GetAf1Ref());
       z_vec.push_back((*it_sv)->GetZ());
+      qcat_m_vec.push_back((*it_sv)->GetQcatM());
+      qcat_t_vec.push_back((*it_sv)->GetQcatT());
       qcat_chisq_vec.push_back((*it_sv)->GetQcatChisq());
       qcat_pval_vec.push_back(gsl_cdf_chisq_Q((*it_sv)->GetQcatChisq(), 1));      
       type_vec.push_back((*it_sv)->GetType());
@@ -119,6 +123,8 @@ DataFrame qcat(int chr,
                                    Named("a2")=a2_vec,
                                    Named("af1ref")=af1ref_vec,
                                    Named("z")=z_vec,
+                                   Named("qcat_m")=qcat_m_vec,
+                                   Named("qcat_t")=qcat_t_vec,
                                    Named("qcat_chisq")=qcat_chisq_vec,
                                    Named("qcat_pval")=qcat_pval_vec,
                                    Named("type")=type_vec);
@@ -220,7 +226,10 @@ void run_qcat(std::vector<Snp*>& snp_vec, Arguments& args){
     double r = CalCor(gsl_matrix_column(LInvZ1,0), gsl_matrix_column(LInvb11t,0)); 
     //double r = CalCor(gsl_matrix_column(Z1,0), gsl_matrix_column(b11t,0));
     //double r = CalCor(gsl_matrix_column(LInvZ1,0), gsl_matrix_column(LInvb11t,0))*std::sqrt(varLInvZ1/(varLInvZ1+1));
+    double tscore = std::sqrt(num_eig-3)*r;
     double chisq = (num_eig-3)*r*r;
+    (*sliding_window_measured_ext[i+num_measured_headwing]).SetQcatM(num_eig);
+    (*sliding_window_measured_ext[i+num_measured_headwing]).SetQcatT(tscore);
     (*sliding_window_measured_ext[i+num_measured_headwing]).SetQcatChisq(chisq);
   }
 
@@ -232,7 +241,10 @@ void run_qcat(std::vector<Snp*>& snp_vec, Arguments& args){
     double r = CalCor(gsl_matrix_column(LInvZ1,0), gsl_matrix_column(LInvb21t,0)); 
     //double r = CalCor(gsl_matrix_column(Z1,0), gsl_matrix_column(b21t,0));
     //double r = CalCor(gsl_matrix_column(LInvZ1,0), gsl_matrix_column(LInvb21t,0))*std::sqrt(varLInvZ1/(varLInvZ1+1));
+    double tscore = std::sqrt(num_eig-3)*r; 
     double chisq = (num_eig-3)*r*r;
+    (*sliding_window_unmeasured_pred[i]).SetQcatM(num_eig);
+    (*sliding_window_unmeasured_pred[i]).SetQcatT(tscore);
     (*sliding_window_unmeasured_pred[i]).SetQcatChisq(chisq);
   }
   

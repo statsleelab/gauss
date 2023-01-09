@@ -146,7 +146,7 @@ void cpw2_vec(std::vector<Snp*>& snp_vec, Arguments& args){
     
     gsl_matrix* af1_mat = gsl_matrix_calloc(snp_subvec_size, args.num_pops+1);
     for(int j=0; j<snp_subvec_size; j++){
-      gsl_matrix_set(af1_mat, j, 0, std::asin(snp_subvec[j]->GetAf1Study())); //use arcsine transformed af1 to stabilize the var    
+      gsl_matrix_set(af1_mat, j, 0, std::asin(std::sqrt(snp_subvec[j]->GetAf1Study()))); //use arcsine square root transformation to stabilize the variance    
       //Rcpp::Rcout<<"af1study :"<<snp_subvec[j]->GetAf1Study();
       std::string line;
       bgzf_seek(fp, (*snp_subvec[j]).GetFpos(), SEEK_SET);
@@ -165,7 +165,7 @@ void cpw2_vec(std::vector<Snp*>& snp_vec, Arguments& args){
         double af1;
         buffer >> af1;
         //Rcpp::Rcout<<af1<<std::endl;
-        gsl_matrix_set(af1_mat, j, kk, std::asin(af1));
+        gsl_matrix_set(af1_mat, j, kk, std::asin(std::sqrt(af1))); // use arcsine square root transformation to stabilize the variance
         kk++;
       }
     }

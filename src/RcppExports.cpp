@@ -121,6 +121,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// zmix
+void zmix(std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, std::string output_file, Rcpp::Nullable<int> interval);
+RcppExport SEXP _gauss_zmix(SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP output_fileSEXP, SEXP intervalSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type input_file(input_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_index_file(reference_index_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_data_file(reference_data_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_pop_desc_file(reference_pop_desc_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type output_file(output_fileSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<int> >::type interval(intervalSEXP);
+    zmix(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, output_file, interval);
+    return R_NilValue;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_gauss_cal_pop_wgt", (DL_FUNC) &_gauss_cal_pop_wgt, 5},
@@ -129,6 +144,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gauss_distmix", (DL_FUNC) &_gauss_distmix, 10},
     {"_gauss_qcat", (DL_FUNC) &_gauss_qcat, 10},
     {"_gauss_qcatmix", (DL_FUNC) &_gauss_qcatmix, 10},
+    {"_gauss_zmix", (DL_FUNC) &_gauss_zmix, 6},
     {NULL, NULL, 0}
 };
 

@@ -26,6 +26,25 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// computeLD
+List computeLD(int chr, long long int start_bp, long long int end_bp, DataFrame pop_wgt_df, std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<double> af1_cutoff);
+RcppExport SEXP _gauss_computeLD(SEXP chrSEXP, SEXP start_bpSEXP, SEXP end_bpSEXP, SEXP pop_wgt_dfSEXP, SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP af1_cutoffSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type chr(chrSEXP);
+    Rcpp::traits::input_parameter< long long int >::type start_bp(start_bpSEXP);
+    Rcpp::traits::input_parameter< long long int >::type end_bp(end_bpSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type pop_wgt_df(pop_wgt_dfSEXP);
+    Rcpp::traits::input_parameter< std::string >::type input_file(input_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_index_file(reference_index_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_data_file(reference_data_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_pop_desc_file(reference_pop_desc_fileSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<double> >::type af1_cutoff(af1_cutoffSEXP);
+    rcpp_result_gen = Rcpp::wrap(computeLD(chr, start_bp, end_bp, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpw2
 DataFrame cpw2(std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<int> interval);
 RcppExport SEXP _gauss_cpw2(SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP intervalSEXP) {
@@ -139,6 +158,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_gauss_cal_pop_wgt", (DL_FUNC) &_gauss_cal_pop_wgt, 5},
+    {"_gauss_computeLD", (DL_FUNC) &_gauss_computeLD, 9},
     {"_gauss_cpw2", (DL_FUNC) &_gauss_cpw2, 5},
     {"_gauss_dist", (DL_FUNC) &_gauss_dist, 10},
     {"_gauss_distmix", (DL_FUNC) &_gauss_distmix, 10},

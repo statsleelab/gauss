@@ -13,7 +13,7 @@ using namespace Rcpp;
 //#define CPW_Debug  
 
 //Forward declaration
-void cal_pop_wgt_vec(std::vector<Snp*>& snp_vec, Arguments& args);
+void afmix_vec(std::vector<Snp*>& snp_vec, Arguments& args);
 void read_input_cpw(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
 void read_ref_index_cpw(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
 
@@ -27,11 +27,11 @@ void read_ref_index_cpw(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Argumen
 //' @param interval number of non-overlapping SNP sets used in calculating population weights 
 //' @return R data frame containing population IDs and weights 
 // [[Rcpp::export]]
-DataFrame cal_pop_wgt(std::string input_file,
-                      std::string reference_index_file,
-                      std::string reference_data_file,
-                      std::string reference_pop_desc_file,
-                      Rcpp::Nullable<int> interval = R_NilValue){
+DataFrame afmix(std::string input_file,
+                std::string reference_index_file,
+                std::string reference_data_file,
+                std::string reference_pop_desc_file,
+                Rcpp::Nullable<int> interval = R_NilValue){
   
   Arguments args;
   args.input_file = input_file;
@@ -75,7 +75,7 @@ DataFrame cal_pop_wgt(std::string input_file,
   Rcpp::Rcout<<"Num of measured SNPs used for calculations: "<< measured_snp_vec.size() <<std::endl;
 #endif
   
-  cal_pop_wgt_vec(measured_snp_vec, args);
+  afmix_vec(measured_snp_vec, args);
   
   //deletes measured_snp_map.
   for(it_msm = measured_snp_map.begin(); it_msm != measured_snp_map.end();){
@@ -106,7 +106,7 @@ DataFrame cal_pop_wgt(std::string input_file,
 }
 
 
-void cal_pop_wgt_vec(std::vector<Snp*>& snp_vec, Arguments& args){
+void afmix_vec(std::vector<Snp*>& snp_vec, Arguments& args){
   
   int size = snp_vec.size(); 
   int interval = args.interval;
@@ -129,7 +129,7 @@ void cal_pop_wgt_vec(std::vector<Snp*>& snp_vec, Arguments& args){
     Rcpp::stop("ERROR: can't open reference data file '"+args.reference_data_file+"'");
   }
   
-  Rcpp::Rcout<<"Calculating population weights..."<<std::endl;
+  Rcpp::Rcout<<"Estimating ancestry proportions..."<<std::endl;
   for(int i=0; i<interval; i++){
     std::vector<Snp*> snp_subvec;
     for(int j=0;;j++){

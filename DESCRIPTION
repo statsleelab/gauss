@@ -15,10 +15,10 @@ Imports: Rcpp (>= 1.0.7),
 LinkingTo: Rcpp, 
            RcppGSL
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 URL: https://github.com/statsleelab/gauss
 BugReports: https://github.com/statsleelab/gauss/issues
 Suggests: 
     rmarkdown,
     knitr
-
+VignetteBuilder: knitr

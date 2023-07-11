@@ -1,8 +1,8 @@
 ---
-title: "Imputing association Z-scores of unmeasured SNPs in GWAS using DIST"
+title: "Imputing association Z-scores of unmeasured SNPs"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{dist_example}
+  %\VignetteIndexEntry{Imputing association Z-scores of unmeasured SNPs}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

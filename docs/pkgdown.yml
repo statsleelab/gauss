@@ -1,7 +1,8 @@
-pandoc: 2.3.1
-pkgdown: 2.0.1
+pandoc: 2.19.2
+pkgdown: 2.0.6
 pkgdown_sha: ~
 articles:
+  afmix_example: afmix_example.html
   dist_example: dist_example.html
-last_built: 2022-03-26T05:53Z
+last_built: 2023-07-11T22:41Z
 

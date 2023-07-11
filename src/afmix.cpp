@@ -84,23 +84,28 @@ DataFrame afmix(std::string input_file,
     measured_snp_map.erase(it_msm++);      // delete map element
   }
   
+  std::vector<std::string> sup_pop_vec;
   std::vector<std::string> pop_vec;
   std::vector<double> wgt_vec;
   
   for(int i=0; i<args.ref_pop_vec.size(); i++){
     if(args.pop_wgt_vec[i]>0){
+      sup_pop_vec.push_back(args.ref_sup_pop_vec[i]);
       pop_vec.push_back(args.ref_pop_vec[i]);
       wgt_vec.push_back(args.pop_wgt_vec[i]);
     }
   }
   
+  StringVector sup_pop(pop_vec.size());
   StringVector pop(pop_vec.size());
   NumericVector wgt(pop_vec.size());
   
+  sup_pop = sup_pop_vec; 
   pop = pop_vec;
   wgt = wgt_vec;
   
-  DataFrame df = DataFrame::create(Named("pop")=pop,
+  DataFrame df = DataFrame::create(Named("sup.pop")=sup_pop,
+                                   Named("pop")=pop,
                                    Named("wgt")=wgt);
   return df;  
 }

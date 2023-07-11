@@ -4,6 +4,9 @@
     <loc>/404.html</loc>
   </url>
   <url>
+    <loc>/articles/afmix_example.html</loc>
+  </url>
+  <url>
     <loc>/articles/dist_example.html</loc>
   </url>
   <url>
@@ -16,7 +19,16 @@
     <loc>/index.html</loc>
   </url>
   <url>
+    <loc>/reference/afmix.html</loc>
+  </url>
+  <url>
     <loc>/reference/cal_pop_wgt.html</loc>
+  </url>
+  <url>
+    <loc>/reference/computeLD.html</loc>
+  </url>
+  <url>
+    <loc>/reference/cpw2.html</loc>
   </url>
   <url>
     <loc>/reference/dist.html</loc>

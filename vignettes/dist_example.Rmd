@@ -1,8 +1,8 @@
 ---
-title: "Imputing association Z-scores of unmeasured SNPs"
+title: "Imputing Z-scores of unmeasured SNPs"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Imputing association Z-scores of unmeasured SNPs}
+  %\VignetteIndexEntry{Imputing Z-scores of unmeasured SNPs}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,10 +14,90 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-#library(gauss)
+In this vignette, we will show how to use dist() to impute association Z-scores of unmeasureds SNPs from ethnically homogeneous cohorts.  
+
+## Load necessary packages
+```{r setup, warning=FALSE, message=FALSE}
+# Load necessary packages
+library(gauss)
+library(tidyverse)
+library(data.table)
+library(kableExtra)
+```
+
+## Arguments
+
+The afmix() function requires four arguments:
+
+1. Path to the association Z-score data file.
+2. Path to the reference panel index file (i.e., reference_index_file).
+3. Path to the reference data file (i.e., reference_data_file).
+4. Path to the reference population description file (i.e., reference_pop_desc_file).
+
+The association Z-score data file should include six columns with the following column names: rsid (SNP ID), chr (chromosome number), bp (base pair position), a1 (reference allele), a2 (alternative allele), and z (association Z-score).
 
 
+Firstly, we will assign the path to the association Z-score data file.
+```{r prep_input}
+# Path to the input file
+input_file <- "/Users/leed13/Desktop/GAUSS/GWAS_data/PGC/PGC2/PGC2_final/ilmn1M/pgc2.chr22.ilmn1M.Zonly.txt"
+
+# Input file should include six columns (rsid, chr, bp, a1, a2, and z)
+input.data <- fread(input_file, header = TRUE)
+head(input.data)
+```
+
+Next, we will assign the paths to reference data files to variables
+```{r prep_ref_path, eval=FALSE}
+# Paths to the reference files (replace these with your actual paths)
+reference_index_file<-"/path/to/33kg_index.gz"
+reference_data_file <- "/path/to/33kg_geno.gz"
+reference_pop_desc_file<-"path/to/33kg_pop_desc.txt"
+```
+
+```{r prep_ref, echo=FALSE}
+reference_index_file<-"/Users/leed13/Desktop/GAUSS/ref/Human/33KG/chr_data/33kg_chr22_index.gz"
+reference_data_file <- "/Users/leed13/Desktop/GAUSS/ref/Human/33KG/chr_data/33kg_chr22_geno.gz"
+reference_pop_desc_file<-"/Users/leed13/Desktop/GAUSS/ref/Human/33KG/33kg_pop_desc.txt"
+```
 
 
+## Execute dist()
+
+Lastly, we will execute the dist() function to  and display the results in a neat table. 
+```{r run_function, message=FALSE, warning=FALSE, results='hide'}
+af1_cutoff = 0.001
+
+res <- dist(chr=22, start_bp = 26000001, end_bp = 27000000, wing_size = 500000, study_pop = "EUR",
+            input_file = input_file, 
+            reference_index_file = reference_index_file,
+            reference_data_file = reference_data_file, 
+            reference_pop_desc_file = reference_pop_desc_file,
+            af1_cutoff = af1_cutoff)
+```
+
+## Results
+
+```{r}
+head(res) %>% kable("html")
+```
+
+
+## Manhattan Plot
+```{r}
+res.info <- res %>% filter(info>0.6)
+gwas.sig <- 5*10^-8
+  
+ggplot(res.info, aes(x = bp, y = -log10(pval), color = info)) +
+  geom_point(alpha = 0.8) +
+  geom_hline(aes(yintercept = -log10(gwas.sig)), 
+             linetype = "dashed", 
+             color = "red", 
+             size = 1.0) +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(title = "Manhattan Plot",
+       x = "Base Pair Position",
+       y = "-Log10(p-value)",
+       color = "Info") +
+  theme_minimal()
 ```

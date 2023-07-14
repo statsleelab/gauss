@@ -16,22 +16,26 @@ knitr::opts_chunk$set(
 
 In this vignette, we will illustrate how to use the afmix() function, which is designed to compute ethnic mixing proportions for a multi-ethnic GWAS dataset.
 
+## Load necessary packages
 ```{r setup, warning=FALSE, message=FALSE}
-# Load necessary packages
 library(gauss)
 library(dplyr)
 library(data.table)
 library(kableExtra)
 ```
 
+## Arguments
+
+
 The afmix() function requires four arguments:
 
-1. Path to the input file.
+1. Path to the allele frequency data file.
 2. Path to the reference panel index file (i.e., reference_index_file).
 3. Path to the reference data file (i.e., reference_data_file).
 4. Path to the reference population description file (i.e., reference_pop_desc_file).
 
-The input file should include six columns with the following column names: rsid (SNP ID), chr (chromosome number), bp (base pair position), a1 (reference allele), a2 (alternative allele), and af1 (reference allele frequency).
+The allele frequency data file should include six columns with the following column names: rsid (SNP ID), chr (chromosome number), bp (base pair position), a1 (reference allele), a2 (alternative allele), and af1 (reference allele frequency).
+
 
 Firstly, we will assign the path to an input file containing rsid, chr, bp, a1, a2 and af1.
 ```{r prep_input}
@@ -57,6 +61,8 @@ reference_data_file <- "/Users/leed13/Desktop/GAUSS/ref/Human/33KG/chr_data/33kg
 reference_pop_desc_file<-"/Users/leed13/Desktop/GAUSS/ref/Human/33KG/33kg_pop_desc.txt"
 ```
 
+## Execute afmix()
+
 Lastly, we will execute the afmix() function to compute the ethnic mixing proportions and display the results in a neat table. 
 ```{r run_function, message=FALSE, warning=FALSE, results='hide'}
 wgt.df <- afmix(input_file=input_file,
@@ -65,9 +71,12 @@ wgt.df <- afmix(input_file=input_file,
                 reference_pop_desc_file = reference_pop_desc_file)
 ```
 
+## Results (population)
 ```{r}
 wgt.df %>% kable("html")
 ```
+
+## Results:  Super population
 
 Here, we obtain the total proportion for each super population and display the results in a table.
 ```{r sup_pop_prop}

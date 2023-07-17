@@ -86,4 +86,6 @@ wgt.df %>%
   kable("html")
 ```
 
-```{r}
+```{r, message=FALSE, warning=FALSE, results='hide', echo=FALSE}
+write.table(wgt.df, file="data/pgc2.scz.ancestry.proportions.txt", quote=FALSE, sep=" ", row.names = FALSE, col.names = TRUE)
+```

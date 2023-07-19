@@ -87,5 +87,7 @@ wgt.df %>%
 ```
 
 ```{r, message=FALSE, warning=FALSE, results='hide', echo=FALSE}
-write.table(wgt.df, file="data/pgc2.scz.ancestry.proportions.txt", quote=FALSE, sep=" ", row.names = FALSE, col.names = TRUE)
+head(wgt.df)
+PGC2_SCZ_ANC_Prop <- wgt.df[,-1]
+save(PGC2_SCZ_ANC_Prop, file = "data/pgc2_scz_anc_prop.RData")
 ```

@@ -21,7 +21,7 @@ void run_dist(std::vector<Snp*>& snp_vec, Arguments& args);
 //' @param end_bp end base pair position of prediction window
 //' @param wing_size the size of the area flanking the left and right of the prediction window
 //' @param study_pop study population group
-//' @param input_file file name of GWAS summary statistics data containing rsid, chr, bp, a1, a2, af1, and z
+//' @param input_file file name of GWAS summary statistics data containing rsid, chr, bp, a1, a2, and z
 //' @param reference_index_file file name of reference panel index data
 //' @param reference_data_file  file name of reference panel data
 //' @param reference_pop_desc_file file name of reference panel population description data
@@ -54,7 +54,7 @@ DataFrame dist(int chr,
   if(af1_cutoff.isNotNull()){
     args.af1_cutoff = Rcpp::as<double>(af1_cutoff);
   } else {
-    args.af1_cutoff = 0.05;
+    args.af1_cutoff = 0.01;
   }
     
   read_ref_desc(args);

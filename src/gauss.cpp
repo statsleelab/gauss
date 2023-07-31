@@ -126,12 +126,12 @@ void ReadInput(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args)
   while(std::getline(in_input, line)){
     std::istringstream buffer(line);
     buffer >> rsid >> chr >> bp >> a1 >> a2 >> z;
-
+    
     if( (args.chr > 0) && (args.chr != chr) )  // if only one chromosome is specified with -c option and
       continue;                                   // the user specified chr is not equal to chr, skip it.
-
     if((args.start_bp - args.wing_size) > bp || (args.end_bp + args.wing_size) < bp)
       continue;
+    
     
     snp = new Snp();
     snp->SetRsid(rsid);
@@ -241,7 +241,7 @@ void ReadReferenceIndex(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Argumen
 }
 
 
-// Used in DIST, QCAT, jepeg
+// Used in DIST, QCAT, JEPEG
 void MakeSnpVec(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
   BGZF* fp = bgzf_open(args.reference_data_file.c_str(), "r");
   if(fp == NULL){
@@ -277,7 +277,7 @@ void MakeSnpVec(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMapKe
 }
 
 
-// Used in DISTMIX, QCATMIX, jepegMIX
+// Used in DISTMIX, QCATMIX, JEPEGMIX
 // This function computes weighted sum of the reference allele frequencies (af1_mix) of each SNP and 
 // store SNPs with af1_mix > af1_cutoff or af1_mix < 1-af1_cutoff and store them in SNP vector.   
 
@@ -536,9 +536,6 @@ void init_pop_flag_wgt_vec(Arguments& args){
 */  
 
 
-
-
-/*
 void ReadAnnotation(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
   Rcpp::Rcout<<"Reading SNP Annotation data...";
   Rcpp::Rcout.flush();
@@ -564,8 +561,6 @@ void ReadAnnotation(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& 
     std::istringstream buffer(line);
     buffer >> rsid >> chr >> bp >> a1 >> a2 >> geneid >> categ >> wgt;
 
-    if( (args.chr > 0) && (args.chr != chr) )  // if only one chromosome is specified with -c option and
-      continue;                                   // the user specified chr is not equal to chr, skip it.
 
     MapKey mkey1(chr, bp, a1, a2);
     MapKey mkey2(chr, bp, a2, a1);
@@ -597,8 +592,7 @@ void ReadAnnotation(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& 
 
       (it2->second)->SetA1(a1);
       (it2->second)->SetA2(a2);
-      (it2->second)->SetAf1study( 1 - (it2->second)->GetAf1study() );
-      (it2->second)->SetAf1ref( 1 - (it2->second)->GetAf1ref() );
+      (it2->second)->SetAf1Ref( 1 - (it2->second)->GetAf1Ref() );
       (it2->second)->SetZ( (it2->second)->GetZ()*(-1) );
       (it2->second)->SetFlip(true); // true means genotypes of this snp needs to be flipped.
 
@@ -618,6 +612,8 @@ void ReadAnnotation(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& 
   Rcpp::Rcout<<std::endl;
 } 
 
+
+/*
 void DeleteUnusedSnp(std::map<MapKey, Snp*, LessThanMapKey>& snp_map){
   std::map<MapKey, Snp*, LessThanMapKey>::iterator it_sm;
   for(it_sm = snp_map.begin(); it_sm != snp_map.end();){
@@ -637,7 +633,7 @@ void DeleteUnusedSnp(std::map<MapKey, Snp*, LessThanMapKey>& snp_map){
   tmp_map.insert(snp_map.begin(), snp_map.end());
   tmp_map.swap(snp_map);
 }
-
+*/
 
 
 
@@ -658,27 +654,27 @@ void MakeGeneStartEndVec(std::vector<StartEnd>& gene_start_end_vec, std::vector<
     } else {
       gene_end = it_sv;
       if(current_gene != geneid){
-	StartEnd gene_start_end;
-	gene_start_end.start_it = gene_start;
-	gene_start_end.end_it = gene_end;
-	gene_start_end_vec.push_back(gene_start_end);
-	--it_sv;
-	first_gene_snp = true;
+	      StartEnd gene_start_end;
+        gene_start_end.start_it = gene_start;
+        gene_start_end.end_it = gene_end;
+        gene_start_end_vec.push_back(gene_start_end);
+      	--it_sv;
+      	first_gene_snp = true;
       }//if(current_gene...
     }//if(first_gene...
 
     if( it_sv == snp_vec.end()-1 ){
-      	StartEnd gene_start_end;
-	gene_start_end.start_it = gene_start;
-	gene_start_end.end_it = snp_vec.end();
-	gene_start_end_vec.push_back(gene_start_end);
+      StartEnd gene_start_end;
+      gene_start_end.start_it = gene_start;
+      gene_start_end.end_it = gene_end;
+      gene_start_end_vec.push_back(gene_start_end);
     }//if(it_sv...
   }//for
 }
-*/
+
 
 /*
-void Executejepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
+void ExecuteJepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
 
   std::map<MapKey, Snp*, LessThanMapKey>::iterator it_sm;
   std::vector<Snp*> snp_vec;
@@ -723,9 +719,9 @@ void Executejepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& ar
   out_result << "geneid chisq df jepeg_pval num_categ num_protein num_tfbs num_wthhair num_wthtar num_cis num_trans rmvc0 rmvc1 rmvc2 rmvc3 rmvc4 rmvc5 u0 u1 u2 u3 u4 u5"<<std::endl; //print output header.
   for(it_gsev = gene_start_end_vec.begin(); it_gsev != gene_start_end_vec.end(); ++it_gsev){
     std::vector<Snp*> gene_snp_vec(it_gsev->start_it, it_gsev->end_it);
-    jepeg jepeg(args, fp);
-    jepeg.Runjepeg(gene_snp_vec);
-    jepeg.PrintjepegResult(out_result, gene_snp_vec);
+    Jepeg jepeg(args, fp);
+    Jepeg.Runjepeg(gene_snp_vec);
+    Jepeg.PrintjepegResult(out_result, gene_snp_vec);
   }
 
   //closes file connections

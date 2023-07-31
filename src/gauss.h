@@ -111,7 +111,6 @@ struct StartEnd{
 };
 
 
-
 void ReadInput(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
 void ReadReferenceIndex(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
 void MakeSnpVec(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
@@ -121,18 +120,19 @@ void FreeGenotype(std::vector<Snp*>& snp_vec);
 void read_ref_desc(Arguments& args);
 void init_pop_flag_vec(Arguments& args);
 void init_pop_flag_wgt_vec(Arguments& args);
-  
-/*
+
+//JEPEG & JEPEGMIX  
 void ReadAnnotation(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args); 
-void DeleteUnusedSnp(std::map<MapKey, Snp*, LessThanMapKey>& snp_map);
-void MakeSnpVec(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args, BGZF* fp);
-void MakeChrArmStartEndVec(std::vector<StartEnd>& chr_arm_start_end_vec, std::vector<Snp*>& snp_vec);
 void MakeGeneStartEndVec(std::vector<StartEnd>& gene_start_end_vec, std::vector<Snp*>& snp_vec);
-void ExecuteJepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
-void ExecuteQcat(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
-void ExecuteQcatLocal(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
-void ExecuteSnpx(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
-void ExecuteDistJepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
-void ExecuteDistSnpx(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
-*/
+
+//void DeleteUnusedSnp(std::map<MapKey, Snp*, LessThanMapKey>& snp_map);
+//void MakeSnpVec(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args, BGZF* fp);
+//void MakeChrArmStartEndVec(std::vector<StartEnd>& chr_arm_start_end_vec, std::vector<Snp*>& snp_vec);
+//void ExecuteJepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
+//void ExecuteQcat(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
+//void ExecuteQcatLocal(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
+//void ExecuteSnpx(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
+//void ExecuteDistJepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
+//void ExecuteDistSnpx(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
+
  #endif

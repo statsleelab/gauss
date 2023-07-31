@@ -241,7 +241,7 @@ void ReadReferenceIndex(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Argumen
 }
 
 
-// Used in DIST, QCAT, JEPEG
+// Used in DIST, QCAT, jepeg
 void MakeSnpVec(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
   BGZF* fp = bgzf_open(args.reference_data_file.c_str(), "r");
   if(fp == NULL){
@@ -277,7 +277,7 @@ void MakeSnpVec(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMapKe
 }
 
 
-// Used in DISTMIX, QCATMIX, JEPEGMIX
+// Used in DISTMIX, QCATMIX, jepegMIX
 // This function computes weighted sum of the reference allele frequencies (af1_mix) of each SNP and 
 // store SNPs with af1_mix > af1_cutoff or af1_mix < 1-af1_cutoff and store them in SNP vector.   
 
@@ -641,7 +641,6 @@ void DeleteUnusedSnp(std::map<MapKey, Snp*, LessThanMapKey>& snp_map){
 
 
 
-
 void MakeGeneStartEndVec(std::vector<StartEnd>& gene_start_end_vec, std::vector<Snp*>& snp_vec){
   std::vector<Snp*>::iterator gene_start = snp_vec.begin();
   std::vector<Snp*>::iterator gene_end = snp_vec.begin();
@@ -679,7 +678,7 @@ void MakeGeneStartEndVec(std::vector<StartEnd>& gene_start_end_vec, std::vector<
 */
 
 /*
-void ExecuteJepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
+void Executejepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
 
   std::map<MapKey, Snp*, LessThanMapKey>::iterator it_sm;
   std::vector<Snp*> snp_vec;
@@ -724,9 +723,9 @@ void ExecuteJepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& ar
   out_result << "geneid chisq df jepeg_pval num_categ num_protein num_tfbs num_wthhair num_wthtar num_cis num_trans rmvc0 rmvc1 rmvc2 rmvc3 rmvc4 rmvc5 u0 u1 u2 u3 u4 u5"<<std::endl; //print output header.
   for(it_gsev = gene_start_end_vec.begin(); it_gsev != gene_start_end_vec.end(); ++it_gsev){
     std::vector<Snp*> gene_snp_vec(it_gsev->start_it, it_gsev->end_it);
-    Jepeg jepeg(args, fp);
-    jepeg.RunJepeg(gene_snp_vec);
-    jepeg.PrintJepegResult(out_result, gene_snp_vec);
+    jepeg jepeg(args, fp);
+    jepeg.Runjepeg(gene_snp_vec);
+    jepeg.PrintjepegResult(out_result, gene_snp_vec);
   }
 
   //closes file connections
@@ -852,7 +851,7 @@ void ExecuteQcatLocal(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments
 #endif
 }
 
-void ExecuteDistJepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
+void ExecuteDistjepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
 
   std::vector<Snp*> snp_vec;
   std::vector<Snp*>::iterator it_sv;

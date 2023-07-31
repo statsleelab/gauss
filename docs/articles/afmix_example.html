@@ -43,6 +43,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/afmix_example.html">Estimating ancestry proportions</a>
     <a class="dropdown-item" href="../articles/dist_example.html">Imputing Z-scores of unmeasured SNPs</a>
+    <a class="dropdown-item" href="../articles/distmix_example.html">Imputing Z-scores of unmeasured SNPs from multi-ethnic cohorts</a>
   </div>
 </li>
       </ul>
@@ -81,25 +82,31 @@
 <p>In this vignette, we will illustrate how to use the afmix() function,
 which is designed to compute ethnic mixing proportions for a
 multi-ethnic GWAS dataset.</p>
+<div class="section level2">
+<h2 id="load-necessary-packages">Load necessary packages<a class="anchor" aria-label="anchor" href="#load-necessary-packages"></a>
+</h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Load necessary packages</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/statsleelab/gauss" class="external-link">gauss</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/statsleelab/gauss" class="external-link">gauss</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://haozhu233.github.io/kableExtra/" class="external-link">kableExtra</a></span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a>
+</h2>
 <p>The afmix() function requires four arguments:</p>
 <ol style="list-style-type: decimal">
-<li>Path to the input file.</li>
+<li>Path to the allele frequency data file.</li>
 <li>Path to the reference panel index file (i.e.,
 reference_index_file).</li>
 <li>Path to the reference data file (i.e., reference_data_file).</li>
 <li>Path to the reference population description file (i.e.,
 reference_pop_desc_file).</li>
 </ol>
-<p>The input file should include six columns with the following column
-names: rsid (SNP ID), chr (chromosome number), bp (base pair position),
-a1 (reference allele), a2 (alternative allele), and af1 (reference
-allele frequency).</p>
+<p>The allele frequency data file should include six columns with the
+following column names: rsid (SNP ID), chr (chromosome number), bp (base
+pair position), a1 (reference allele), a2 (alternative allele), and af1
+(reference allele frequency).</p>
 <p>Firstly, we will assign the path to an input file containing rsid,
 chr, bp, a1, a2 and af1.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -123,6 +130,10 @@ variables</p>
 <span><span class="va">reference_index_file</span><span class="op">&lt;-</span><span class="st">"/path/to/33kg_index.gz"</span></span>
 <span><span class="va">reference_data_file</span> <span class="op">&lt;-</span> <span class="st">"/path/to/33kg_geno.gz"</span></span>
 <span><span class="va">reference_pop_desc_file</span><span class="op">&lt;-</span><span class="st">"path/to/33kg_pop_desc.txt"</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="execute-afmix">Execute afmix()<a class="anchor" aria-label="anchor" href="#execute-afmix"></a>
+</h2>
 <p>Lastly, we will execute the afmix() function to compute the ethnic
 mixing proportions and display the results in a neat table.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -130,6 +141,10 @@ mixing proportions and display the results in a neat table.</p>
 <span>                reference_index_file <span class="op">=</span> <span class="va">reference_index_file</span>,</span>
 <span>                reference_data_file <span class="op">=</span> <span class="va">reference_data_file</span>,</span>
 <span>                reference_pop_desc_file <span class="op">=</span> <span class="va">reference_pop_desc_file</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="results-population">Results (population)<a class="anchor" aria-label="anchor" href="#results-population"></a>
+</h2>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">wgt.df</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="st">"html"</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
@@ -378,6 +393,10 @@ TSI
 </tr>
 </tbody>
 </table>
+</div>
+<div class="section level2">
+<h2 id="results-super-population">Results: Super population<a class="anchor" aria-label="anchor" href="#results-super-population"></a>
+</h2>
 <p>Here, we obtain the total proportion for each super population and
 display the results in a table.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -436,7 +455,10 @@ SAS
 </td>
 </tr>
 </tbody>
-</table></main>
+</table>
+</div>
+  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 

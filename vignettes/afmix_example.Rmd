@@ -86,8 +86,8 @@ wgt.df %>%
   kable("html")
 ```
 
-```{r, message=FALSE, warning=FALSE, results='hide', echo=FALSE}
-head(wgt.df)
-PGC2_SCZ_ANC_Prop <- wgt.df[,-1]
-save(PGC2_SCZ_ANC_Prop, file = "data/pgc2_scz_anc_prop.RData")
+```{r, message=FALSE, warning=FALSE, results=FALSE, echo=FALSE}
+#head(wgt.df)
+#PGC2_SCZ_ANC_Prop <- wgt.df[,-1]
+#save(PGC2_SCZ_ANC_Prop, file = "data/pgc2_scz_anc_prop.RData")
 ```

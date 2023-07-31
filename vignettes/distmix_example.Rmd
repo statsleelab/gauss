@@ -50,11 +50,8 @@ The ancestry proportion data `pop_wgt_df` should include two columns with the fo
 Let's load the ancestry proportion data generated from the [vignette](https://statsleelab.github.io/gauss/articles/afmix_example.html) for `afmix()` function:
 
 ```{r prep_mix_prop}
-# Define path to the ancestry (ethnic mixing) proportion data file
-anc_prop_file <- "data/pgc2_scz_anc_prop.RData"
-
-# Load the ancestry proportion file
-load(anc_prop_file) # data frame name: PGC2_SCZ_ANC_Prop=
+# Load the ancestry proportion data
+data("PGC2_SCZ_ANC_Prop") # data frame name: PGC2_SCZ_ANC_Prop
 head(PGC2_SCZ_ANC_Prop)
 ```
 
@@ -96,7 +93,7 @@ We will now execute the distmix() function with the necessary arguments and stor
 ```{r run_function, message=FALSE, warning=FALSE, results='hide'}
 af1_cutoff = 0.001
 
-res <- distmix(chr=22, start_bp = 26000001, end_bp = 27000000, wing_size = 500000,
+res <- distmix(chr=22, start_bp = 26000001, end_bp = 26100000, wing_size = 100000,
               pop_wgt_df = PGC2_SCZ_ANC_Prop,
               input_file = input_file, 
               reference_index_file = reference_index_file,
@@ -116,7 +113,7 @@ head(res) %>% kable("html")
 ## Manhattan Plot
 
 Here, we create a Manhattan Plot to visually represent our results:
-```{r}
+```{r man_plot, fig.height=6, fig.width=8}
 res.info <- res %>% filter(info>0.6)
 gwas.sig <- 5*10^-8
   

@@ -48,7 +48,7 @@ cpw2 <- function(input_file, reference_index_file, reference_data_file, referenc
 #' @param end_bp end base pair position of prediction window
 #' @param wing_size the size of the area flanking the left and right of the prediction window
 #' @param study_pop study population group
-#' @param input_file file name of GWAS summary statistics data containing rsid, chr, bp, a1, a2, af1, and z
+#' @param input_file file name of GWAS summary statistics data containing rsid, chr, bp, a1, a2, and z
 #' @param reference_index_file file name of reference panel index data
 #' @param reference_data_file  file name of reference panel data
 #' @param reference_pop_desc_file file name of reference panel population description data
@@ -73,6 +73,20 @@ dist <- function(chr, start_bp, end_bp, wing_size, study_pop, input_file, refere
 #' @return R data frame containing rsid, chr, bp, a1, a2, af1mix, z, pval, info, type 
 distmix <- function(chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff = NULL) {
     .Call(`_gauss_distmix`, chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff)
+}
+
+#' Joint effect on phenotype of eQTLs/functional SNPs associated with a gene
+#' 
+#' @param study_pop study population group
+#' @param input_file file name of GWAS summary statistics data containing rsid, chr, bp, a1, a2 and z
+#' @param annotation file name of the SNP annotation data set 
+#' @param reference_index_file file name of reference panel index data
+#' @param reference_data_file  file name of reference panel data
+#' @param reference_pop_desc_file file name of reference panel population description data
+#' @param af1_cutoff cutoff of reference allele, a1, frequency
+#' @return R dataframe containing geneid, chisq, df, jepeg_pval, num_snp, top_categ, top_categ_pval, top_snp, and top_snp_pval   
+jepeg <- function(study_pop, input_file, annotation_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff = NULL) {
+    .Call(`_gauss_jepeg`, study_pop, input_file, annotation_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff)
 }
 
 #' Testing causality of variants from ethnically homogeneous cohorts

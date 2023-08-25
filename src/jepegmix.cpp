@@ -13,12 +13,10 @@ using namespace Rcpp;
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_cdf.h>
 
-//void read_input_jepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
-//void read_ref_index_jepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
 
-//' Joint effect on phenotype of eQTLs/functional SNPs associated with a gene
+//' JEPEGMIX: gene-level joint analysis of functional SNPs in cosmopolitan cohorts
 //' 
-//' @param study_pop study population group
+//' @param pop_wgt_df R data frame containing population IDs and weights
 //' @param input_file file name of GWAS summary statistics data containing rsid, chr, bp, a1, a2 and z
 //' @param annotation file name of the SNP annotation data set 
 //' @param reference_index_file file name of reference panel index data
@@ -27,16 +25,26 @@ using namespace Rcpp;
 //' @param af1_cutoff cutoff of reference allele, a1, frequency
 //' @return R dataframe containing geneid, chisq, df, jepeg_pval, num_snp, top_categ, top_categ_pval, top_snp, and top_snp_pval   
 // [[Rcpp::export]]
-DataFrame jepeg(std::string study_pop,
-                std::string input_file,
-                std::string annotation_file,
-                std::string reference_index_file,
-                std::string reference_data_file,
-                std::string reference_pop_desc_file,
-                Rcpp::Nullable<double> af1_cutoff = R_NilValue){
+DataFrame jepegmix(DataFrame pop_wgt_df,
+                   std::string input_file,
+                   std::string annotation_file,
+                   std::string reference_index_file,
+                   std::string reference_data_file,
+                   std::string reference_pop_desc_file,
+                   Rcpp::Nullable<double> af1_cutoff = R_NilValue){
   
   Arguments args;
-  args.study_pop = study_pop;
+
+  // add pop_wgt_df info in args.pop_wgt_map
+  std::vector<std::string> pop_vec_in = as<std::vector<std::string>>(pop_wgt_df[0]);
+  std::vector<double> pop_wgt_vec_in = as<std::vector<double>>(pop_wgt_df[1]);
+  for(int i=0; i<pop_vec_in.size(); i++){
+    std::string pop = pop_vec_in[i];
+    std::transform(pop.begin(), pop.end(), pop.begin(), ::toupper); //make capital
+    args.pop_wgt_map[pop]=pop_wgt_vec_in[i];
+    //Rcpp::Rcout<<pop<<" "<<pop_wgt_vec_in[i]<<std::endl;
+  }  
+  
   args.input_file = input_file;
   args.annotation_file = annotation_file;
   args.reference_index_file = reference_index_file;
@@ -50,7 +58,7 @@ DataFrame jepeg(std::string study_pop,
   }
 
   read_ref_desc(args);
-  init_pop_flag_vec(args);
+  init_pop_flag_wgt_vec(args);
   //args.PrintArguments();
   
   std::map<MapKey, Snp*, LessThanMapKey> snp_map;
@@ -67,7 +75,7 @@ DataFrame jepeg(std::string study_pop,
   std::vector<Snp*> snp_vec;
   std::vector<Snp*> gene_snp_vec;
   std::vector<Snp*>::iterator it_sv;
-  MakeSnpVec(snp_vec, snp_map, args);
+  MakeSnpVecMix(snp_vec, snp_map, args);
   
   //Rcpp::Rcout<<"snp_map size : "<<snp_map.size()<<std::endl;
   //Rcpp::Rcout<<"snp_vec size : "<<snp_vec.size()<<std::endl;
@@ -119,7 +127,7 @@ DataFrame jepeg(std::string study_pop,
     //counter = counter + gvec.size();
     
     Gene gene(args);
-    gene.RunJepeg(gvec);
+    gene.RunJepegmix(gvec);
     geneid_vec.push_back(gene.GetGeneid());
     chisq_vec.push_back(gene.GetChisq());
     df_vec.push_back(gene.GetDf());
@@ -145,7 +153,7 @@ DataFrame jepeg(std::string study_pop,
   DataFrame df = DataFrame::create(Named("geneid")=geneid_vec,
                                    Named("chisq")=chisq_vec,
                                    Named("df")=df_vec,
-                                   Named("jepeg_pval")=jepeg_pval_vec,
+                                   Named("jepegmix_pval")=jepeg_pval_vec,
                                    Named("num_snp")=num_snp_vec,
                                    Named("top_categ")=top_categ_vec,
                                    Named("top_categ_pval")=top_categ_pval_vec,
@@ -154,115 +162,3 @@ DataFrame jepeg(std::string study_pop,
   return df;  
 }
 
-/*
-void read_input_jepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
-  
-  Rcpp::Rcout<<"Reading input...";
-  Rcpp::Rcout.flush();
-  
-  std::string input_file = args.input_file;
-  std::ifstream in_input(input_file.c_str());
-  
-  if(!in_input){
-    Rcpp::stop("ERROR: can't open input file '"+input_file+"'");
-  }
-  
-  std::string line;
-  std::string rsid, a1, a2;
-  int chr;
-  long long int bp;
-  double z;
-  double info = 1.0;
-  Snp* snp;
-  
-  std::getline(in_input, line); //read header of input file.  
-  while(std::getline(in_input, line)){
-    std::istringstream buffer(line);
-    buffer >> rsid >> chr >> bp >> a1 >> a2 >> z;
-    
-    snp = new Snp();
-    snp->SetRsid(rsid);
-    snp->SetChr(chr);
-    snp->SetBp(bp);
-    snp->SetA1(a1);
-    snp->SetA2(a2);
-    snp->SetZ(z);
-    snp->SetInfo(info);
-    snp->SetType(2); // 2: measured SNP but does not exist in reference data.
-    
-    MapKey mkey(chr, bp, a1, a2);
-    snp_map[mkey]=snp;
-  }//while
-  in_input.close();
-  Rcpp::Rcout<<std::endl;
-}
-*/
-
-/*
-void read_ref_index_jepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
-  Rcpp::Rcout<<"Reading reference index...";
-  Rcpp::Rcout.flush();
-  
-  std::map<MapKey, Snp*, LessThanMapKey>::iterator it1;
-  std::map<MapKey, Snp*, LessThanMapKey>::iterator it2;
-  std::string reference_index_file = args.reference_index_file;
-  BGZF* fp = bgzf_open(reference_index_file.c_str(), "r");
-  if(!fp){
-    Rcpp::Rcout<<std::endl;
-    Rcpp::stop("ERROR: can't open reference index file '"+reference_index_file+"'");
-  }
-  
-  int last_char;
-  std::string line;
-  std::string rsid, a1, a2;
-  int chr;
-  double af1ref;
-  long long int bp, fpos;
-  
-  while(true){
-    
-    last_char = BgzfGetLine(fp, line);
-    if(last_char == -1) //EOF
-      break;
-    
-    std::istringstream buffer(line);
-    buffer >> rsid >> chr >> bp >> a1 >> a2 >> af1ref >> fpos;
-    
-    MapKey mkey1(chr, bp, a1, a2);
-    MapKey mkey2(chr, bp, a2, a1);
-    
-    it1 = snp_map.find(mkey1);
-    it2 = snp_map.find(mkey2);
-    
-    if((it1 != snp_map.end()) && (it2 == snp_map.end())){ // snp exists in input and a1=a1 & a2=a2.
-      
-      (it1->second)->SetRsid(rsid);
-      (it1->second)->SetType(1); // change to "measured and exists in reference panel"
-      //(it1->second)->SetAf1ref(af1ref);
-      (it1->second)->SetFpos(fpos); // index of snp genotypes
-      
-    } else if((it1 == snp_map.end()) && (it2 != snp_map.end())){ // snp exists in input but a1=a2 & a2=a1.
-      
-      (it2->second)->SetRsid(rsid);
-      (it2->second)->SetA1(a1);
-      (it2->second)->SetA2(a2);
-      (it2->second)->SetZ( (it2->second)->GetZ()*(-1) ); //change the sign of z-score
-      (it2->second)->SetType(1); // change to "measured and exists in reference panel"
-      (it2->second)->SetAf1Study( 1 - (it2->second)->GetAf1Study() );
-      //(it2->second)->SetAf1ref(af1ref);
-      (it2->second)->SetFpos(fpos); // index of snp genotypes
-      
-      MapKey new_key(chr, bp, a1, a2); //makes a new key for the modified snp object.
-      snp_map[new_key] = it2->second;  //makes a map element with the new key. 
-      snp_map.erase(it2);              //delete snp with the old key. 
-      
-    } else if(it1 != snp_map.end() && it2 != snp_map.end()){ //Throw error message! This should not happen.
-      Rcpp::Rcout<<std::endl;
-      Rcpp::stop("ERROR: input file contains duplicates");
-    }//if
-    
-  }//while
-  bgzf_close(fp);
-  Rcpp::Rcout<<std::endl;
-}
-*/

@@ -117,6 +117,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// jepegmix
+DataFrame jepegmix(DataFrame pop_wgt_df, std::string input_file, std::string annotation_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<double> af1_cutoff);
+RcppExport SEXP _gauss_jepegmix(SEXP pop_wgt_dfSEXP, SEXP input_fileSEXP, SEXP annotation_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP af1_cutoffSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DataFrame >::type pop_wgt_df(pop_wgt_dfSEXP);
+    Rcpp::traits::input_parameter< std::string >::type input_file(input_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type annotation_file(annotation_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_index_file(reference_index_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_data_file(reference_data_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_pop_desc_file(reference_pop_desc_fileSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<double> >::type af1_cutoff(af1_cutoffSEXP);
+    rcpp_result_gen = Rcpp::wrap(jepegmix(pop_wgt_df, input_file, annotation_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff));
+    return rcpp_result_gen;
+END_RCPP
+}
 // qcat
 DataFrame qcat(int chr, long long int start_bp, long long int end_bp, long long int wing_size, std::string study_pop, std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<double> af1_cutoff);
 RcppExport SEXP _gauss_qcat(SEXP chrSEXP, SEXP start_bpSEXP, SEXP end_bpSEXP, SEXP wing_sizeSEXP, SEXP study_popSEXP, SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP af1_cutoffSEXP) {
@@ -180,6 +197,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gauss_dist", (DL_FUNC) &_gauss_dist, 10},
     {"_gauss_distmix", (DL_FUNC) &_gauss_distmix, 10},
     {"_gauss_jepeg", (DL_FUNC) &_gauss_jepeg, 7},
+    {"_gauss_jepegmix", (DL_FUNC) &_gauss_jepegmix, 7},
     {"_gauss_qcat", (DL_FUNC) &_gauss_qcat, 10},
     {"_gauss_qcatmix", (DL_FUNC) &_gauss_qcatmix, 10},
     {"_gauss_zmix", (DL_FUNC) &_gauss_zmix, 6},

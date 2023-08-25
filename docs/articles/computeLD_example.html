@@ -22,7 +22,7 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
     
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
+    <nav class="navbar fixed-top navbar-default navbar-expand-lg bg-light"><div class="container">
     
     <a class="navbar-brand me-2" href="../index.html">gauss</a>
 
@@ -36,16 +36,28 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item">
-  <a class="nav-link" href="../reference/index.html">Reference</a>
+  <a class="nav-link" href="../index.html">Get Started</a>
 </li>
 <li class="active nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/afmix_example.html">Estimating ancestry proportions</a>
-    <a class="dropdown-item" href="../articles/computeLD_example.html">Estimating Linkage Disequilibrium within a multi-ethnic cohort</a>
+    <a class="dropdown-item" href="../articles/computeLD_example.html">Estimating linkage disequilibrium</a>
     <a class="dropdown-item" href="../articles/dist_example.html">Imputing Z-scores of unmeasured SNPs</a>
-    <a class="dropdown-item" href="../articles/distmix_example.html">Imputing Z-scores of unmeasured SNPs from multi-ethnic cohorts</a>
+    <a class="dropdown-item" href="../articles/distmix_example.html">Imputing Z-scores of unmeasured SNPs from muli-ethnic cohorts</a>
+    <a class="dropdown-item" href="../articles/jepeg_example.html">Transcriptome wide association study for homogenous GWAS</a>
+    <a class="dropdown-item" href="../articles/jepegmix_example.html">Transcriptome wide association study for multi-ethnic GWAS</a>
   </div>
+</li>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-reference-panels">Reference Panels</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-reference-panels">
+    <a class="dropdown-item" href="../articles/ref_33KG.html">33KG Panel</a>
+    <a class="dropdown-item" href="../articles/ref_1KG.html">1KG Panel</a>
+  </div>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="../reference/index.html">Functions</a>
 </li>
       </ul>
 <form class="form-inline my-2 my-lg-0" role="search">
@@ -54,8 +66,14 @@
 
       <ul class="navbar-nav">
 <li class="nav-item">
-  <a class="external-link nav-link" href="https://github.com/statsleelab/gauss/" aria-label="github">
-    <span class="fab fa fab fa-github fa-lg"></span>
+  <a class="nav-link" href="../#">
+    <span class="fa fa-search"></span>
+     
+  </a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="https://github.com/statsleelab/gauss">
+    <span class="fa fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -74,7 +92,7 @@
       <img src="" class="logo" alt=""><h1>Estimating Linkage Disequilibrium within a multi-ethnic cohort</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/statsleelab/gauss/blob/HEAD/vignettes/computeLD_example.Rmd" class="external-link"><code>vignettes/computeLD_example.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/statsleelab/gauss/blob/HEAD/vignettes/computeLD_example.Rmd"><code>vignettes/computeLD_example.Rmd</code></a></small>
       <div class="d-none name"><code>computeLD_example.Rmd</code></div>
     </div>
 
@@ -98,7 +116,7 @@ for SNPs within a multi-ethnic Schizophrenia GWAS cohort.</p>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load necessary packages</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/statsleelab/gauss" class="external-link">gauss</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/statsleelab/gauss">gauss</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/hadley/reshape" class="external-link">reshape2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span></span>
@@ -427,7 +445,7 @@ estimates:</p>
 
     <footer><div class="pkgdown-footer-left">
   <p></p>
-<p>Developed by Donghyung Lee.</p>
+<p>Developed by <a href="https://github.com/dleelab" class="external-link">Donghyung Lee</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

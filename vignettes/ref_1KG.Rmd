@@ -1,0 +1,40 @@
+---
+title: "1000 Genomes Reference Panel (1KG)"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{1000 Genomes Reference Panel (1KG)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Download
+
+|**Direct download link**|**Number of Samples**|**Number of populations**|**NCBI build**|**Release Date**|**Note**|
+|:---|:---|:---|:---|:---|:---|
+|[1000 Genomes Phase1 Release3](https://drive.google.com/file/d/0B_9H56XID17SLWJaWjlYekxkVkU/view?usp=sharing)|1092|14|build 37 (hg19)|Nov. 23 2010|Includes chr1-chr22|
+
+Here are the 1000 Genome population abbreviations. AFR is an abbreviation for African; AMR for admixed American; ASN for East Asian; EUR for European. 
+
+|**Population Abbreviation**|**Number of Subjects**|**Super Population**|**Population Description**|
+|:---|:---|:---|:---|
+|ASW|61|AFR|African Ancestry in Southwest US|
+|CEU|85|EUR|Utah residents (CEPH) with Northern and Western European ancestry|
+|CHB|97|ASN|Han Chinese in Beijing, China|
+|CHS|100|ASN|Southern Han Chinese|
+|CLM|60|AMR|Colombian in Medellin, Colombia|
+|FIN|93|EUR|Finnish in Finland|
+|GBR|89|EUR|British in England and Scotlant|
+|IBS|14|EUR|Iberian populations in Spain|
+|JPT|89|ASN|Japanese in Tokyo, Japan|
+|LWK|97|AFR|Luhya in Wenbuye, Kenya|
+|MXL|66|AMR|Mexican Ancestry from Los Angeles, USA|
+|PUR|55|AMR|Puerto Rican in Puerto Rico|
+|TSI|98|EUR|Toscani in Italia|
+|YRI|88|AFR|Yoruba in Ibadan, Nigeria|

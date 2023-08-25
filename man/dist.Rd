@@ -28,7 +28,7 @@ dist(
 
 \item{study_pop}{study population group}
 
-\item{input_file}{file name of GWAS summary statistics data containing rsid, chr, bp, a1, a2, af1, and z}
+\item{input_file}{file name of GWAS summary statistics data containing rsid, chr, bp, a1, a2, and z}
 
 \item{reference_index_file}{file name of reference panel index data}
 

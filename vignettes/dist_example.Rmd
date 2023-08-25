@@ -27,12 +27,17 @@ library(kableExtra)
 
 ## Arguments
 
-The afmix() function requires four arguments:
-
-1. Path to the association Z-score data file.
-2. Path to the reference panel index file (i.e., reference_index_file).
-3. Path to the reference data file (i.e., reference_data_file).
-4. Path to the reference population description file (i.e., reference_pop_desc_file).
+The dist() function requires ten arguments:
+1. `chr` chromosome number
+2. `start_bp` start base pair position of prediction window
+3. `end_bp` end base pair position of prediction window
+4. `wing_size` the size of the area flanking the left and right of the prediction window
+5. `study_pop` study population group
+6. `input_file` Path to the association Z-score data file.
+7. `reference_index_file` Path to the reference panel index file (i.e., reference_index_file).
+8. `reference_data_file` Path to the reference data file (i.e., reference_data_file).
+9. `reference_pop_desc_file` Path to the reference population description file (i.e., reference_pop_desc_file).
+10. `af1_cutoff` cutoff of reference allele, a1, frequency
 
 The association Z-score data file should include six columns with the following column names: rsid (SNP ID), chr (chromosome number), bp (base pair position), a1 (reference allele), a2 (alternative allele), and z (association Z-score).
 
@@ -64,7 +69,7 @@ reference_pop_desc_file<-"/Users/leed13/Desktop/GAUSS/ref/Human/33KG/33kg_pop_de
 
 ## Execute dist()
 
-Lastly, we will execute the dist() function to  and display the results in a neat table. 
+Lastly, we will execute the dist() function to impute association Z-scores of missing SNPs in a genomic region chr22:26M - 27M and display the results in a neat table. 
 ```{r run_function, message=FALSE, warning=FALSE, results='hide'}
 af1_cutoff = 0.001
 

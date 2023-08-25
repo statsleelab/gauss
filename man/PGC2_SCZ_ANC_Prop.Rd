@@ -11,7 +11,7 @@ An object of class 'data.frame' with 2 columns.
 data(PGC2_SCZ_ANC_Prop)
 }
 \description{
-This data set contains include two columns with the following names: 
+This data set include two columns with the following names: 
 pop (population abbreviation) wgt (weight or proportion). This is estimated 
 using the `afmix()` function.
 }

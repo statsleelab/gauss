@@ -3,7 +3,15 @@ pkgdown: 2.0.6
 pkgdown_sha: ~
 articles:
   afmix_example: afmix_example.html
+  computeLD_example: computeLD_example.html
   dist_example: dist_example.html
   distmix_example: distmix_example.html
-last_built: 2023-07-19T17:21Z
+  jepeg_example: jepeg_example.html
+  jepegmix_example: jepegmix_example.html
+  ref_1KG: ref_1KG.html
+  ref_33KG: ref_33KG.html
+last_built: 2023-08-25T17:11Z
+urls:
+  reference: https://github.com/statsleelab/gauss/reference
+  article: https://github.com/statsleelab/gauss/articles
 

@@ -1,4 +1,6 @@
-url: ~
+url: https://github.com/statsleelab/gauss
+
+
 template:
   bootstrap: 5
   bslib:
@@ -6,3 +8,40 @@ template:
     border-radius: 0.5rem
     btn-border-radius: 0.25rem
 
+authors:
+  Donghyung Lee:
+    href: https://github.com/dleelab
+
+navbar:
+  type: default
+  left:
+    - text: Get Started
+      href: index.html
+    - text: Articles
+      menu: 
+        - text: Estimating ancestry proportions
+          href: articles/afmix_example.html
+        - text: Estimating linkage disequilibrium
+          href: articles/computeLD_example.html
+        - text: Imputing Z-scores of unmeasured SNPs
+          href: articles/dist_example.html
+        - text: Imputing Z-scores of unmeasured SNPs from muli-ethnic cohorts
+          href: articles/distmix_example.html
+        - text: Transcriptome wide association study for homogenous GWAS
+          href: articles/jepeg_example.html
+        - text: Transcriptome wide association study for multi-ethnic GWAS
+          href: articles/jepegmix_example.html
+    - text: Reference Panels
+      menu:
+        - text: 33KG Panel
+          href: articles/ref_33KG.html
+        - text: 1KG Panel
+          href: articles/ref_1KG.html
+    - text: Functions
+      href: reference/index.html
+  right:
+    - icon: fa-search
+      href: "#"
+      id: pkgdown-search-button
+    - icon: fa-github fa-lg
+      href: https://github.com/statsleelab/gauss

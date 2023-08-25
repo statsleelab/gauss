@@ -22,50 +22,11 @@ gauss is a free and open-source R software package, which contains functions for
 
 ## Installation
 
-You can install the development version of gauss from [GitHub](https://github.com/) with:
+You can install the development version of gauss from GitHub with:
 
 ``` r
 # install.packages("devtools")
 devtools::install_github("statsleelab/gauss")
 ```
 
-## Reference Panels
-
-|**Direct download link**|**Number of Samples**|**Number of populations**|**NCBI build**|**Release Date**|**Note**|
-|:---|:---|:---|:---|:---|:---|
-|[33KG](https://drive.google.com/drive/folders/1jXFwhTWoPpFMHkMOUHbvVju7IYckWGB5?usp=sharing)|32953|29|build 37 (hg19)|Jul. 16 2018|Includes chr1-chr22|
-
-Here are the 33KG population abbreviations used by GAUSS. AFR is an abbreviation for African; AMR for admixed American; ASN for East Asian; EUR for European and SAS for South Asian. 
-
-|**Population Abbreviation**|**Number of Subjects**|**Super Population**|**Population Description**|
-|:---|:---|:---|:---|
-|ACB|164|AFR|African Caribbeans in Barbados|
-|ASW|162|AFR|African Ancestry in Southwest US|
-|BEB|86|SAS|Bengali from Bangladesh|
-|CCE|3409|ASN|China Central East|
-|CCS|2613|ASN|China Central South|
-|CDX|95|ASN|Chinese Dai in Xishuangbanna, China|
-|CEU|6360|EUR|Utah residents with Northern and Western European ancestry| 
-|CLM|98|AMR|Colombians from Medellin, Colombia|
-|CNE|2330|ASN|China North East|
-|CSE|2020|ASN|China South-East|
-|ESN|140|AFR|Esan in Nigeria|
-|FIN|3529|EUR|Finnish in Finland|
-|GBR|2020|EUR|British in England and Scotland|
-|GIH|110|SAS|Gujarati Indian from Houston, Texas|
-|GWD|113|AFR|Gambian in Western Divisions in the Gambia|
-|IBS|1309|EUR|Iberian Population in Spain|
-|ITU|95|SAS|Indian Telugu from the UK|
-|JPT|107|ASN|Japanese in Tokyo, Japan|
-|KHV|226|ASN|Kinh in Ho Chi Minh City, Vietnam|
-|LWK|99|AFR|Luhya in Webuye, Kenya|
-|MSL|87|AFR|Mende in Sierra Leone|
-|MXL|187|AMR|Mexican Ancestry from Los Angeles, USA|
-|ORK|5772|EUR|Orkney Island study|
-|PEL|110|AMR|Peruvians from Lima, Peru|
-|PJL|121|SAS|Punjabi from Lahore, Pakistan|
-|PUR|138|AMR|Puerto Rican in Puerto Rico|
-|STU|110|SAS|Sri Lankan Tamil from the UK|
-|TSI|1291|EUR|Toscani in Italia|
-|YRI|52|AFR|Yoruba in Ibadan, Nigeria|
 

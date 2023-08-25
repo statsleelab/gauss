@@ -28,7 +28,7 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
     
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
+    <nav class="navbar fixed-top navbar-default navbar-expand-lg bg-light"><div class="container">
     
     <a class="navbar-brand me-2" href="index.html">gauss</a>
 
@@ -41,16 +41,29 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item">
-  <a class="nav-link" href="reference/index.html">Reference</a>
+<li class="active nav-item">
+  <a class="nav-link" href="index.html">Get Started</a>
 </li>
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="articles/afmix_example.html">Estimating ancestry proportions</a>
+    <a class="dropdown-item" href="articles/computeLD_example.html">Estimating linkage disequilibrium</a>
     <a class="dropdown-item" href="articles/dist_example.html">Imputing Z-scores of unmeasured SNPs</a>
-    <a class="dropdown-item" href="articles/distmix_example.html">Imputing Z-scores of unmeasured SNPs from multi-ethnic cohorts</a>
+    <a class="dropdown-item" href="articles/distmix_example.html">Imputing Z-scores of unmeasured SNPs from muli-ethnic cohorts</a>
+    <a class="dropdown-item" href="articles/jepeg_example.html">Transcriptome wide association study for homogenous GWAS</a>
+    <a class="dropdown-item" href="articles/jepegmix_example.html">Transcriptome wide association study for multi-ethnic GWAS</a>
   </div>
+</li>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-reference-panels">Reference Panels</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-reference-panels">
+    <a class="dropdown-item" href="articles/ref_33KG.html">33KG Panel</a>
+    <a class="dropdown-item" href="articles/ref_1KG.html">1KG Panel</a>
+  </div>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="reference/index.html">Functions</a>
 </li>
       </ul>
 <form class="form-inline my-2 my-lg-0" role="search">
@@ -59,8 +72,14 @@
 
       <ul class="navbar-nav">
 <li class="nav-item">
-  <a class="external-link nav-link" href="https://github.com/statsleelab/gauss/" aria-label="github">
-    <span class="fab fa fab fa-github fa-lg"></span>
+  <a class="nav-link" href="#">
+    <span class="fa fa-search"></span>
+     
+  </a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="https://github.com/statsleelab/gauss">
+    <span class="fa fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -85,233 +104,12 @@
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"statsleelab/gauss"</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="reference-panels">Reference Panels<a class="anchor" aria-label="anchor" href="#reference-panels"></a>
-</h2>
-<table class="table">
-<colgroup>
-<col width="48%">
-<col width="11%">
-<col width="13%">
-<col width="7%">
-<col width="8%">
-<col width="10%">
-</colgroup>
-<thead><tr class="header">
-<th align="left"><strong>Direct download link</strong></th>
-<th align="left"><strong>Number of Samples</strong></th>
-<th align="left"><strong>Number of populations</strong></th>
-<th align="left"><strong>NCBI build</strong></th>
-<th align="left"><strong>Release Date</strong></th>
-<th align="left"><strong>Note</strong></th>
-</tr></thead>
-<tbody><tr class="odd">
-<td align="left"><a href="https://drive.google.com/drive/folders/1jXFwhTWoPpFMHkMOUHbvVju7IYckWGB5?usp=sharing" class="external-link">33KG</a></td>
-<td align="left">32953</td>
-<td align="left">29</td>
-<td align="left">build 37 (hg19)</td>
-<td align="left">Jul. 16 2018</td>
-<td align="left">Includes chr1-chr22</td>
-</tr></tbody>
-</table>
-<p>Here are the 33KG population abbreviations used by GAUSS. AFR is an abbreviation for African; AMR for admixed American; ASN for East Asian; EUR for European and SAS for South Asian.</p>
-<table class="table">
-<colgroup>
-<col width="21%">
-<col width="17%">
-<col width="15%">
-<col width="45%">
-</colgroup>
-<thead><tr class="header">
-<th align="left"><strong>Population Abbreviation</strong></th>
-<th align="left"><strong>Number of Subjects</strong></th>
-<th align="left"><strong>Super Population</strong></th>
-<th align="left"><strong>Population Description</strong></th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">ACB</td>
-<td align="left">164</td>
-<td align="left">AFR</td>
-<td align="left">African Caribbeans in Barbados</td>
-</tr>
-<tr class="even">
-<td align="left">ASW</td>
-<td align="left">162</td>
-<td align="left">AFR</td>
-<td align="left">African Ancestry in Southwest US</td>
-</tr>
-<tr class="odd">
-<td align="left">BEB</td>
-<td align="left">86</td>
-<td align="left">SAS</td>
-<td align="left">Bengali from Bangladesh</td>
-</tr>
-<tr class="even">
-<td align="left">CCE</td>
-<td align="left">3409</td>
-<td align="left">ASN</td>
-<td align="left">China Central East</td>
-</tr>
-<tr class="odd">
-<td align="left">CCS</td>
-<td align="left">2613</td>
-<td align="left">ASN</td>
-<td align="left">China Central South</td>
-</tr>
-<tr class="even">
-<td align="left">CDX</td>
-<td align="left">95</td>
-<td align="left">ASN</td>
-<td align="left">Chinese Dai in Xishuangbanna, China</td>
-</tr>
-<tr class="odd">
-<td align="left">CEU</td>
-<td align="left">6360</td>
-<td align="left">EUR</td>
-<td align="left">Utah residents with Northern and Western European ancestry</td>
-</tr>
-<tr class="even">
-<td align="left">CLM</td>
-<td align="left">98</td>
-<td align="left">AMR</td>
-<td align="left">Colombians from Medellin, Colombia</td>
-</tr>
-<tr class="odd">
-<td align="left">CNE</td>
-<td align="left">2330</td>
-<td align="left">ASN</td>
-<td align="left">China North East</td>
-</tr>
-<tr class="even">
-<td align="left">CSE</td>
-<td align="left">2020</td>
-<td align="left">ASN</td>
-<td align="left">China South-East</td>
-</tr>
-<tr class="odd">
-<td align="left">ESN</td>
-<td align="left">140</td>
-<td align="left">AFR</td>
-<td align="left">Esan in Nigeria</td>
-</tr>
-<tr class="even">
-<td align="left">FIN</td>
-<td align="left">3529</td>
-<td align="left">EUR</td>
-<td align="left">Finnish in Finland</td>
-</tr>
-<tr class="odd">
-<td align="left">GBR</td>
-<td align="left">2020</td>
-<td align="left">EUR</td>
-<td align="left">British in England and Scotland</td>
-</tr>
-<tr class="even">
-<td align="left">GIH</td>
-<td align="left">110</td>
-<td align="left">SAS</td>
-<td align="left">Gujarati Indian from Houston, Texas</td>
-</tr>
-<tr class="odd">
-<td align="left">GWD</td>
-<td align="left">113</td>
-<td align="left">AFR</td>
-<td align="left">Gambian in Western Divisions in the Gambia</td>
-</tr>
-<tr class="even">
-<td align="left">IBS</td>
-<td align="left">1309</td>
-<td align="left">EUR</td>
-<td align="left">Iberian Population in Spain</td>
-</tr>
-<tr class="odd">
-<td align="left">ITU</td>
-<td align="left">95</td>
-<td align="left">SAS</td>
-<td align="left">Indian Telugu from the UK</td>
-</tr>
-<tr class="even">
-<td align="left">JPT</td>
-<td align="left">107</td>
-<td align="left">ASN</td>
-<td align="left">Japanese in Tokyo, Japan</td>
-</tr>
-<tr class="odd">
-<td align="left">KHV</td>
-<td align="left">226</td>
-<td align="left">ASN</td>
-<td align="left">Kinh in Ho Chi Minh City, Vietnam</td>
-</tr>
-<tr class="even">
-<td align="left">LWK</td>
-<td align="left">99</td>
-<td align="left">AFR</td>
-<td align="left">Luhya in Webuye, Kenya</td>
-</tr>
-<tr class="odd">
-<td align="left">MSL</td>
-<td align="left">87</td>
-<td align="left">AFR</td>
-<td align="left">Mende in Sierra Leone</td>
-</tr>
-<tr class="even">
-<td align="left">MXL</td>
-<td align="left">187</td>
-<td align="left">AMR</td>
-<td align="left">Mexican Ancestry from Los Angeles, USA</td>
-</tr>
-<tr class="odd">
-<td align="left">ORK</td>
-<td align="left">5772</td>
-<td align="left">EUR</td>
-<td align="left">Orkney Island study</td>
-</tr>
-<tr class="even">
-<td align="left">PEL</td>
-<td align="left">110</td>
-<td align="left">AMR</td>
-<td align="left">Peruvians from Lima, Peru</td>
-</tr>
-<tr class="odd">
-<td align="left">PJL</td>
-<td align="left">121</td>
-<td align="left">SAS</td>
-<td align="left">Punjabi from Lahore, Pakistan</td>
-</tr>
-<tr class="even">
-<td align="left">PUR</td>
-<td align="left">138</td>
-<td align="left">AMR</td>
-<td align="left">Puerto Rican in Puerto Rico</td>
-</tr>
-<tr class="odd">
-<td align="left">STU</td>
-<td align="left">110</td>
-<td align="left">SAS</td>
-<td align="left">Sri Lankan Tamil from the UK</td>
-</tr>
-<tr class="even">
-<td align="left">TSI</td>
-<td align="left">1291</td>
-<td align="left">EUR</td>
-<td align="left">Toscani in Italia</td>
-</tr>
-<tr class="odd">
-<td align="left">YRI</td>
-<td align="left">52</td>
-<td align="left">AFR</td>
-<td align="left">Yoruba in Ibadan, Nigeria</td>
-</tr>
-</tbody>
-</table>
-</div>
 </div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/statsleelab/gauss/" class="external-link">Browse source code</a></li>
-<li><a href="https://github.com/statsleelab/gauss/issues" class="external-link">Report a bug</a></li>
+<li><a href="https://github.com/statsleelab/gauss/">Browse source code</a></li>
+<li><a href="https://github.com/statsleelab/gauss/issues">Report a bug</a></li>
 </ul>
 </div>
 
@@ -333,7 +131,8 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Donghyung Lee <br><small class="roles"> Author, maintainer </small>  </li>
+<li>
+<a href="https://github.com/dleelab" class="external-link">Donghyung Lee</a> <br><small class="roles"> Author, maintainer </small>  </li>
 </ul>
 </div>
 
@@ -345,7 +144,7 @@
 
     <footer><div class="pkgdown-footer-left">
   <p></p>
-<p>Developed by Donghyung Lee.</p>
+<p>Developed by <a href="https://github.com/dleelab" class="external-link">Donghyung Lee</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

@@ -22,7 +22,7 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
     
 
-    <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
+    <nav class="navbar fixed-top navbar-default navbar-expand-lg bg-light"><div class="container">
     
     <a class="navbar-brand me-2" href="../index.html">gauss</a>
 
@@ -36,15 +36,28 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item">
-  <a class="nav-link" href="../reference/index.html">Reference</a>
+  <a class="nav-link" href="../index.html">Get Started</a>
 </li>
 <li class="active nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/afmix_example.html">Estimating ancestry proportions</a>
+    <a class="dropdown-item" href="../articles/computeLD_example.html">Estimating linkage disequilibrium</a>
     <a class="dropdown-item" href="../articles/dist_example.html">Imputing Z-scores of unmeasured SNPs</a>
-    <a class="dropdown-item" href="../articles/distmix_example.html">Imputing Z-scores of unmeasured SNPs from multi-ethnic cohorts</a>
+    <a class="dropdown-item" href="../articles/distmix_example.html">Imputing Z-scores of unmeasured SNPs from muli-ethnic cohorts</a>
+    <a class="dropdown-item" href="../articles/jepeg_example.html">Transcriptome wide association study for homogenous GWAS</a>
+    <a class="dropdown-item" href="../articles/jepegmix_example.html">Transcriptome wide association study for multi-ethnic GWAS</a>
   </div>
+</li>
+<li class="nav-item dropdown">
+  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-reference-panels">Reference Panels</a>
+  <div class="dropdown-menu" aria-labelledby="dropdown-reference-panels">
+    <a class="dropdown-item" href="../articles/ref_33KG.html">33KG Panel</a>
+    <a class="dropdown-item" href="../articles/ref_1KG.html">1KG Panel</a>
+  </div>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="../reference/index.html">Functions</a>
 </li>
       </ul>
 <form class="form-inline my-2 my-lg-0" role="search">
@@ -53,8 +66,14 @@
 
       <ul class="navbar-nav">
 <li class="nav-item">
-  <a class="external-link nav-link" href="https://github.com/statsleelab/gauss/" aria-label="github">
-    <span class="fab fa fab fa-github fa-lg"></span>
+  <a class="nav-link" href="../#">
+    <span class="fa fa-search"></span>
+     
+  </a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="https://github.com/statsleelab/gauss">
+    <span class="fa fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -73,7 +92,7 @@
       <img src="" class="logo" alt=""><h1>Imputing Z-scores of unmeasured SNPs</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/statsleelab/gauss/blob/HEAD/vignettes/dist_example.Rmd" class="external-link"><code>vignettes/dist_example.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/statsleelab/gauss/blob/HEAD/vignettes/dist_example.Rmd"><code>vignettes/dist_example.Rmd</code></a></small>
       <div class="d-none name"><code>dist_example.Rmd</code></div>
     </div>
 
@@ -87,7 +106,7 @@ cohorts.</p>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load necessary packages</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/statsleelab/gauss" class="external-link">gauss</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/statsleelab/gauss">gauss</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://haozhu233.github.io/kableExtra/" class="external-link">kableExtra</a></span><span class="op">)</span></span></code></pre></div>
@@ -95,15 +114,19 @@ cohorts.</p>
 <div class="section level2">
 <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a>
 </h2>
-<p>The afmix() function requires four arguments:</p>
-<ol style="list-style-type: decimal">
-<li>Path to the association Z-score data file.</li>
-<li>Path to the reference panel index file (i.e.,
-reference_index_file).</li>
-<li>Path to the reference data file (i.e., reference_data_file).</li>
-<li>Path to the reference population description file (i.e.,
-reference_pop_desc_file).</li>
-</ol>
+<p>The dist() function requires ten arguments: 1. <code>chr</code>
+chromosome number 2. <code>start_bp</code> start base pair position of
+prediction window 3. <code>end_bp</code> end base pair position of
+prediction window 4. <code>wing_size</code> the size of the area
+flanking the left and right of the prediction window 5.
+<code>study_pop</code> study population group 6. <code>input_file</code>
+Path to the association Z-score data file. 7.
+<code>reference_index_file</code> Path to the reference panel index file
+(i.e., reference_index_file). 8. <code>reference_data_file</code> Path
+to the reference data file (i.e., reference_data_file). 9.
+<code>reference_pop_desc_file</code> Path to the reference population
+description file (i.e., reference_pop_desc_file). 10.
+<code>af1_cutoff</code> cutoff of reference allele, a1, frequency</p>
 <p>The association Z-score data file should include six columns with the
 following column names: rsid (SNP ID), chr (chromosome number), bp (base
 pair position), a1 (reference allele), a2 (alternative allele), and z
@@ -135,8 +158,9 @@ variables</p>
 <div class="section level2">
 <h2 id="execute-dist">Execute dist()<a class="anchor" aria-label="anchor" href="#execute-dist"></a>
 </h2>
-<p>Lastly, we will execute the dist() function to and display the
-results in a neat table.</p>
+<p>Lastly, we will execute the dist() function to impute association
+Z-scores of missing SNPs in a genomic region chr22:26M - 27M and display
+the results in a neat table.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">af1_cutoff</span> <span class="op">=</span> <span class="fl">0.001</span></span>
 <span></span>
@@ -412,7 +436,7 @@ G
 
     <footer><div class="pkgdown-footer-left">
   <p></p>
-<p>Developed by Donghyung Lee.</p>
+<p>Developed by <a href="https://github.com/dleelab" class="external-link">Donghyung Lee</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

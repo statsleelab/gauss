@@ -1,0 +1,99 @@
+---
+title: "Transcriptome wide association study using JEPEG"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Transcriptome wide association study using JEPEG}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+In this vignette, we will show how to use jepeg() to perform a gene-level association study using summary statistics from ethnically homogeneous cohorts.  
+
+## Load necessary packages
+```{r setup, warning=FALSE, message=FALSE}
+# Load necessary packages
+library(gauss)
+library(tidyverse)
+library(data.table)
+library(kableExtra)
+```
+
+## Arguments
+
+The jepeg() function requires seven arguments:
+
+1. `study_pop` study population group
+2. `input_file` file name of GWAS summary statistics data containing rsid, chr, bp, a1, a2 and z
+3. `annotation` file name of the SNP annotation data set 
+4. `reference_index_file` file name of reference panel index data
+5. `reference_data_file`  file name of reference panel data
+6. `reference_pop_desc_file` file name of reference panel population description data
+7. `af1_cutoff` cutoff of reference allele, a1, frequency
+
+The association Z-score data file should include six columns with the following column names: rsid (SNP ID), chr (chromosome number), bp (base pair position), a1 (reference allele), a2 (alternative allele), and z (association Z-score).
+
+
+Firstly, we will assign the path to the association Z-score data file.
+```{r prep_input}
+# Path to the input file
+input_file <- "/Users/leed13/Desktop/GAUSS/GWAS_data/PGC/PGC2/PGC2_final/ilmn1M/pgc2.chr22.ilmn1M.Zonly.txt"
+
+# Input file should include six columns (rsid, chr, bp, a1, a2, and z)
+input.data <- fread(input_file, header = TRUE)
+head(input.data)
+```
+
+```{r prep_anno_path, eval=FALSE}
+# Paths to the annotation file (replace these with your actual paths)
+annotation_file <- "/path/to/JEPEG_SNP_Annotation.v1.0.txt"
+```
+
+```{r prep_anno, echo=FALSE}
+annotation_file <- "/Users/leed13/Desktop/GAUSS/snp_annotation/JEPEG_SNP_Annotation.v1.0.txt"
+```
+
+Next, we will assign the paths to reference data files to variables
+```{r prep_ref_path, eval=FALSE}
+# Paths to the reference files (replace these with your actual paths)
+reference_index_file<-"/path/to/33kg_index.gz"
+reference_data_file <- "/path/to/33kg_geno.gz"
+reference_pop_desc_file<-"path/to/33kg_pop_desc.txt"
+```
+
+```{r prep_ref, echo=FALSE}
+reference_index_file<-"/Users/leed13/Desktop/GAUSS/ref/Human/33KG/chr_data/33kg_chr22_index.gz"
+reference_data_file <- "/Users/leed13/Desktop/GAUSS/ref/Human/33KG/chr_data/33kg_chr22_geno.gz"
+reference_pop_desc_file<-"/Users/leed13/Desktop/GAUSS/ref/Human/33KG/33kg_pop_desc.txt"
+```
+
+
+## Execute jepeg()
+
+Lastly, we will execute the jepeg() function with the necessary arguments and display the results in a neat table. 
+```{r run_function, message=FALSE, warning=FALSE, results='hide'}
+af1_cutoff = 0.001
+
+res <- jepeg(study_pop = "GBR",
+             input_file=input_file,
+             annotation_file=annotation_file,
+             reference_index_file = reference_index_file,
+             reference_data_file = reference_data_file,
+             reference_pop_desc_file = reference_pop_desc_file)
+
+res <- res[order(res$jepeg_pval),]
+```
+
+## Results
+
+```{r}
+head(res) %>% kable("html")
+```
+
+

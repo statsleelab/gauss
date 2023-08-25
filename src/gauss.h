@@ -110,9 +110,15 @@ struct StartEnd{
   std::vector<Snp*>::iterator end_it;
 };
 
-
-void ReadInput(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
+// used in dist&distmix with All=false, jepeg&jepegmix with All=true
+void ReadInputZ(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args, bool All);
+// used in afmix
+void ReadInputAf(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
+// used in dist, distmix, qcat, qcatmix Read SNPs in a genomic region
 void ReadReferenceIndex(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
+// used in afmix, jepeg, jepegmix Read all SNPs
+void ReadReferenceIndexAll(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
+
 void MakeSnpVec(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
 void MakeSnpVecMix(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
 void ReadGenotype(std::vector<Snp*>& snp_vec, Arguments& args);
@@ -124,15 +130,5 @@ void init_pop_flag_wgt_vec(Arguments& args);
 //JEPEG & JEPEGMIX  
 void ReadAnnotation(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args); 
 void MakeGeneStartEndVec(std::vector<StartEnd>& gene_start_end_vec, std::vector<Snp*>& snp_vec);
-
-//void DeleteUnusedSnp(std::map<MapKey, Snp*, LessThanMapKey>& snp_map);
-//void MakeSnpVec(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args, BGZF* fp);
-//void MakeChrArmStartEndVec(std::vector<StartEnd>& chr_arm_start_end_vec, std::vector<Snp*>& snp_vec);
-//void ExecuteJepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
-//void ExecuteQcat(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
-//void ExecuteQcatLocal(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
-//void ExecuteSnpx(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
-//void ExecuteDistJepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
-//void ExecuteDistSnpx(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
 
  #endif

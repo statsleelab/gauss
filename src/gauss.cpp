@@ -102,7 +102,7 @@ void Arguments::PrintArguments(){
 }
 
 
-void ReadInput(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
+void ReadInputZ(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args, bool All){
   
   Rcpp::Rcout<<"Reading input...";
   Rcpp::Rcout.flush();
@@ -127,11 +127,12 @@ void ReadInput(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args)
     std::istringstream buffer(line);
     buffer >> rsid >> chr >> bp >> a1 >> a2 >> z;
     
-    if( (args.chr > 0) && (args.chr != chr) )  // if only one chromosome is specified with -c option and
-      continue;                                   // the user specified chr is not equal to chr, skip it.
-    if((args.start_bp - args.wing_size) > bp || (args.end_bp + args.wing_size) < bp)
-      continue;
-    
+    if(!All){
+      if( (args.chr > 0) && (args.chr != chr) )  // if only one chromosome is specified with -c option and
+        continue;                                   // the user specified chr is not equal to chr, skip it.
+      if((args.start_bp - args.wing_size) > bp || (args.end_bp + args.wing_size) < bp)
+        continue;
+    }
     
     snp = new Snp();
     snp->SetRsid(rsid);
@@ -143,6 +144,45 @@ void ReadInput(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args)
     snp->SetInfo(info);
     snp->SetType(2); // 2: measured SNP but does not exist in reference data.
 
+    MapKey mkey(chr, bp, a1, a2);
+    snp_map[mkey]=snp;
+  }//while
+  in_input.close();
+  Rcpp::Rcout<<std::endl;
+}
+
+// used in afmix
+void ReadInputAf(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
+  Rcpp::Rcout<<"Reading input...";
+  Rcpp::Rcout.flush();
+  
+  std::string input_file = args.input_file;
+  std::ifstream in_input(input_file.c_str());
+  if(!in_input){
+    Rcpp::Rcout<<std::endl;
+    Rcpp::stop("ERROR: can't open input file '"+input_file+"'");
+  }
+  
+  std::string line;
+  std::string rsid, a1, a2;
+  int chr;
+  long long int bp;
+  double af1study;
+  Snp* snp;
+  
+  std::getline(in_input, line); //read header of input file.  
+  while(std::getline(in_input, line)){
+    std::istringstream buffer(line);
+    buffer >> rsid >> chr >> bp >> a1 >> a2 >> af1study;
+    
+    snp = new Snp();
+    snp->SetRsid(rsid);
+    snp->SetChr(chr);
+    snp->SetBp(bp);
+    snp->SetA1(a1);
+    snp->SetA2(a2);
+    snp->SetAf1Study(af1study);
+    
     MapKey mkey(chr, bp, a1, a2);
     snp_map[mkey]=snp;
   }//while
@@ -239,6 +279,74 @@ void ReadReferenceIndex(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Argumen
   bgzf_close(fp);
   Rcpp::Rcout<<std::endl;
 }
+
+void ReadReferenceIndexAll(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
+  Rcpp::Rcout<<"Reading reference index...";
+  Rcpp::Rcout.flush();
+  
+  std::map<MapKey, Snp*, LessThanMapKey>::iterator it1;
+  std::map<MapKey, Snp*, LessThanMapKey>::iterator it2;
+  std::string reference_index_file = args.reference_index_file;
+  BGZF* fp = bgzf_open(reference_index_file.c_str(), "r");
+  if(!fp){
+    Rcpp::Rcout<<std::endl;
+    Rcpp::stop("ERROR: can't open reference index file '"+reference_index_file+"'");
+  }
+  
+  int last_char;
+  std::string line;
+  std::string rsid, a1, a2;
+  int chr;
+  double af1ref;
+  long long int bp, fpos;
+  
+  while(true){
+    
+    last_char = BgzfGetLine(fp, line);
+    if(last_char == -1) //EOF
+      break;
+    
+    std::istringstream buffer(line);
+    buffer >> rsid >> chr >> bp >> a1 >> a2 >> af1ref >> fpos;
+    
+    MapKey mkey1(chr, bp, a1, a2);
+    MapKey mkey2(chr, bp, a2, a1);
+    
+    it1 = snp_map.find(mkey1);
+    it2 = snp_map.find(mkey2);
+    
+    if((it1 != snp_map.end()) && (it2 == snp_map.end())){ // snp exists in input and a1=a1 & a2=a2.
+      
+      (it1->second)->SetRsid(rsid);
+      (it1->second)->SetType(1); // change to "measured and exists in reference panel"
+      //(it1->second)->SetAf1ref(af1ref);
+      (it1->second)->SetFpos(fpos); // index of snp genotypes
+      
+    } else if((it1 == snp_map.end()) && (it2 != snp_map.end())){ // snp exists in input but a1=a2 & a2=a1.
+      
+      (it2->second)->SetRsid(rsid);
+      (it2->second)->SetA1(a1);
+      (it2->second)->SetA2(a2);
+      (it2->second)->SetZ( (it2->second)->GetZ()*(-1) ); //change the sign of z-score
+      (it2->second)->SetType(1); // change to "measured and exists in reference panel"
+      (it2->second)->SetAf1Study( 1 - (it2->second)->GetAf1Study() );
+      //(it2->second)->SetAf1ref(af1ref);
+      (it2->second)->SetFpos(fpos); // index of snp genotypes
+      
+      MapKey new_key(chr, bp, a1, a2); //makes a new key for the modified snp object.
+      snp_map[new_key] = it2->second;  //makes a map element with the new key. 
+      snp_map.erase(it2);              //delete snp with the old key. 
+      
+    } else if(it1 != snp_map.end() && it2 != snp_map.end()){ //Throw error message! This should not happen.
+      Rcpp::Rcout<<std::endl;
+      Rcpp::stop("ERROR: input file contains duplicates");
+    }//if
+    
+  }//while
+  bgzf_close(fp);
+  Rcpp::Rcout<<std::endl;
+}
+
 
 
 // Used in DIST, QCAT, JEPEG
@@ -426,7 +534,7 @@ void init_pop_flag_vec(Arguments& args){
   args.num_samples = sample_counter;
 }
 
-// used in DISTMIX
+// used in DISTMIX, QCATMIX, JEPEGMIX
 void init_pop_flag_wgt_vec(Arguments& args){
   std::string pop;
   for(int i=0; i<args.num_pops; i++){
@@ -613,29 +721,6 @@ void ReadAnnotation(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& 
 } 
 
 
-/*
-void DeleteUnusedSnp(std::map<MapKey, Snp*, LessThanMapKey>& snp_map){
-  std::map<MapKey, Snp*, LessThanMapKey>::iterator it_sm;
-  for(it_sm = snp_map.begin(); it_sm != snp_map.end();){
-    int type = (it_sm->second)->GetType();
-    std::string geneid = (it_sm->second)->GetGeneid();
-    if((type == 0 && geneid == ".") || (type == 2)){
-      (it_sm->second)->ClearSnp(); // clear categ map in each snp object
-      delete it_sm->second;        // delete snp object
-      snp_map.erase(it_sm++);      // delete map element	  
-    } else {
-      ++it_sm;
-    }
-  }
-  //To release allocated memory of deleted Snps immediately, 
-  //use swap trick here.
-  std::map<MapKey, Snp*, LessThanMapKey> tmp_map;
-  tmp_map.insert(snp_map.begin(), snp_map.end());
-  tmp_map.swap(snp_map);
-}
-*/
-
-
 
 void MakeGeneStartEndVec(std::vector<StartEnd>& gene_start_end_vec, std::vector<Snp*>& snp_vec){
   std::vector<Snp*>::iterator gene_start = snp_vec.begin();
@@ -666,266 +751,10 @@ void MakeGeneStartEndVec(std::vector<StartEnd>& gene_start_end_vec, std::vector<
     if( it_sv == snp_vec.end()-1 ){
       StartEnd gene_start_end;
       gene_start_end.start_it = gene_start;
-      gene_start_end.end_it = gene_end;
+      gene_start_end.end_it = gene_end + 1;
       gene_start_end_vec.push_back(gene_start_end);
     }//if(it_sv...
   }//for
 }
 
 
-/*
-void ExecuteJepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
-
-  std::map<MapKey, Snp*, LessThanMapKey>::iterator it_sm;
-  std::vector<Snp*> snp_vec;
-  std::vector<Snp*>::iterator it_sv;
-
-  //opens reference genotype matrix file (BGZF)
-  BGZF* fp = bgzf_open(args.reference_file.c_str(), "r");
-  if(fp == NULL){
-    Rcpp::Rcout<<std::endl;
-    Rcpp::Rcout<<"Error: can't open reference data file '" << args.reference_file << "'" <<std::endl;
-    exit(EXIT_FAILURE);
-  }
-  //opens output data file.
-  std::ofstream out_result;
-  out_result.open(args.output_file.c_str());
-  if(!out_result){
-    Rcpp::Rcout<<"Error: can't open output data file '" << args.output_file << "'" << std::endl;
-    exit(EXIT_FAILURE);
-  }
-
-  ReadAnnotation(snp_map, args);
-  Rcpp::Rcout<<"snp_map size : "<<snp_map.size()<<std::endl;
-  Rcpp::Rcout<<"snp_vec size (before adding): "<<snp_vec.size()<<std::endl;
-  for(it_sm = snp_map.begin(); it_sm != snp_map.end(); ++it_sm){
-    if( (it_sm->second)->GetGeneid() != "." && 
-	(it_sm->second)->GetType() == 1 &&
-	(it_sm->second)->GetInfo() > args.imp_info_cutoff){
-      snp_vec.push_back(it_sm->second);
-      //(it_sm->second)->PrintSnpInfo();
-    }
-  }
-  Rcpp::Rcout<<"snp_vec size  (after adding): "<<snp_vec.size()<<std::endl;
-  
-  //Sort snp_vec by geneid
-  //TODO: fix LessThanGeneid() to sort snps by (geneid, chr, bp)
-  std::sort(snp_vec.begin(), snp_vec.end(), LessThanGeneid());
-  
-  //Make a table (vector) containing start iterator and end iterator of each gene block.
-  std::vector<StartEnd> gene_start_end_vec;
-  std::vector<StartEnd>::iterator it_gsev;
-  MakeGeneStartEndVec(gene_start_end_vec, snp_vec);
-  out_result << "geneid chisq df jepeg_pval num_categ num_protein num_tfbs num_wthhair num_wthtar num_cis num_trans rmvc0 rmvc1 rmvc2 rmvc3 rmvc4 rmvc5 u0 u1 u2 u3 u4 u5"<<std::endl; //print output header.
-  for(it_gsev = gene_start_end_vec.begin(); it_gsev != gene_start_end_vec.end(); ++it_gsev){
-    std::vector<Snp*> gene_snp_vec(it_gsev->start_it, it_gsev->end_it);
-    Jepeg jepeg(args, fp);
-    Jepeg.Runjepeg(gene_snp_vec);
-    Jepeg.PrintjepegResult(out_result, gene_snp_vec);
-  }
-
-  //closes file connections
-  bgzf_close(fp); //closes BGZF file connnection.
-  out_result.close(); // closes output file connection.
-}
-*/
-
-/*
-void ExecuteQcat(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
-   
-  std::vector<Snp*> snp_vec;
-  std::vector<Snp*>::iterator it_sv;
-  std::vector<StartEnd> chr_arm_start_end_vec;
-  std::vector<StartEnd>::iterator it_casev;
-
-  //opens reference genotype matrix file (BGZF)
-  BGZF* fp = bgzf_open(args.reference_file.c_str(), "r");
-  if(fp == NULL){
-    Rcpp::Rcout<<std::endl;
-    Rcpp::Rcout<<"Error: can't open reference data file '" << args.reference_file << "'" <<std::endl;
-    exit(EXIT_FAILURE);
-  }
-  //opens output data file.
-  std::ofstream out_result;
-  out_result.open(args.output_file.c_str());
-  if(!out_result){
-    Rcpp::Rcout<<"Error: can't open output data file '" << args.output_file << "'" << std::endl;
-    exit(EXIT_FAILURE);
-  }
-
-  //Rcpp::Rcout<<"ExecuteQcat 1"<<std::endl;
-
-  MakeSnpVecMix(snp_vec, snp_map, args, fp);
-
-  //Rcpp::Rcout<<"Num of SNPs for Imputation: "<< snp_vec.size() <<std::endl;  
-
-#ifdef main_Debug
-  for(std::vector<Snp*>::iterator it_sv = snp_vec.begin(); it_sv != snp_vec.end(); ++it_sv){
-    (*it_sv)->PrintQcatResult();
-  }
-#endif
-  //Rcpp::Rcout<<"ExecuteQcat 2"<<std::endl;
-  MakeChrArmStartEndVec(chr_arm_start_end_vec, snp_vec);
-  //Rcpp::Rcout<<"ExecuteQcat 3"<<std::endl;
-
-  //out_result << "rsid chr bp a1 a2 waf1 af1 z info pval type"<<std::endl; //print output header.
-  out_result << "rsid chr bp a1 a2 waf1 af1 assoc_pval qcat_chisq qcat_pval type"<<std::endl; //print output header.
-  for(it_casev = chr_arm_start_end_vec.begin(); it_casev != chr_arm_start_end_vec.end(); ++it_casev){
-    std::vector<Snp*> chr_arm_snp_vec(it_casev->start_it, it_casev->end_it);
-    Qcat qcat(args, fp);
-    qcat.RunQcat(chr_arm_snp_vec);
-    qcat.PrintQcatResult(out_result, chr_arm_snp_vec);
-    //qcat.PrintQcatResult(chr_arm_snp_vec);
-  }
-  //Rcpp::Rcout<<"ExecuteQcat 4"<<std::endl; 
-
-  //closes file connections
-  bgzf_close(fp); //closes BGZF file connnection.
-  out_result.close(); // closes output file connection.
-
-}
-
-
-void ExecuteQcatLocal(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
-
-#ifdef ExecuteQcatLocal_Debug
-  Rcpp::Rcout<<std::endl;
-  Rcpp::Rcout<<"========================"<<std::endl;
-  Rcpp::Rcout<<"ExecuteQcatLocal() Start"<<std::endl;
-#endif
-   
-  std::vector<Snp*> snp_vec;
-  std::vector<Snp*>::iterator it_sv;
-  
-  //opens reference genotype matrix file (BGZF)
-  BGZF* fp = bgzf_open(args.reference_file.c_str(), "r");
-  if(fp == NULL){
-    Rcpp::Rcout<<std::endl;
-    Rcpp::Rcout<<"Error: can't open reference data file '" << args.reference_file << "'" <<std::endl;
-    exit(EXIT_FAILURE);
-  }
-  //opens output data file.
-  std::ofstream out_result;
-  out_result.open(args.output_file.c_str());
-  if(!out_result){
-    Rcpp::Rcout<<"Error: can't open output data file '" << args.output_file << "'" << std::endl;
-    exit(EXIT_FAILURE);
-  }
-
-#ifdef ExecuteQcatLocal_Debug
-  Rcpp::Rcout<<"Before MakeSnpVecMix()"<<std::endl;
-#endif
-  MakeSnpVecMix(snp_vec, snp_map, args, fp);
-
-#ifdef ExecuteQcatLocal_Debug
-  Rcpp::Rcout<<"After MakeSnpVecMix()"<<std::endl;
-#endif
-
-#ifdef ExecuteQcatLocal_Debug
-  Rcpp::Rcout<<"============="<<std::endl;
-  Rcpp::Rcout<<"snp_vec print"<<std::endl;
-  for(std::vector<Snp*>::iterator it_sv = snp_vec.begin(); it_sv != snp_vec.end(); ++it_sv){
-    (*it_sv)->PrintSnpInfo();
-  }
-#endif
-  out_result << "rsid chr bp a1 a2 waf1 af1 assoc_pval qcat_chisq qcat_pval type"<<std::endl; //print output header.
-
-  Qcat qcat(args, fp);
-  qcat.RunQcatLocal(snp_vec);
-  qcat.PrintQcatLocalResult(out_result, snp_vec);
-  //qcat.PrintQcatResult(out_result, snp_vec);
-  //qcat.PrintQcatResult(snp_vec);
-  
-  //closes file connections
-  bgzf_close(fp); //closes BGZF file connnection.
-  out_result.close(); // closes output file connection.
-
-#ifdef ExecuteQcatLocal_Debug
-  Rcpp::Rcout<<std::endl;
-  Rcpp::Rcout<<"ExecuteQcatLocal() End"<<std::endl;
-  Rcpp::Rcout<<"======================"<<std::endl;
-#endif
-}
-
-void ExecuteDistjepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
-
-  std::vector<Snp*> snp_vec;
-  std::vector<Snp*>::iterator it_sv;
-  std::vector<StartEnd> chr_arm_start_end_vec;
-  std::vector<StartEnd>::iterator it_casev;
-
-  //opens reference genotype matrix file (BGZF)
-  BGZF* fp = bgzf_open(args.reference_file.c_str(), "r");
-  if(fp == NULL){
-    Rcpp::Rcout<<std::endl;
-    Rcpp::Rcout<<"Error: can't open reference data file '" << args.reference_file << "'" <<std::endl;
-    exit(EXIT_FAILURE);
-  }
-  //opens output data file.
-  std::ofstream out_result;
-  out_result.open(args.output_file.c_str());
-  if(!out_result){
-    Rcpp::Rcout<<"Error: can't open output data file '" << args.output_file << "'" << std::endl;
-    exit(EXIT_FAILURE);
-  }
-  
-  ReadAnnotation(snp_map, args);
-  //Deletes all unmeasured SNPs without geneid from snp_map.
-  Rcpp::Rcout<<"snp_map size (before deleting): "<<snp_map.size()<<std::endl;
-  DeleteUnusedSnp(snp_map);
-  Rcpp::Rcout<<"snp_map size  (after deleting): "<<snp_map.size()<<std::endl;
-  
-  MakeSnpVecMix(snp_vec, snp_map, args, fp);
-  
-  //if(!args.mix_flag)
-  //  MakeSnpVec(snp_vec, snp_map, args, fp);
-  //else
-  //  MakeSnpVecMix(snp_vec, snp_map, args, fp);
-  
-
-  MakeChrArmStartEndVec(chr_arm_start_end_vec, snp_vec);
-  
-  //Runs DIST. 
-  //Here DIST imputes only unmeasured snps with geneid.
-  for(it_casev = chr_arm_start_end_vec.begin(); it_casev != chr_arm_start_end_vec.end(); ++it_casev){
-    std::vector<Snp*> chr_arm_snp_vec(it_casev->start_it, it_casev->end_it);
-    Dist dist(args, fp);
-    dist.RunDist(chr_arm_snp_vec);
-    //dist.PrintDistResult(out_result, chr_arm_snp_vec);
-    //dist.PrintDistResult(chr_arm_snp_vec);
-  }
-  
-  //Remove from snp_vec SNPs 1)that do not have geneid, 2)whose type is 2, 3)cannot be imputed (info=-1) 
-  //or 4) whose imputation information is less than args->imp_info_cutoff.
-  for(it_sv = snp_vec.begin(); it_sv != snp_vec.end();){
-    if((*it_sv)->GetGeneid() == "." || (*it_sv)->GetType() == 2 || (*it_sv)->GetInfo() < args.imp_info_cutoff){
-      it_sv = snp_vec.erase(it_sv);
-    } else {
-      ++it_sv;
-    }
-  }
-  //Sort snp_vec by geneid
-  //TODO: fix LessThanGeneid() to sort snps by (geneid, chr, bp)
-  std::sort(snp_vec.begin(), snp_vec.end(), LessThanGeneid());
-  
-  //Make a table (vector) containing start iterator and end iterator of each gene block.
-  std::vector<StartEnd> gene_start_end_vec;
-  std::vector<StartEnd>::iterator it_gsev;
-  MakeGeneStartEndVec(gene_start_end_vec, snp_vec);
-  out_result << "geneid chisq df jepeg_pval num_categ num_protein num_tfbs num_wthhair num_wthtar num_cis num_trans rmvc0 rmvc1 rmvc2 rmvc3 rmvc4 rmvc5 u0 u1 u2 u3 u4 u5"<<std::endl; //print output header.
-  for(it_gsev = gene_start_end_vec.begin(); it_gsev != gene_start_end_vec.end(); ++it_gsev){
-    std::vector<Snp*> gene_snp_vec(it_gsev->start_it, it_gsev->end_it);
-    Jepeg jepeg(args, fp);
-    jepeg.RunJepeg(gene_snp_vec);
-    jepeg.PrintJepegResult(out_result, gene_snp_vec);
-  } 
-
-  //closes file connections
-  bgzf_close(fp); //closes BGZF file connnection.
-  out_result.close(); // closes output file connection.
-}
-
-void ExecuteDistSnpx(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
-
-}
-*/

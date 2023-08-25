@@ -62,7 +62,7 @@ DataFrame distmix(int chr,
   if(af1_cutoff.isNotNull()){
     args.af1_cutoff = Rcpp::as<double>(af1_cutoff);
   } else {
-    args.af1_cutoff = 0.05;
+    args.af1_cutoff = 0.01;
   }
   
   read_ref_desc(args);
@@ -70,7 +70,7 @@ DataFrame distmix(int chr,
   //args.PrintArguments();
   
   std::map<MapKey, Snp*, LessThanMapKey> snp_map;
-  ReadInput(snp_map, args);
+  ReadInputZ(snp_map, args, false);
   //Rcpp::Rcout<<"size: "<< snp_map.size() <<std::endl;
   ReadReferenceIndex(snp_map, args);
   //Rcpp::Rcout<<"size: "<< snp_map.size() <<std::endl;

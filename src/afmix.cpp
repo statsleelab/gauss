@@ -14,8 +14,8 @@ using namespace Rcpp;
 
 //Forward declaration
 void afmix_vec(std::vector<Snp*>& snp_vec, Arguments& args);
-void read_input_cpw(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
-void read_ref_index_cpw(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
+//void read_input_cpw(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
+//void read_ref_index_cpw(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
 
 
 //' Calculate population weights using RAF
@@ -57,8 +57,8 @@ DataFrame afmix(std::string input_file,
   std::map<MapKey, Snp*, LessThanMapKey>::iterator it_msm;
   std::vector<Snp*> measured_snp_vec;
 
-  read_input_cpw(measured_snp_map, args);
-  read_ref_index_cpw(measured_snp_map, args);
+  ReadInputAf(measured_snp_map, args);
+  ReadReferenceIndexAll(measured_snp_map, args);
   
 #ifdef CPW_Debug    
   Rcpp::Rcout<<"Measured snp map size: "<< measured_snp_map.size() <<std::endl;
@@ -224,6 +224,7 @@ void afmix_vec(std::vector<Snp*>& snp_vec, Arguments& args){
 }
 
 
+/*
 void read_input_cpw(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
   Rcpp::Rcout<<"Reading input...";
   Rcpp::Rcout.flush();
@@ -261,7 +262,9 @@ void read_input_cpw(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& 
   in_input.close();
   Rcpp::Rcout<<std::endl;
 }
+*/
 
+/*
 void read_ref_index_cpw(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args){
   Rcpp::Rcout<<"Reading reference index...";
   Rcpp::Rcout.flush();
@@ -328,3 +331,4 @@ void read_ref_index_cpw(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Argumen
   bgzf_close(fp);
   Rcpp::Rcout<<std::endl;
 }
+*/

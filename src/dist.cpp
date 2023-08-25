@@ -62,7 +62,7 @@ DataFrame dist(int chr,
   //args.PrintArguments();
   
   std::map<MapKey, Snp*, LessThanMapKey> snp_map;
-  ReadInput(snp_map, args);
+  ReadInputZ(snp_map, args, false);
   //Rcpp::Rcout<<"size: "<< snp_map.size() <<std::endl;
   ReadReferenceIndex(snp_map, args);
   //Rcpp::Rcout<<"size: "<< snp_map.size() <<std::endl;

@@ -11,8 +11,6 @@ class Snp;
 #include <string>
 #include <vector>
 #include <gsl/gsl_matrix.h>
-//#include "bgzf.h"
-
 
 
 struct Categ{
@@ -40,6 +38,8 @@ class Gene{
 public:
   Gene(Arguments& args);
   void RunJepeg(std::vector<Snp*>& gene_snp_vec);
+  void RunJepegmix(std::vector<Snp*>& gene_snp_vec);
+  
   //get
   std::string GetGeneid() {return geneid_;}
   double GetChisq() {return chisq_;}
@@ -101,10 +101,13 @@ private:
   std::vector<bool> rmv_categ_list_debug_; //for Debugging
   std::vector<double> U_list_debug_;  //for Debugging
   
-  //void CalJepegPval1(std::vector<Snp*>& gene_snp_vec);  
-  void CalJepegPval2(std::vector<Snp*>& gene_snp_vec);  
+  std::vector<int> pop_flag_vec_;
+  std::vector<double> pop_wgt_vec_;
+  
+  void CalJepegPval(std::vector<Snp*>& gene_snp_vec);
+  void CalJepegmixPval(std::vector<Snp*>& gene_snp_vec);
+  
   void GetW(gsl_matrix*, std::vector<Snp*>& gene_snp_vec);
-  //void GetW2(gsl_matrix*, std::vector<Snp*>& gene_snp_vec);
   void GetZ(gsl_matrix*, std::vector<Snp*>& gene_snp_vec);
   double CalBonfePval(gsl_matrix*);
   double CalSumUPval(gsl_matrix*, gsl_matrix*);

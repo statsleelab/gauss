@@ -21,12 +21,12 @@ originally measured (`dist()` and `distmix()`), iv) conduct in-depth
 transcriptome-wide association studies (`jepeg()` and `jepegmix()`), and
 v) apply corrections for the ‘Winner’s Curse’ biases (`fiqt()`).
 
-## Installing GSL
+## Pre-installation: Setting Up GSL
 
-The GAUSS package depends on the GNU scientifiy library (GSL), so the
-users should install the gsl labrary first and then install the gauss
-pacakge. You can find the detailed explanation for this in this
-[link](https://statsleelab.github.io/gauss/articles/gsl_installation.html):
+Before installing GAUSS, it is essential to set up the GNU Scientific
+Library (GSL), a dependency for the GAUSS package. Detailed installation
+instructions for GSL are available
+[here](https://statsleelab.github.io/gauss/articles/gsl_installation.html).
 
 ## GAUSS Installation
 

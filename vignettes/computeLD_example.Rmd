@@ -128,7 +128,7 @@ cormat <- res$cormat
 diag(cormat) <- NA
 cormelt <- melt(cormat, na.rm = TRUE)
 
-ggplot(data = cormelt, aes(x = Var1, y = Var2, fill = value)) +
+p1 <- ggplot(data = cormelt, aes(x = Var1, y = Var2, fill = value)) +
   geom_tile() +
   scale_fill_gradient2(low = "blue", high = "red", 
                        mid = "white", 
@@ -145,4 +145,9 @@ ggplot(data = cormelt, aes(x = Var1, y = Var2, fill = value)) +
         panel.grid.minor = element_blank(),
         legend.position = "none") +
   coord_fixed()
+
+p1
+
+#ggsave(file="docs/figure/computeLD_example.pdf", p1)
+
 ```

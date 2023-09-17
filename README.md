@@ -21,6 +21,16 @@ originally measured (`dist()` and `distmix()`), iv) conduct in-depth
 transcriptome-wide association studies (`jepeg()` and `jepegmix()`), and
 v) apply corrections for the ‘Winner’s Curse’ biases (`fiqt()`).
 
+## Citing GAUSS
+
+Lee and Bacanu. GAUSS: A comprehensive R package for computation of
+linkage disequlibrium for variants, Gaussian imputation and TWAS
+analysis of cosmopolitan cohorts.
+
+## Author
+
+Donghyung Lee <leed13@miamioh.edu>
+
 ## Pre-installation: Setting Up GSL
 
 Before installing GAUSS, it is essential to set up the GNU Scientific
@@ -80,3 +90,6 @@ required input data sets for each function. For instance, an arrow
 pointing to the afmix() function is marked by two colored squares (red
 and yellow), indicating that this function utilizes both Allele
 Frequency Data and Reference Panel Data as inputs.
+
+For more detailed examples that demonstrate each functionality, please
+visit [GAUSS vignettes](https://statsleelab.github.io/gauss/)

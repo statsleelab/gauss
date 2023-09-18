@@ -14,7 +14,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-In this vignette, we will illustrate how to use the afmix() function, which is designed to compute ethnic mixing proportions for a multi-ethnic GWAS dataset.
+## Introduction
+
+As genome-wide association studies (GWAS) continue to expand in scope and diversity, the precise quantification of a study's ancestral makeup has become increasingly important. The `afmix()` function of the GAUSS package, provides users with a robust method for accurately estimating these ancestry proportions within multi-ethnic GWAS, utilizing solely summary statistics data. This vignette offers a step-by-step guide on how to effectively employ the `afmix()` function.
 
 ## Load necessary packages
 ```{r setup, warning=FALSE, message=FALSE}
@@ -24,46 +26,53 @@ library(data.table)
 library(kableExtra)
 ```
 
-## Arguments
+## Overview of afmix()
+
+The `afmix()` function requires four specific arguments:
+
+* `input_file`: File name of the allele frequency data
+* `reference_index_file`: File name of reference panel index data
+* `reference_data_file`: File name of reference panel data
+* `reference_pop_desc_file`: File name of reference panel population description data
 
 
-The afmix() function requires four arguments:
+Upon execution, `afmix()` function return a data.frame comprising three columns:
 
-1. Path to the allele frequency data file.
-2. Path to the reference panel index file (i.e., reference_index_file).
-3. Path to the reference data file (i.e., reference_data_file).
-4. Path to the reference population description file (i.e., reference_pop_desc_file).
-
-The allele frequency data file should include six columns with the following column names: rsid (SNP ID), chr (chromosome number), bp (base pair position), a1 (reference allele), a2 (alternative allele), and af1 (reference allele frequency).
+* `sup.pop`: super population name
+* `pop`: population name
+* `wgt`: population proportion
 
 
-Firstly, we will assign the path to an input file containing rsid, chr, bp, a1, a2 and af1.
+## Preparing the Input Data
+
+### Allele Frequency Data
+
+The allele frequency data file should be formatted as a space-delimited text file,  containing six specific columns: `rsid` (SNP ID), `chr` (chromosome number), `bp` (base pair position), `a1` (reference allele), `a2` (alternative allele), and `af1` (reference allele frequency). In this vignette, we will be using allele frequency data of Chromosome 22 from the Psychiatric Genomic Consortium's Phase 2 Schizophrenia (PGC SCZ2) GWAS.
+
+Below, we specify the path to the allele frequency data file.
 ```{r prep_input}
 # Path to the input file
-input_file <- "/Users/leed13/Desktop/GAUSS/GWAS_data/PGC/PGC2/PGC2_final/ilmn1M/pgc2.chr22.ilmn1M.Af1only.txt"
+input_file <- "../data/PGC2_Chr22_ilmn1M_AF1.txt"
 
 # Input file should include six columns (rsid, chr, bp, a1, a2, and af1)
 input.data <- fread(input_file, header = TRUE)
 head(input.data)
 ```
 
-Next, we will assign the paths to reference data files to variables
-```{r prep_ref_path, eval=FALSE}
+### Reference Panel Data Files
+
+Next, we assign the paths to reference panel data files. In this example, we use [the 33KG reference panel](https://statsleelab.github.io/gauss/articles/ref_33KG.html).
+```{r prep_ref_path}
 # Paths to the reference files (replace these with your actual paths)
-reference_index_file<-"/path/to/33kg_index.gz"
-reference_data_file <- "/path/to/33kg_geno.gz"
-reference_pop_desc_file<-"path/to/33kg_pop_desc.txt"
+reference_index_file <-"../ref/Human/33KG/33kg_index.gz"
+reference_data_file <- "../ref/Human/33KG/33kg_geno.gz"
+reference_pop_desc_file<-"../ref/Human/33KG/33kg_pop_desc.txt"
 ```
 
-```{r prep_ref, echo=FALSE}
-reference_index_file<-"/Users/leed13/Desktop/GAUSS/ref/Human/33KG/chr_data/33kg_chr22_index.gz"
-reference_data_file <- "/Users/leed13/Desktop/GAUSS/ref/Human/33KG/chr_data/33kg_chr22_geno.gz"
-reference_pop_desc_file<-"/Users/leed13/Desktop/GAUSS/ref/Human/33KG/33kg_pop_desc.txt"
-```
 
-## Execute afmix()
+## Running afmix()
 
-Lastly, we will execute the afmix() function to compute the ethnic mixing proportions and display the results in a neat table. 
+With the necessary arguments and data files in place, we are ready to run the `afmix()` function to compute ancestry proportion of `PGC SCZ2 GWAS`.
 ```{r run_function, message=FALSE, warning=FALSE, results='hide'}
 wgt.df <- afmix(input_file=input_file,
                 reference_index_file = reference_index_file,
@@ -71,14 +80,17 @@ wgt.df <- afmix(input_file=input_file,
                 reference_pop_desc_file = reference_pop_desc_file)
 ```
 
-## Results (population)
+## Results: Estimated Ancestry Proportions
+
+Here, we display the estimated ancestry proportions in a HTML table.
+
 ```{r}
 wgt.df %>% kable("html")
 ```
 
-## Results:  Super population
+## Summarizing Ancestry Proportions by Super Population
 
-Here, we obtain the total proportion for each super population and display the results in a table.
+Here, we calculate the total proportion for each super population and present the results in a table.
 ```{r sup_pop_prop}
 wgt.df %>%
   group_by(sup.pop) %>%
@@ -91,3 +103,8 @@ wgt.df %>%
 #PGC2_SCZ_ANC_Prop <- wgt.df[,-1]
 #save(PGC2_SCZ_ANC_Prop, file = "data/pgc2_scz_anc_prop.RData")
 ```
+
+
+## References
+
+* Lee et al. DISTMIX: direct imputation of summary statistics for unmeasured SNPs from mixed ethnicity cohorts. Bioinformatics. https://doi.org/10.1093/bioinformatics/btv348

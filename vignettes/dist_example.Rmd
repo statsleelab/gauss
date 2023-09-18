@@ -14,7 +14,10 @@ knitr::opts_chunk$set(
 )
 ```
 
-In this vignette, we will show how to use dist() to impute association Z-scores of unmeasureds SNPs from ethnically homogeneous cohorts.  
+## Introduction
+
+The growing availability of larger, more ethnically diverse reference panels has increased the need for efficient re-imputation of genotype data and updated GWAS. The GAUSS package streamlines these tasks with its two specialized functions—`dist()` and `distmix()`—for imputing association Z-scores for unmeasured SNPs. This vignette will guide you through the practical application of both `dist()` and `distmix()` for imputing association Z-scores in both ethnically homogeneous and multi-ethnic cohorts.
+
 
 ## Load necessary packages
 ```{r setup, warning=FALSE, message=FALSE}
@@ -25,55 +28,91 @@ library(data.table)
 library(kableExtra)
 ```
 
-## Arguments
+## Preparing the Input Data
 
-The dist() function requires ten arguments:
-1. `chr` chromosome number
-2. `start_bp` start base pair position of prediction window
-3. `end_bp` end base pair position of prediction window
-4. `wing_size` the size of the area flanking the left and right of the prediction window
-5. `study_pop` study population group
-6. `input_file` Path to the association Z-score data file.
-7. `reference_index_file` Path to the reference panel index file (i.e., reference_index_file).
-8. `reference_data_file` Path to the reference data file (i.e., reference_data_file).
-9. `reference_pop_desc_file` Path to the reference population description file (i.e., reference_pop_desc_file).
-10. `af1_cutoff` cutoff of reference allele, a1, frequency
+Both `dist()` and `distmix()` functions require two core input datasets: 
 
-The association Z-score data file should include six columns with the following column names: rsid (SNP ID), chr (chromosome number), bp (base pair position), a1 (reference allele), a2 (alternative allele), and z (association Z-score).
+* Association Z-score Data
+* Reference Panel Data
 
+### Association Z-score Data
 
-Firstly, we will assign the path to the association Z-score data file.
+This data should be in the form of a space-delimited text file including six columns with the following names: 
+
+* `rsid`: SNP ID
+* `chr`: Chromosome number 
+* `bp`: Base pair position 
+* `a1`: Reference allele 
+* `a2`: Alternative allele
+* `z`: Association Z-score 
+
+For this example, we will use the Psychiatric Genomic Consortium's Phase 2 Schizophrenia (PGC SCZ2) GWAS dataset.
+
 ```{r prep_input}
 # Path to the input file
-input_file <- "/Users/leed13/Desktop/GAUSS/GWAS_data/PGC/PGC2/PGC2_final/ilmn1M/pgc2.chr22.ilmn1M.Zonly.txt"
+input_file <- "../data/PGC2_3Mb.txt"
 
 # Input file should include six columns (rsid, chr, bp, a1, a2, and z)
 input.data <- fread(input_file, header = TRUE)
 head(input.data)
 ```
 
-Next, we will assign the paths to reference data files to variables
-```{r prep_ref_path, eval=FALSE}
-# Paths to the reference files (replace these with your actual paths)
-reference_index_file<-"/path/to/33kg_index.gz"
-reference_data_file <- "/path/to/33kg_geno.gz"
-reference_pop_desc_file<-"path/to/33kg_pop_desc.txt"
-```
+### Reference Panel Data
 
-```{r prep_ref, echo=FALSE}
-reference_index_file<-"/Users/leed13/Desktop/GAUSS/ref/Human/33KG/chr_data/33kg_chr22_index.gz"
-reference_data_file <- "/Users/leed13/Desktop/GAUSS/ref/Human/33KG/chr_data/33kg_chr22_geno.gz"
-reference_pop_desc_file<-"/Users/leed13/Desktop/GAUSS/ref/Human/33KG/33kg_pop_desc.txt"
+We will use [the 33KG reference panel](https://statsleelab.github.io/gauss/articles/ref_33KG.html). Replace the file paths below with those of your actual reference panel files.
+```{r prep_ref_path}
+reference_index_file <-"../ref/Human/33KG/33kg_index.gz"
+reference_data_file <- "../ref/Human/33KG/33kg_geno.gz"
+reference_pop_desc_file<-"../ref/Human/33KG/33kg_pop_desc.txt"
 ```
 
 
-## Execute dist()
+## The `dist()` function
 
-Lastly, we will execute the dist() function to impute association Z-scores of missing SNPs in a genomic region chr22:26M - 27M and display the results in a neat table. 
+The `dist()` function is specifically designed for ethnically homogeneous cohorts. It allows the direct imputation of association Z-scores for unmeasured SNPs, making it easier to update and enhance GWAS analyses.
+
+### Arguments
+
+The `dist()` function accepts following arguments:
+
+* `chr`: Chromosome number.
+* `start_bp`: Starting base pair position of the estimation window.
+* `end_bp`: Ending base pair position of the estimation window.
+* `wing_size`: Size of the area flanking the left and right of the estimation window
+* `study_pop`: Study population group
+* `input_file`: File name of the association Z-score data
+* `reference_index_file`: File name of reference panel index data
+* `reference_data_file`: File name of reference panel data
+* `reference_pop_desc_file`: File name of reference panel population description data
+* `af1_cutoff`: Cutoff of reference allele (a1) frequency
+
+### Outputs
+
+The `dist()` function returns a data frame with following columns:
+
+* `rsid`: SNP ID.
+* `chr`: Chromosome number.
+* `bp`: Base pair position.
+* `a1`: Reference allele.
+* `a2`: Alternative allele.
+* `af1ref`: Reference allele frequency.
+* `z`: Association Z-score.
+* `pval`: Association P-value.
+* `info`: Imputation information, ranging from 0 to 1.
+* `type`: Type of variant. A value of `0` indicates an imputed variant, while `1` denotes a measured variant. 
+
+
+### Example Usage
+
+In this example, we will execute the `dist()` function to impute association Z-scores of missing SNPs in a 1Mb genomic region (Chromosome 10: 104 - 105 Mb) of PGC SCZ2 study. For the sake of this example, let's assume that the study cohort consists of participants of European descent, represented as "EUR." Therefore, we'll set `study_pop = "EUR"` to utilize genotype data for European subjects from the 33KG reference panel.
 ```{r run_function, message=FALSE, warning=FALSE, results='hide'}
 af1_cutoff = 0.001
 
-res <- dist(chr=22, start_bp = 26000001, end_bp = 27000000, wing_size = 500000, study_pop = "EUR",
+res <- dist(chr=10, 
+            start_bp = 104000001, 
+            end_bp = 105000000, 
+            wing_size = 500000, 
+            study_pop = "EUR",
             input_file = input_file, 
             reference_index_file = reference_index_file,
             reference_data_file = reference_data_file, 
@@ -81,28 +120,87 @@ res <- dist(chr=22, start_bp = 26000001, end_bp = 27000000, wing_size = 500000, 
             af1_cutoff = af1_cutoff)
 ```
 
-## Results
+### Results
 
 ```{r}
 head(res) %>% kable("html")
 ```
 
+## The `distmix()` function
 
-## Manhattan Plot
+The `distmix()` function is designed for multi-ethnic cohorts, extending the capabilities of `dist()` to accommodate the complexities introduced by ethnic diversity in the data.
+
+### Arguments
+
+The `distmix()` function takes a set of arguments that are largely identical to those for `dist()`. However, instead of the `study_pop` argument, `distmix()` incorporates `pop_wgt_df`:
+
+* `pop_wgt_df`: An R data frame that specifies the population IDs and their respective ancestry proportions.
+
+### Outputs
+
+The output of `distmix()` is also largely identical to that of `dist()`, with one exception: the column `af1mix` replaces `af1ref`. 
+
+* `af1mix`: An estimated reference allele frequency for the variant in the study cohort. It is calculated as a weighted sum of the reference allele frequencies across different populations in the reference panel. 
+
+
+### Example Usage
+
+Before using `distmix()`, you need to prepare ancestry proportion data. This data should be structured as a data frame containing two columns: 
+
+* `pop`: Population abbreviation
+* `wgt`: Weight or proportion of each population in the study cohort. 
+
+You can estimate these proportions using the `afmix()` function. For a step-by-step guide on this process, refer to the [`afmix()` vignette](https://statsleelab.github.io/gauss/articles/afmix_example.html). 
+
+Here, we load pre-generated ancestry proportion data:
+```{r prep_mix_prop}
+# Load the ancestry proportion data
+data("PGC2_SCZ_ANC_Prop") # data frame name: PGC2_SCZ_ANC_Prop
+head(PGC2_SCZ_ANC_Prop)
+```
+
+Now, let's proceed to use `distmix()` for imputing association Z-scores of missing SNPs in a 1Mb genomic region on Chromosome 10, ranging from 104 to 105 Mb.
+```{r run_function2, message=FALSE, warning=FALSE, results='hide'}
+af1_cutoff = 0.001
+
+res.mix <- distmix(chr=10, 
+            start_bp = 104000001, 
+            end_bp = 105000000, 
+            wing_size = 500000, 
+            pop_wgt_df = PGC2_SCZ_ANC_Prop,
+            input_file = input_file, 
+            reference_index_file = reference_index_file,
+            reference_data_file = reference_data_file, 
+            reference_pop_desc_file = reference_pop_desc_file,
+            af1_cutoff = af1_cutoff)
+```
+
+### Results
+
 ```{r}
-res.info <- res %>% filter(info>0.6)
+head(res.mix) %>% kable("html")
+```
+
+### Manhattan Plot
+
+```{r, fig.height=4, fig.width=7}
+res.mix.info <- res.mix %>% filter(info>0.6)
+res.mix.info$type <- factor(res.mix.info$type, 
+                            levels=c(0, 1),
+                            labels=c("Imputed","Measured"))
 gwas.sig <- 5*10^-8
   
-ggplot(res.info, aes(x = bp, y = -log10(pval), color = info)) +
+ggplot(res.mix.info, aes(x = bp, y = -log10(pval), 
+                         color = info, shape=type)) +
   geom_point(alpha = 0.8) +
   geom_hline(aes(yintercept = -log10(gwas.sig)), 
              linetype = "dashed", 
-             color = "red", 
-             size = 1.0) +
+             color = "black", 
+             size = 1.5) +
   scale_color_gradient(low = "blue", high = "red") +
-  labs(title = "Manhattan Plot",
-       x = "Base Pair Position",
+  labs(x = "Base Pair Position",
        y = "-Log10(p-value)",
-       color = "Info") +
+       color = "Info",
+       shape = "Type") +
   theme_minimal()
 ```

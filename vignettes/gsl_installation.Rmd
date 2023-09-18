@@ -2,7 +2,7 @@
 title: "Installing the GNU Scientific Library (GSL)"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{gsl_installation}
+  %\VignetteIndexEntry{Installing the GNU Scientific Library (GSL)}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

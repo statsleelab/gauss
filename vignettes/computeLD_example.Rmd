@@ -74,7 +74,7 @@ The association Z-score data file should be a space-delimited text file includin
 We assign the path to the association Z-score data file here:
 ```{r prep_input}
 # Define the path to the input file
-input_file <- "data/pgc2_3Mb.txt"
+input_file <- "../data/PGC2_3Mb.txt"
 
 # Input file should include six columns (rsid, chr, bp, a1, a2, and z)
 input_data <- fread(input_file, header = TRUE)
@@ -86,9 +86,9 @@ head(input_data)
 Next, we assign the paths to reference panel data files:
 ```{r prep_ref_path}
 # Paths to the reference files (replace these with your actual paths)
-reference_index_file <-"ref/Human/33KG/33kg_index.gz"
-reference_data_file <- "ref/Human/33KG/33kg_geno.gz"
-reference_pop_desc_file<-"ref/Human/33KG/33kg_pop_desc.txt"
+reference_index_file <-"../ref/Human/33KG/33kg_index.gz"
+reference_data_file <- "../ref/Human/33KG/33kg_geno.gz"
+reference_pop_desc_file<-"../ref/Human/33KG/33kg_pop_desc.txt"
 ```
 
 

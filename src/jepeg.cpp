@@ -149,7 +149,7 @@ DataFrame jepeg(std::string study_pop,
                                    Named("num_snp")=num_snp_vec,
                                    Named("top_categ")=top_categ_vec,
                                    Named("top_categ_pval")=top_categ_pval_vec,
-                                   Named("top_snp_vec")=top_snp_vec,
+                                   Named("top_snp")=top_snp_vec,
                                    Named("top_snp_pval")=top_snp_pval_vec);
   return df;  
 }

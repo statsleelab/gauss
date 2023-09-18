@@ -153,11 +153,11 @@ DataFrame jepegmix(DataFrame pop_wgt_df,
   DataFrame df = DataFrame::create(Named("geneid")=geneid_vec,
                                    Named("chisq")=chisq_vec,
                                    Named("df")=df_vec,
-                                   Named("jepegmix_pval")=jepeg_pval_vec,
+                                   Named("jepeg_pval")=jepeg_pval_vec,
                                    Named("num_snp")=num_snp_vec,
                                    Named("top_categ")=top_categ_vec,
                                    Named("top_categ_pval")=top_categ_pval_vec,
-                                   Named("top_snp_vec")=top_snp_vec,
+                                   Named("top_snp")=top_snp_vec,
                                    Named("top_snp_pval")=top_snp_pval_vec);
   return df;  
 }

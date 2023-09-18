@@ -94,7 +94,7 @@ reference_pop_desc_file<-"ref/Human/33KG/33kg_pop_desc.txt"
 
 ## Running computeLD()
 
-With the necessary arguments and data prepared, we can now estimate the Linkage Disequilibrium for a specific genomic region using the `computeLD()` function. For this example, we focus on a 1Mb genomic region located at Chromosome 10: 104M-105M.
+With the necessary arguments and data prepared, we can now estimate the Linkage Disequilibrium for a specific genomic region using the `computeLD()` function. For this example, we focus on a 1Mb genomic region located at Chromosome 10: 104-105 Mb.
 
 ```{r run_function, message=FALSE, warning=FALSE, results='hide'}
 af1_cutoff = 0.001

@@ -31,7 +31,7 @@ library(kableExtra)
 
 ## Overview of computeLD()
 
-The `computeLD()` function in the GAUSS package is designed to estimate Linkage Disequilibrium (LD) by leveraging the observed or estimated ancestry proportions of a target cohort. It calculates LD for specific genomic regions as a weighted sum of LD values across various ancestries. The LD values for each ancestry are estimated from a reference panel. In this example, we utilize the 33KG reference panel for our estimations. 
+The `computeLD()` function in the GAUSS package is designed to estimate Linkage Disequilibrium (LD) by leveraging the observed or estimated ancestry proportions of a target cohort. It calculates LD for specific genomic regions as a weighted sum of LD values across various ancestries. The LD values for each ancestry are estimated from a reference panel. In this example, we utilize [the 33KG reference panel](https://statsleelab.github.io/gauss/articles/ref_33KG.html) for our estimations. 
 
 The function requires following arguments:
 
@@ -74,7 +74,7 @@ The association Z-score data file should be a space-delimited text file includin
 We assign the path to the association Z-score data file here:
 ```{r prep_input}
 # Define the path to the input file
-input_file <- "/Users/leed13/Desktop/GAUSS/GWAS_data/PGC/PGC2/PGC2_final/ilmn1M/pgc2.chr22.ilmn1M.Zonly.txt"
+input_file <- "data/pgc2_3Mb.txt"
 
 # Input file should include six columns (rsid, chr, bp, a1, a2, and z)
 input_data <- fread(input_file, header = TRUE)
@@ -84,28 +84,24 @@ head(input_data)
 ### Reference Panel Data Files
 
 Next, we assign the paths to reference panel data files:
-```{r prep_ref_path, eval=FALSE}
+```{r prep_ref_path}
 # Paths to the reference files (replace these with your actual paths)
-reference_index_file<-"/path/to/33kg_index.gz"
-reference_data_file <- "/path/to/33kg_geno.gz"
-reference_pop_desc_file<-"path/to/33kg_pop_desc.txt"
-```
-
-```{r prep_ref, echo=FALSE}
-reference_index_file<-"/Users/leed13/Desktop/GAUSS/ref/Human/33KG/chr_data/33kg_chr22_index.gz"
-reference_data_file <- "/Users/leed13/Desktop/GAUSS/ref/Human/33KG/chr_data/33kg_chr22_geno.gz"
-reference_pop_desc_file<-"/Users/leed13/Desktop/GAUSS/ref/Human/33KG/33kg_pop_desc.txt"
+reference_index_file <-"ref/Human/33KG/33kg_index.gz"
+reference_data_file <- "ref/Human/33KG/33kg_geno.gz"
+reference_pop_desc_file<-"ref/Human/33KG/33kg_pop_desc.txt"
 ```
 
 
 ## Running computeLD()
 
-With the necessary arguments and data prepared, we can now estimate the Linkage Disequilibrium for a specific genomic region using the `computeLD()` function. For this example, we focus on a 1Mb genomic region located at Chr 22: 26M-27M.
+With the necessary arguments and data prepared, we can now estimate the Linkage Disequilibrium for a specific genomic region using the `computeLD()` function. For this example, we focus on a 1Mb genomic region located at Chromosome 10: 104M-105M.
 
 ```{r run_function, message=FALSE, warning=FALSE, results='hide'}
 af1_cutoff = 0.001
 
-res <- computeLD(chr=22, start_bp = 26000001, end_bp = 27000000,
+res <- computeLD(chr=10, 
+                 start_bp = 104000001, 
+                 end_bp = 105000000,
                  pop_wgt_df = PGC2_SCZ_ANC_Prop,
                  input_file = input_file, 
                  reference_index_file = reference_index_file,
@@ -123,7 +119,7 @@ head(res$cormat[1:3,1:3])
 ```
 
 Finally, we generate a heatmap to visually represent the LD estimates:
-```{r heatmap, fig.height=6, fig.width=6}
+```{r heatmap, fig.height=6, fig.width=6, warning=FALSE}
 cormat <- res$cormat
 diag(cormat) <- NA
 cormelt <- melt(cormat, na.rm = TRUE)
@@ -151,3 +147,8 @@ p1
 #ggsave(file="docs/figure/computeLD_example.pdf", p1)
 
 ```
+
+## References
+
+* Lee et al. DISTMIX: direct imputation of summary statistics for unmeasured SNPs from mixed ethnicity cohorts. Bioinformatics. https://doi.org/10.1093/bioinformatics/btv348
+

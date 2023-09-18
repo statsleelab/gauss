@@ -44,7 +44,12 @@ devtools::install_github("statsleelab/gauss")
 
 ## Suggested Workflow
 
-![GAUSS Flowchart](GAUSS_Flowchart_bioinfo.png)
+
+```{r echo=FALSE, fig.align='center', fig.cap='', out.width='100%'}
+knitr::include_graphics('man/figures/GAUSS_Flowchart_bioinfo.png')
+```
+
+
 
 GAUSS functions utilize five core input datasets: i) Association Z-score Data (highlighted in blue), consisting of six columns of variables: SNP ID (rsid), chromosome number (chr), base pair position (bp), reference allele (a1), alternative allele (a2), and Z-score (z); ii) Allele Frequency Data (colored in red), encapsulating rsid, chr, bp, a1, a2, and reference allele frequency (af1); iii) Ethnic Mixing Proportion Data (colored in green), comprising population name abbreviations and corresponding mixing proportions; iv) SNP Annotation Data (colored in orange), offering functional annotation information of SNPs; v) Reference Panel Data  (colored in yellow), e.g., [33KG Panel](https://statsleelab.github.io/gauss/articles/ref_33KG.html) offering genotype information for a significant pool of 32,953 individuals from 29 diverse ethnic groups. 
 

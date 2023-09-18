@@ -44,9 +44,8 @@
     <a class="dropdown-item" href="../articles/afmix_example.html">Estimating ancestry proportions</a>
     <a class="dropdown-item" href="../articles/computeLD_example.html">Estimating linkage disequilibrium</a>
     <a class="dropdown-item" href="../articles/dist_example.html">Imputing Z-scores of unmeasured SNPs</a>
-    <a class="dropdown-item" href="../articles/distmix_example.html">Imputing Z-scores of unmeasured SNPs from muli-ethnic cohorts</a>
-    <a class="dropdown-item" href="../articles/jepeg_example.html">Transcriptome wide association study for homogenous GWAS</a>
-    <a class="dropdown-item" href="../articles/jepegmix_example.html">Transcriptome wide association study for multi-ethnic GWAS</a>
+    <a class="dropdown-item" href="../articles/jepeg_example.html">Transcriptome wide association study</a>
+    <a class="dropdown-item" href="../articles/gsl_installation.html">GSL Installation</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -98,9 +97,19 @@
 
     
     
-<p>In this vignette, we will show how to use dist() to impute
-association Z-scores of unmeasureds SNPs from ethnically homogeneous
+<div class="section level2">
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
+<p>The growing availability of larger, more ethnically diverse reference
+panels has increased the need for efficient re-imputation of genotype
+data and updated GWAS. The GAUSS package streamlines these tasks with
+its two specialized functions—<code><a href="../reference/dist.html">dist()</a></code> and
+<code><a href="../reference/distmix.html">distmix()</a></code>—for imputing association Z-scores for unmeasured
+SNPs. This vignette will guide you through the practical application of
+both <code><a href="../reference/dist.html">dist()</a></code> and <code><a href="../reference/distmix.html">distmix()</a></code> for imputing
+association Z-scores in both ethnically homogeneous and multi-ethnic
 cohorts.</p>
+</div>
 <div class="section level2">
 <h2 id="load-necessary-packages">Load necessary packages<a class="anchor" aria-label="anchor" href="#load-necessary-packages"></a>
 </h2>
@@ -112,68 +121,161 @@ cohorts.</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://haozhu233.github.io/kableExtra/" class="external-link">kableExtra</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a>
+<h2 id="preparing-the-input-data">Preparing the Input Data<a class="anchor" aria-label="anchor" href="#preparing-the-input-data"></a>
 </h2>
-<p>The dist() function requires ten arguments: 1. <code>chr</code>
-chromosome number 2. <code>start_bp</code> start base pair position of
-prediction window 3. <code>end_bp</code> end base pair position of
-prediction window 4. <code>wing_size</code> the size of the area
-flanking the left and right of the prediction window 5.
-<code>study_pop</code> study population group 6. <code>input_file</code>
-Path to the association Z-score data file. 7.
-<code>reference_index_file</code> Path to the reference panel index file
-(i.e., reference_index_file). 8. <code>reference_data_file</code> Path
-to the reference data file (i.e., reference_data_file). 9.
-<code>reference_pop_desc_file</code> Path to the reference population
-description file (i.e., reference_pop_desc_file). 10.
-<code>af1_cutoff</code> cutoff of reference allele, a1, frequency</p>
-<p>The association Z-score data file should include six columns with the
-following column names: rsid (SNP ID), chr (chromosome number), bp (base
-pair position), a1 (reference allele), a2 (alternative allele), and z
-(association Z-score).</p>
-<p>Firstly, we will assign the path to the association Z-score data
-file.</p>
+<p>Both <code><a href="../reference/dist.html">dist()</a></code> and <code><a href="../reference/distmix.html">distmix()</a></code> functions require
+two core input datasets:</p>
+<ul>
+<li>Association Z-score Data</li>
+<li>Reference Panel Data</li>
+</ul>
+<div class="section level3">
+<h3 id="association-z-score-data">Association Z-score Data<a class="anchor" aria-label="anchor" href="#association-z-score-data"></a>
+</h3>
+<p>This data should be in the form of a space-delimited text file
+including six columns with the following names:</p>
+<ul>
+<li>
+<code>rsid</code>: SNP ID</li>
+<li>
+<code>chr</code>: Chromosome number</li>
+<li>
+<code>bp</code>: Base pair position</li>
+<li>
+<code>a1</code>: Reference allele</li>
+<li>
+<code>a2</code>: Alternative allele</li>
+<li>
+<code>z</code>: Association Z-score</li>
+</ul>
+<p>For this example, we will use the Psychiatric Genomic Consortium’s
+Phase 2 Schizophrenia (PGC SCZ2) GWAS dataset.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Path to the input file</span></span>
-<span><span class="va">input_file</span> <span class="op">&lt;-</span> <span class="st">"/Users/leed13/Desktop/GAUSS/GWAS_data/PGC/PGC2/PGC2_final/ilmn1M/pgc2.chr22.ilmn1M.Zonly.txt"</span></span>
+<span><span class="va">input_file</span> <span class="op">&lt;-</span> <span class="st">"../data/PGC2_3Mb.txt"</span></span>
 <span></span>
 <span><span class="co"># Input file should include six columns (rsid, chr, bp, a1, a2, and z)</span></span>
 <span><span class="va">input.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="va">input_file</span>, header <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">input.data</span><span class="op">)</span></span>
-<span><span class="co">#&gt;         rsid chr       bp a1 a2          z</span></span>
-<span><span class="co">#&gt; 1: rs1000427  22 36890105  A  G -1.4969741</span></span>
-<span><span class="co">#&gt; 2: rs1000470  22 24026845  A  C  1.8407377</span></span>
-<span><span class="co">#&gt; 3: rs1000539  22 20202729  A  G  2.1683772</span></span>
-<span><span class="co">#&gt; 4:   rs10009  22 22051709  A  G -0.0556759</span></span>
-<span><span class="co">#&gt; 5: rs1001022  22 26403488  T  C  2.9694844</span></span>
-<span><span class="co">#&gt; 6: rs1001213  22 34131736  A  G -0.8957244</span></span></code></pre></div>
-<p>Next, we will assign the paths to reference data files to
-variables</p>
+<span><span class="co">#&gt;          rsid chr        bp a1 a2         z</span></span>
+<span><span class="co">#&gt; 1:  rs1004467  10 104594507  A  G  6.686674</span></span>
+<span><span class="co">#&gt; 2:  rs1008013  10 103548866  A  T -1.769923</span></span>
+<span><span class="co">#&gt; 3: rs10128116  10 103717613  A  G -1.883298</span></span>
+<span><span class="co">#&gt; 4:  rs1015037  10 105547517  T  G -1.917614</span></span>
+<span><span class="co">#&gt; 5: rs10159775  10 103184297  A  G  1.304979</span></span>
+<span><span class="co">#&gt; 6: rs10159838  10 105473937  A  G  2.582526</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="reference-panel-data">Reference Panel Data<a class="anchor" aria-label="anchor" href="#reference-panel-data"></a>
+</h3>
+<p>We will use <a href="https://statsleelab.github.io/gauss/articles/ref_33KG.html" class="external-link">the
+33KG reference panel</a>. Replace the file paths below with those of
+your actual reference panel files.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Paths to the reference files (replace these with your actual paths)</span></span>
-<span><span class="va">reference_index_file</span><span class="op">&lt;-</span><span class="st">"/path/to/33kg_index.gz"</span></span>
-<span><span class="va">reference_data_file</span> <span class="op">&lt;-</span> <span class="st">"/path/to/33kg_geno.gz"</span></span>
-<span><span class="va">reference_pop_desc_file</span><span class="op">&lt;-</span><span class="st">"path/to/33kg_pop_desc.txt"</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">reference_index_file</span> <span class="op">&lt;-</span><span class="st">"../ref/Human/33KG/33kg_index.gz"</span></span>
+<span><span class="va">reference_data_file</span> <span class="op">&lt;-</span> <span class="st">"../ref/Human/33KG/33kg_geno.gz"</span></span>
+<span><span class="va">reference_pop_desc_file</span><span class="op">&lt;-</span><span class="st">"../ref/Human/33KG/33kg_pop_desc.txt"</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level2">
-<h2 id="execute-dist">Execute dist()<a class="anchor" aria-label="anchor" href="#execute-dist"></a>
+<h2 id="the-dist-function">The <code>dist()</code> function<a class="anchor" aria-label="anchor" href="#the-dist-function"></a>
 </h2>
-<p>Lastly, we will execute the dist() function to impute association
-Z-scores of missing SNPs in a genomic region chr22:26M - 27M and display
-the results in a neat table.</p>
+<p>The <code><a href="../reference/dist.html">dist()</a></code> function is specifically designed for
+ethnically homogeneous cohorts. It allows the direct imputation of
+association Z-scores for unmeasured SNPs, making it easier to update and
+enhance GWAS analyses.</p>
+<div class="section level3">
+<h3 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a>
+</h3>
+<p>The <code><a href="../reference/dist.html">dist()</a></code> function accepts following arguments:</p>
+<ul>
+<li>
+<code>chr</code>: Chromosome number.</li>
+<li>
+<code>start_bp</code>: Starting base pair position of the estimation
+window.</li>
+<li>
+<code>end_bp</code>: Ending base pair position of the estimation
+window.</li>
+<li>
+<code>wing_size</code>: Size of the area flanking the left and right
+of the estimation window</li>
+<li>
+<code>study_pop</code>: Study population group</li>
+<li>
+<code>input_file</code>: File name of the association Z-score
+data</li>
+<li>
+<code>reference_index_file</code>: File name of reference panel
+index data</li>
+<li>
+<code>reference_data_file</code>: File name of reference panel
+data</li>
+<li>
+<code>reference_pop_desc_file</code>: File name of reference panel
+population description data</li>
+<li>
+<code>af1_cutoff</code>: Cutoff of reference allele (a1)
+frequency</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="outputs">Outputs<a class="anchor" aria-label="anchor" href="#outputs"></a>
+</h3>
+<p>The <code><a href="../reference/dist.html">dist()</a></code> function returns a data frame with following
+columns:</p>
+<ul>
+<li>
+<code>rsid</code>: SNP ID.</li>
+<li>
+<code>chr</code>: Chromosome number.</li>
+<li>
+<code>bp</code>: Base pair position.</li>
+<li>
+<code>a1</code>: Reference allele.</li>
+<li>
+<code>a2</code>: Alternative allele.</li>
+<li>
+<code>af1ref</code>: Reference allele frequency.</li>
+<li>
+<code>z</code>: Association Z-score.</li>
+<li>
+<code>pval</code>: Association P-value.</li>
+<li>
+<code>info</code>: Imputation information, ranging from 0 to 1.</li>
+<li>
+<code>type</code>: Type of variant. A value of <code>0</code>
+indicates an imputed variant, while <code>1</code> denotes a measured
+variant.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="example-usage">Example Usage<a class="anchor" aria-label="anchor" href="#example-usage"></a>
+</h3>
+<p>In this example, we will execute the <code><a href="../reference/dist.html">dist()</a></code> function to
+impute association Z-scores of missing SNPs in a 1Mb genomic region
+(Chromosome 10: 104 - 105 Mb) of PGC SCZ2 study. For the sake of this
+example, let’s assume that the study cohort consists of participants of
+European descent, represented as “EUR.” Therefore, we’ll set
+<code>study_pop = "EUR"</code> to utilize genotype data for European
+subjects from the 33KG reference panel.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">af1_cutoff</span> <span class="op">=</span> <span class="fl">0.001</span></span>
 <span></span>
-<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dist.html">dist</a></span><span class="op">(</span>chr<span class="op">=</span><span class="fl">22</span>, start_bp <span class="op">=</span> <span class="fl">26000001</span>, end_bp <span class="op">=</span> <span class="fl">27000000</span>, wing_size <span class="op">=</span> <span class="fl">500000</span>, study_pop <span class="op">=</span> <span class="st">"EUR"</span>,</span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dist.html">dist</a></span><span class="op">(</span>chr<span class="op">=</span><span class="fl">10</span>, </span>
+<span>            start_bp <span class="op">=</span> <span class="fl">104000001</span>, </span>
+<span>            end_bp <span class="op">=</span> <span class="fl">105000000</span>, </span>
+<span>            wing_size <span class="op">=</span> <span class="fl">500000</span>, </span>
+<span>            study_pop <span class="op">=</span> <span class="st">"EUR"</span>,</span>
 <span>            input_file <span class="op">=</span> <span class="va">input_file</span>, </span>
 <span>            reference_index_file <span class="op">=</span> <span class="va">reference_index_file</span>,</span>
 <span>            reference_data_file <span class="op">=</span> <span class="va">reference_data_file</span>, </span>
 <span>            reference_pop_desc_file <span class="op">=</span> <span class="va">reference_pop_desc_file</span>,</span>
 <span>            af1_cutoff <span class="op">=</span> <span class="va">af1_cutoff</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="results">Results<a class="anchor" aria-label="anchor" href="#results"></a>
-</h2>
+<div class="section level3">
+<h3 id="results">Results<a class="anchor" aria-label="anchor" href="#results"></a>
+</h3>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="st">"html"</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
@@ -212,13 +314,13 @@ type
 <tbody>
 <tr>
 <td style="text-align:left;">
-rs144526288
+rs117589665
 </td>
 <td style="text-align:right;">
-22
+10
 </td>
 <td style="text-align:right;">
-26000077
+104000008
 </td>
 <td style="text-align:left;">
 G
@@ -227,16 +329,16 @@ G
 A
 </td>
 <td style="text-align:right;">
-0.00368
+0.05720
 </td>
 <td style="text-align:right;">
--0.4787916
+3.7785313
 </td>
 <td style="text-align:right;">
-0.6320869
+0.0001578
 </td>
 <td style="text-align:right;">
-0.3571922
+0.9498775
 </td>
 <td style="text-align:right;">
 0
@@ -244,13 +346,13 @@ A
 </tr>
 <tr>
 <td style="text-align:left;">
-rs146646304
+rs530689457
 </td>
 <td style="text-align:right;">
-22
+10
 </td>
 <td style="text-align:right;">
-26000267
+104000125
 </td>
 <td style="text-align:left;">
 T
@@ -259,48 +361,16 @@ T
 C
 </td>
 <td style="text-align:right;">
-0.00104
+0.00336
 </td>
 <td style="text-align:right;">
-0.3406137
+-1.2757191
 </td>
 <td style="text-align:right;">
-0.7333944
+0.2020548
 </td>
 <td style="text-align:right;">
-0.4976277
-</td>
-<td style="text-align:right;">
-0
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rs542157098
-</td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-26000579
-</td>
-<td style="text-align:left;">
-G
-</td>
-<td style="text-align:left;">
-A
-</td>
-<td style="text-align:right;">
-0.00674
-</td>
-<td style="text-align:right;">
--1.8859780
-</td>
-<td style="text-align:right;">
-0.0592979
-</td>
-<td style="text-align:right;">
-0.5201586
+0.0831094
 </td>
 <td style="text-align:right;">
 0
@@ -308,63 +378,31 @@ A
 </tr>
 <tr>
 <td style="text-align:left;">
-rs16980509
+rs9664049
 </td>
 <td style="text-align:right;">
-22
+10
 </td>
 <td style="text-align:right;">
-26000651
-</td>
-<td style="text-align:left;">
-A
-</td>
-<td style="text-align:left;">
-C
-</td>
-<td style="text-align:right;">
-0.06650
-</td>
-<td style="text-align:right;">
--1.0535260
-</td>
-<td style="text-align:right;">
-0.2921000
-</td>
-<td style="text-align:right;">
-1.0000000
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rs16980035
-</td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-26001101
-</td>
-<td style="text-align:left;">
-C
+104000307
 </td>
 <td style="text-align:left;">
 T
 </td>
-<td style="text-align:right;">
-0.01448
+<td style="text-align:left;">
+C
 </td>
 <td style="text-align:right;">
--0.5668762
+0.61243
 </td>
 <td style="text-align:right;">
-0.5707983
+-0.4576290
 </td>
 <td style="text-align:right;">
-0.9352894
+0.6472190
+</td>
+<td style="text-align:right;">
+0.9859440
 </td>
 <td style="text-align:right;">
 0
@@ -372,13 +410,77 @@ T
 </tr>
 <tr>
 <td style="text-align:left;">
-rs552699792
+rs149691625
 </td>
 <td style="text-align:right;">
-22
+10
 </td>
 <td style="text-align:right;">
-26002266
+104000837
+</td>
+<td style="text-align:left;">
+T
+</td>
+<td style="text-align:left;">
+C
+</td>
+<td style="text-align:right;">
+0.00351
+</td>
+<td style="text-align:right;">
+-2.9077590
+</td>
+<td style="text-align:right;">
+0.0036403
+</td>
+<td style="text-align:right;">
+0.0870822
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rs112009583
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+104001402
+</td>
+<td style="text-align:left;">
+T
+</td>
+<td style="text-align:left;">
+C
+</td>
+<td style="text-align:right;">
+0.01793
+</td>
+<td style="text-align:right;">
+0.6621509
+</td>
+<td style="text-align:right;">
+0.5078745
+</td>
+<td style="text-align:right;">
+0.9589020
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rs35200058
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+104002372
 </td>
 <td style="text-align:left;">
 A
@@ -387,16 +489,16 @@ A
 G
 </td>
 <td style="text-align:right;">
-0.00102
+0.00575
 </td>
 <td style="text-align:right;">
-0.3764773
+1.4120431
 </td>
 <td style="text-align:right;">
-0.7065621
+0.1579373
 </td>
 <td style="text-align:right;">
-0.4857914
+0.1878804
 </td>
 <td style="text-align:right;">
 0
@@ -405,28 +507,347 @@ G
 </tbody>
 </table>
 </div>
+</div>
 <div class="section level2">
-<h2 id="manhattan-plot">Manhattan Plot<a class="anchor" aria-label="anchor" href="#manhattan-plot"></a>
+<h2 id="the-distmix-function">The <code>distmix()</code> function<a class="anchor" aria-label="anchor" href="#the-distmix-function"></a>
 </h2>
+<p>The <code><a href="../reference/distmix.html">distmix()</a></code> function is designed for multi-ethnic
+cohorts, extending the capabilities of <code><a href="../reference/dist.html">dist()</a></code> to
+accommodate the complexities introduced by ethnic diversity in the
+data.</p>
+<div class="section level3">
+<h3 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a>
+</h3>
+<p>The <code><a href="../reference/distmix.html">distmix()</a></code> function takes a set of arguments that are
+largely identical to those for <code><a href="../reference/dist.html">dist()</a></code>. However, instead of
+the <code>study_pop</code> argument, <code><a href="../reference/distmix.html">distmix()</a></code> incorporates
+<code>pop_wgt_df</code>:</p>
+<ul>
+<li>
+<code>pop_wgt_df</code>: An R data frame that specifies the
+population IDs and their respective ancestry proportions.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="outputs-1">Outputs<a class="anchor" aria-label="anchor" href="#outputs-1"></a>
+</h3>
+<p>The output of <code><a href="../reference/distmix.html">distmix()</a></code> is also largely identical to
+that of <code><a href="../reference/dist.html">dist()</a></code>, with one exception: the column
+<code>af1mix</code> replaces <code>af1ref</code>.</p>
+<ul>
+<li>
+<code>af1mix</code>: An estimated reference allele frequency for the
+variant in the study cohort. It is calculated as a weighted sum of the
+reference allele frequencies across different populations in the
+reference panel.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="example-usage-1">Example Usage<a class="anchor" aria-label="anchor" href="#example-usage-1"></a>
+</h3>
+<p>Before using <code><a href="../reference/distmix.html">distmix()</a></code>, you need to prepare ancestry
+proportion data. This data should be structured as a data frame
+containing two columns:</p>
+<ul>
+<li>
+<code>pop</code>: Population abbreviation</li>
+<li>
+<code>wgt</code>: Weight or proportion of each population in the
+study cohort.</li>
+</ul>
+<p>You can estimate these proportions using the <code><a href="../reference/afmix.html">afmix()</a></code>
+function. For a step-by-step guide on this process, refer to the <a href="https://statsleelab.github.io/gauss/articles/afmix_example.html" class="external-link"><code>afmix()</code>
+vignette</a>.</p>
+<p>Here, we load pre-generated ancestry proportion data:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">res.info</span> <span class="op">&lt;-</span> <span class="va">res</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">info</span><span class="op">&gt;</span><span class="fl">0.6</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co"># Load the ancestry proportion data</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"PGC2_SCZ_ANC_Prop"</span><span class="op">)</span> <span class="co"># data frame name: PGC2_SCZ_ANC_Prop</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">PGC2_SCZ_ANC_Prop</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   pop   wgt</span></span>
+<span><span class="co">#&gt; 1 ACB 0.006</span></span>
+<span><span class="co">#&gt; 2 ASW 0.036</span></span>
+<span><span class="co">#&gt; 3 BEB 0.005</span></span>
+<span><span class="co">#&gt; 4 CCE 0.008</span></span>
+<span><span class="co">#&gt; 5 CCS 0.004</span></span>
+<span><span class="co">#&gt; 6 CDX 0.018</span></span></code></pre></div>
+<p>Now, let’s proceed to use <code><a href="../reference/distmix.html">distmix()</a></code> for imputing
+association Z-scores of missing SNPs in a 1Mb genomic region on
+Chromosome 10, ranging from 104 to 105 Mb.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">af1_cutoff</span> <span class="op">=</span> <span class="fl">0.001</span></span>
+<span></span>
+<span><span class="va">res.mix</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/distmix.html">distmix</a></span><span class="op">(</span>chr<span class="op">=</span><span class="fl">10</span>, </span>
+<span>            start_bp <span class="op">=</span> <span class="fl">104000001</span>, </span>
+<span>            end_bp <span class="op">=</span> <span class="fl">105000000</span>, </span>
+<span>            wing_size <span class="op">=</span> <span class="fl">500000</span>, </span>
+<span>            pop_wgt_df <span class="op">=</span> <span class="va">PGC2_SCZ_ANC_Prop</span>,</span>
+<span>            input_file <span class="op">=</span> <span class="va">input_file</span>, </span>
+<span>            reference_index_file <span class="op">=</span> <span class="va">reference_index_file</span>,</span>
+<span>            reference_data_file <span class="op">=</span> <span class="va">reference_data_file</span>, </span>
+<span>            reference_pop_desc_file <span class="op">=</span> <span class="va">reference_pop_desc_file</span>,</span>
+<span>            af1_cutoff <span class="op">=</span> <span class="va">af1_cutoff</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="results-1">Results<a class="anchor" aria-label="anchor" href="#results-1"></a>
+</h3>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res.mix</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="st">"html"</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<thead><tr>
+<th style="text-align:left;">
+rsid
+</th>
+<th style="text-align:right;">
+chr
+</th>
+<th style="text-align:right;">
+bp
+</th>
+<th style="text-align:left;">
+a1
+</th>
+<th style="text-align:left;">
+a2
+</th>
+<th style="text-align:right;">
+af1mix
+</th>
+<th style="text-align:right;">
+z
+</th>
+<th style="text-align:right;">
+pval
+</th>
+<th style="text-align:right;">
+info
+</th>
+<th style="text-align:right;">
+type
+</th>
+</tr></thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+rs117589665
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+104000008
+</td>
+<td style="text-align:left;">
+G
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+0.0498071
+</td>
+<td style="text-align:right;">
+3.7654378
+</td>
+<td style="text-align:right;">
+0.0001663
+</td>
+<td style="text-align:right;">
+0.9502819
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rs530689457
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+104000125
+</td>
+<td style="text-align:left;">
+T
+</td>
+<td style="text-align:left;">
+C
+</td>
+<td style="text-align:right;">
+0.0025437
+</td>
+<td style="text-align:right;">
+-1.5946868
+</td>
+<td style="text-align:right;">
+0.1107823
+</td>
+<td style="text-align:right;">
+0.1066830
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rs74469897
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+104000130
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:left;">
+G
+</td>
+<td style="text-align:right;">
+0.0019094
+</td>
+<td style="text-align:right;">
+-0.3684543
+</td>
+<td style="text-align:right;">
+0.7125345
+</td>
+<td style="text-align:right;">
+0.0353522
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rs115917085
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+104000143
+</td>
+<td style="text-align:left;">
+G
+</td>
+<td style="text-align:left;">
+T
+</td>
+<td style="text-align:right;">
+0.0017765
+</td>
+<td style="text-align:right;">
+-0.5972413
+</td>
+<td style="text-align:right;">
+0.5503463
+</td>
+<td style="text-align:right;">
+0.0405036
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rs9664049
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+104000307
+</td>
+<td style="text-align:left;">
+T
+</td>
+<td style="text-align:left;">
+C
+</td>
+<td style="text-align:right;">
+0.6636273
+</td>
+<td style="text-align:right;">
+-0.4611097
+</td>
+<td style="text-align:right;">
+0.6447199
+</td>
+<td style="text-align:right;">
+0.9857300
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rs149691625
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+104000837
+</td>
+<td style="text-align:left;">
+T
+</td>
+<td style="text-align:left;">
+C
+</td>
+<td style="text-align:right;">
+0.0046659
+</td>
+<td style="text-align:right;">
+-2.7223649
+</td>
+<td style="text-align:right;">
+0.0064817
+</td>
+<td style="text-align:right;">
+0.0791713
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
+<h3 id="manhattan-plot">Manhattan Plot<a class="anchor" aria-label="anchor" href="#manhattan-plot"></a>
+</h3>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">res.mix.info</span> <span class="op">&lt;-</span> <span class="va">res.mix</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">info</span><span class="op">&gt;</span><span class="fl">0.6</span><span class="op">)</span></span>
+<span><span class="va">res.mix.info</span><span class="op">$</span><span class="va">type</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">res.mix.info</span><span class="op">$</span><span class="va">type</span>, </span>
+<span>                            levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>                            labels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Imputed"</span>,<span class="st">"Measured"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">gwas.sig</span> <span class="op">&lt;-</span> <span class="fl">5</span><span class="op">*</span><span class="fl">10</span><span class="op">^</span><span class="op">-</span><span class="fl">8</span></span>
 <span>  </span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">res.info</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">bp</span>, y <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">pval</span><span class="op">)</span>, color <span class="op">=</span> <span class="va">info</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">res.mix.info</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">bp</span>, y <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">pval</span><span class="op">)</span>, </span>
+<span>                         color <span class="op">=</span> <span class="va">info</span>, shape<span class="op">=</span><span class="va">type</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log10</a></span><span class="op">(</span><span class="va">gwas.sig</span><span class="op">)</span><span class="op">)</span>, </span>
 <span>             linetype <span class="op">=</span> <span class="st">"dashed"</span>, </span>
-<span>             color <span class="op">=</span> <span class="st">"red"</span>, </span>
-<span>             size <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span> <span class="op">+</span></span>
+<span>             color <span class="op">=</span> <span class="st">"black"</span>, </span>
+<span>             size <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_color_gradient</a></span><span class="op">(</span>low <span class="op">=</span> <span class="st">"blue"</span>, high <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Manhattan Plot"</span>,</span>
-<span>       x <span class="op">=</span> <span class="st">"Base Pair Position"</span>,</span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Base Pair Position"</span>,</span>
 <span>       y <span class="op">=</span> <span class="st">"-Log10(p-value)"</span>,</span>
-<span>       color <span class="op">=</span> <span class="st">"Info"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>       color <span class="op">=</span> <span class="st">"Info"</span>,</span>
+<span>       shape <span class="op">=</span> <span class="st">"Type"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `linewidth` instead.</span></span></code></pre></div>
-<p><img src="dist_example_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
+<p><img src="dist_example_files/figure-html/unnamed-chunk-4-1.png" width="672"></p>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

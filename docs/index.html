@@ -50,9 +50,8 @@
     <a class="dropdown-item" href="articles/afmix_example.html">Estimating ancestry proportions</a>
     <a class="dropdown-item" href="articles/computeLD_example.html">Estimating linkage disequilibrium</a>
     <a class="dropdown-item" href="articles/dist_example.html">Imputing Z-scores of unmeasured SNPs</a>
-    <a class="dropdown-item" href="articles/distmix_example.html">Imputing Z-scores of unmeasured SNPs from muli-ethnic cohorts</a>
-    <a class="dropdown-item" href="articles/jepeg_example.html">Transcriptome wide association study for homogenous GWAS</a>
-    <a class="dropdown-item" href="articles/jepegmix_example.html">Transcriptome wide association study for multi-ethnic GWAS</a>
+    <a class="dropdown-item" href="articles/jepeg_example.html">Transcriptome wide association study</a>
+    <a class="dropdown-item" href="articles/gsl_installation.html">GSL Installation</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -91,18 +90,43 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="gauss">gauss<a class="anchor" aria-label="anchor" href="#gauss"></a>
+<div class="page-header"><h1 id="gauss">GAUSS<a class="anchor" aria-label="anchor" href="#gauss"></a>
 </h1></div>
 <!-- badges: start -->
 <!-- badges: end -->
-<p>gauss is a free and open-source R software package, which contains functions for analyzing summary statistics from large-scale genome-wide association studies (GWAS) meta-analyses from cohorts of diverse ethnic backgrounds, even including family based GWAS, using a next generation reference panel consists of 32,953 samples of 29 populations.</p>
+<p>GAUSS (Genome Analysis Using Summary Statistics) is a versatile R package designed for the analysis of multi-ethnic GWAS summary statistics. It leverages a large multi-ethnic reference panel consisting of 32,953 genomes (<a href="https://statsleelab.github.io/gauss/articles/ref_33KG.html" class="external-link">33KG Panel</a>), including 20,281 Europeans, 10,800 East Asians, 522 South Asians, 817 Africans, and 533 Native Americans. The GAUSS package offers a robust set of tools that enable researchers to: i) accurately estimate the ancestry proportions within a multi-ethnic GWAS (<code><a href="reference/afmix.html">afmix()</a></code> and <code>zimx()</code>), ii) calculate ancestry-informed linkage disequilibrium (LD) metrics (<code><a href="reference/computeLD.html">computeLD()</a></code>), iii) impute Z-scores for genetic variants not originally measured (<code><a href="reference/dist.html">dist()</a></code> and <code><a href="reference/distmix.html">distmix()</a></code>), iv) conduct in-depth transcriptome-wide association studies (<code><a href="reference/jepeg.html">jepeg()</a></code> and <code><a href="reference/jepegmix.html">jepegmix()</a></code>), and v) apply corrections for the ‘Winner’s Curse’ biases (<code>fiqt()</code>).</p>
 <div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+<h2 id="citing-gauss">Citing GAUSS<a class="anchor" aria-label="anchor" href="#citing-gauss"></a>
 </h2>
-<p>You can install the development version of gauss from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
+<p>Lee and Bacanu. GAUSS: A comprehensive R package for computation of linkage disequlibrium for variants, Gaussian imputation and TWAS analysis of cosmopolitan cohorts.</p>
+</div>
+<div class="section level2">
+<h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a>
+</h2>
+<p>Donghyung Lee <a href="mailto:leed13@miamioh.edu" class="email">leed13@miamioh.edu</a></p>
+</div>
+<div class="section level2">
+<h2 id="pre-installation-setting-up-gsl">Pre-installation: Setting Up GSL<a class="anchor" aria-label="anchor" href="#pre-installation-setting-up-gsl"></a>
+</h2>
+<p>Before installing GAUSS, it is essential to set up the GNU Scientific Library (GSL), a dependency for the GAUSS package. Detailed installation instructions for GSL are available <a href="https://statsleelab.github.io/gauss/articles/gsl_installation.html" class="external-link">here</a>.</p>
+</div>
+<div class="section level2">
+<h2 id="gauss-installation">GAUSS Installation<a class="anchor" aria-label="anchor" href="#gauss-installation"></a>
+</h2>
+<p>You can install the development version of gauss from GitHub with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"statsleelab/gauss"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="suggested-workflow">Suggested Workflow<a class="anchor" aria-label="anchor" href="#suggested-workflow"></a>
+</h2>
+<p><img src="reference/figures/GAUSS_Flowchart_bioinfo.png" width="100%" style="display: block; margin: auto;"></p>
+<p>GAUSS functions utilize five core input datasets: i) Association Z-score Data (highlighted in blue), consisting of six columns of variables: SNP ID (rsid), chromosome number (chr), base pair position (bp), reference allele (a1), alternative allele (a2), and Z-score (z); ii) Allele Frequency Data (colored in red), encapsulating rsid, chr, bp, a1, a2, and reference allele frequency (af1); iii) Ethnic Mixing Proportion Data (colored in green), comprising population name abbreviations and corresponding mixing proportions; iv) SNP Annotation Data (colored in orange), offering functional annotation information of SNPs; v) Reference Panel Data (colored in yellow), e.g., <a href="https://statsleelab.github.io/gauss/articles/ref_33KG.html" class="external-link">33KG Panel</a> offering genotype information for a significant pool of 32,953 individuals from 29 diverse ethnic groups.</p>
+<p>Initially, users should determine whether their input summary statistics data originate from mixed ethnicity cohorts. If they do not (suggesting the data comes from a homogeneous cohort), users can use a variety of analysis functions specific to homogeneous cohorts, including <code><a href="reference/computeLD.html">computeLD()</a></code> for LD estimation, <code><a href="reference/dist.html">dist()</a></code> for imputing Z-scores of missing SNPs, and <code><a href="reference/jepeg.html">jepeg()</a></code> for conducting trascriptome-wide associaton study (TWAS). These functions primarily require Association Z-score Data and Reference Panel Data.</p>
+<p>Conversely, if the data derive from mixed ethnicity cohorts and the ethnic mixing proportions are known, GAUSS provides a range of tools for multi-ethnic cohort analysis. These encompass <code><a href="reference/computeLD.html">computeLD()</a></code> for LD estimation, <code><a href="reference/distmix.html">distmix()</a></code> for Z-score imputation, and <code><a href="reference/jepegmix.html">jepegmix()</a></code> for TWAS. These tools require Association Z-score Data, Reference Panel Data, and Mixing Proportion Data. If ethnic mixing proportions are not known, they should be estimated using either the <code><a href="reference/afmix.html">afmix()</a></code> function (if Allele Frequency Data is available) or the <code>zmix()</code> function (if it is not). Upon determining the ethnic mixing proportions, users can apply the genome analysis functions designed for multi-ethnic cohorts.</p>
+<p>Small colored squares on arrows pointing to GAUSS functions denote the required input data sets for each function. For instance, an arrow pointing to the afmix() function is marked by two colored squares (red and yellow), indicating that this function utilizes both Allele Frequency Data and Reference Panel Data as inputs.</p>
+<p>For more detailed examples that demonstrate each functionality, please visit <a href="https://statsleelab.github.io/gauss/" class="external-link">GAUSS vignettes</a></p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">

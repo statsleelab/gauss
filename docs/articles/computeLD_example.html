@@ -44,9 +44,8 @@
     <a class="dropdown-item" href="../articles/afmix_example.html">Estimating ancestry proportions</a>
     <a class="dropdown-item" href="../articles/computeLD_example.html">Estimating linkage disequilibrium</a>
     <a class="dropdown-item" href="../articles/dist_example.html">Imputing Z-scores of unmeasured SNPs</a>
-    <a class="dropdown-item" href="../articles/distmix_example.html">Imputing Z-scores of unmeasured SNPs from muli-ethnic cohorts</a>
-    <a class="dropdown-item" href="../articles/jepeg_example.html">Transcriptome wide association study for homogenous GWAS</a>
-    <a class="dropdown-item" href="../articles/jepegmix_example.html">Transcriptome wide association study for multi-ethnic GWAS</a>
+    <a class="dropdown-item" href="../articles/jepeg_example.html">Transcriptome wide association study</a>
+    <a class="dropdown-item" href="../articles/gsl_installation.html">GSL Installation</a>
   </div>
 </li>
 <li class="nav-item dropdown">
@@ -130,8 +129,8 @@ designed to estimate Linkage Disequilibrium (LD) by leveraging the
 observed or estimated ancestry proportions of a target cohort. It
 calculates LD for specific genomic regions as a weighted sum of LD
 values across various ancestries. The LD values for each ancestry are
-estimated from a reference panel. In this example, we utilize the 33KG
-reference panel for our estimations.</p>
+estimated from a reference panel. In this example, we utilize <a href="https://statsleelab.github.io/gauss/articles/ref_33KG.html" class="external-link">the
+33KG reference panel</a> for our estimations.</p>
 <p>The function requires following arguments:</p>
 <ul>
 <li>
@@ -207,18 +206,18 @@ pair position), <code>a1</code> (reference allele), <code>a2</code>
 <p>We assign the path to the association Z-score data file here:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Define the path to the input file</span></span>
-<span><span class="va">input_file</span> <span class="op">&lt;-</span> <span class="st">"/Users/leed13/Desktop/GAUSS/GWAS_data/PGC/PGC2/PGC2_final/ilmn1M/pgc2.chr22.ilmn1M.Zonly.txt"</span></span>
+<span><span class="va">input_file</span> <span class="op">&lt;-</span> <span class="st">"../data/PGC2_3Mb.txt"</span></span>
 <span></span>
 <span><span class="co"># Input file should include six columns (rsid, chr, bp, a1, a2, and z)</span></span>
 <span><span class="va">input_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="va">input_file</span>, header <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">input_data</span><span class="op">)</span></span>
-<span><span class="co">#&gt;         rsid chr       bp a1 a2          z</span></span>
-<span><span class="co">#&gt; 1: rs1000427  22 36890105  A  G -1.4969741</span></span>
-<span><span class="co">#&gt; 2: rs1000470  22 24026845  A  C  1.8407377</span></span>
-<span><span class="co">#&gt; 3: rs1000539  22 20202729  A  G  2.1683772</span></span>
-<span><span class="co">#&gt; 4:   rs10009  22 22051709  A  G -0.0556759</span></span>
-<span><span class="co">#&gt; 5: rs1001022  22 26403488  T  C  2.9694844</span></span>
-<span><span class="co">#&gt; 6: rs1001213  22 34131736  A  G -0.8957244</span></span></code></pre></div>
+<span><span class="co">#&gt;          rsid chr        bp a1 a2         z</span></span>
+<span><span class="co">#&gt; 1:  rs1004467  10 104594507  A  G  6.686674</span></span>
+<span><span class="co">#&gt; 2:  rs1008013  10 103548866  A  T -1.769923</span></span>
+<span><span class="co">#&gt; 3: rs10128116  10 103717613  A  G -1.883298</span></span>
+<span><span class="co">#&gt; 4:  rs1015037  10 105547517  T  G -1.917614</span></span>
+<span><span class="co">#&gt; 5: rs10159775  10 103184297  A  G  1.304979</span></span>
+<span><span class="co">#&gt; 6: rs10159838  10 105473937  A  G  2.582526</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="reference-panel-data-files">Reference Panel Data Files<a class="anchor" aria-label="anchor" href="#reference-panel-data-files"></a>
@@ -226,9 +225,9 @@ pair position), <code>a1</code> (reference allele), <code>a2</code>
 <p>Next, we assign the paths to reference panel data files:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Paths to the reference files (replace these with your actual paths)</span></span>
-<span><span class="va">reference_index_file</span><span class="op">&lt;-</span><span class="st">"/path/to/33kg_index.gz"</span></span>
-<span><span class="va">reference_data_file</span> <span class="op">&lt;-</span> <span class="st">"/path/to/33kg_geno.gz"</span></span>
-<span><span class="va">reference_pop_desc_file</span><span class="op">&lt;-</span><span class="st">"path/to/33kg_pop_desc.txt"</span></span></code></pre></div>
+<span><span class="va">reference_index_file</span> <span class="op">&lt;-</span><span class="st">"../ref/Human/33KG/33kg_index.gz"</span></span>
+<span><span class="va">reference_data_file</span> <span class="op">&lt;-</span> <span class="st">"../ref/Human/33KG/33kg_geno.gz"</span></span>
+<span><span class="va">reference_pop_desc_file</span><span class="op">&lt;-</span><span class="st">"../ref/Human/33KG/33kg_pop_desc.txt"</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -237,11 +236,13 @@ pair position), <code>a1</code> (reference allele), <code>a2</code>
 <p>With the necessary arguments and data prepared, we can now estimate
 the Linkage Disequilibrium for a specific genomic region using the
 <code><a href="../reference/computeLD.html">computeLD()</a></code> function. For this example, we focus on a 1Mb
-genomic region located at Chr 22: 26M-27M.</p>
+genomic region located at Chromosome 10: 104-105 Mb.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">af1_cutoff</span> <span class="op">=</span> <span class="fl">0.001</span></span>
 <span></span>
-<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/computeLD.html">computeLD</a></span><span class="op">(</span>chr<span class="op">=</span><span class="fl">22</span>, start_bp <span class="op">=</span> <span class="fl">26000001</span>, end_bp <span class="op">=</span> <span class="fl">27000000</span>,</span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/computeLD.html">computeLD</a></span><span class="op">(</span>chr<span class="op">=</span><span class="fl">10</span>, </span>
+<span>                 start_bp <span class="op">=</span> <span class="fl">104000001</span>, </span>
+<span>                 end_bp <span class="op">=</span> <span class="fl">105000000</span>,</span>
 <span>                 pop_wgt_df <span class="op">=</span> <span class="va">PGC2_SCZ_ANC_Prop</span>,</span>
 <span>                 input_file <span class="op">=</span> <span class="va">input_file</span>, </span>
 <span>                 reference_index_file <span class="op">=</span> <span class="va">reference_index_file</span>,</span>
@@ -279,53 +280,13 @@ af1mix
 <tbody>
 <tr>
 <td style="text-align:left;">
-rs16980509
+rs3758549
 </td>
 <td style="text-align:right;">
-22
+10
 </td>
 <td style="text-align:right;">
-26000651
-</td>
-<td style="text-align:left;">
-A
-</td>
-<td style="text-align:left;">
-C
-</td>
-<td style="text-align:right;">
-0.0712967
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rs16980043
-</td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-26004249
-</td>
-<td style="text-align:left;">
-G
-</td>
-<td style="text-align:left;">
-A
-</td>
-<td style="text-align:right;">
-0.0061116
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rs9612998
-</td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-26022728
+104004195
 </td>
 <td style="text-align:left;">
 A
@@ -334,58 +295,38 @@ A
 G
 </td>
 <td style="text-align:right;">
-0.0274948
+0.1928059
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-rs7284230
+rs1541046
 </td>
 <td style="text-align:right;">
-22
+10
 </td>
 <td style="text-align:right;">
-26025678
+104005386
 </td>
 <td style="text-align:left;">
 A
 </td>
 <td style="text-align:left;">
-C
+G
 </td>
 <td style="text-align:right;">
-0.0206094
+0.6625196
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-rs8142086
+rs2296887
 </td>
 <td style="text-align:right;">
-22
+10
 </td>
 <td style="text-align:right;">
-26046513
-</td>
-<td style="text-align:left;">
-T
-</td>
-<td style="text-align:left;">
-C
-</td>
-<td style="text-align:right;">
-0.0742663
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-rs6004737
-</td>
-<td style="text-align:right;">
-22
-</td>
-<td style="text-align:right;">
-26065034
+104005410
 </td>
 <td style="text-align:left;">
 C
@@ -394,31 +335,85 @@ C
 T
 </td>
 <td style="text-align:right;">
-0.0796814
+0.1591055
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rs10748818
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+104015279
+</td>
+<td style="text-align:left;">
+G
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+0.1664600
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rs1628530
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+104029307
+</td>
+<td style="text-align:left;">
+C
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+0.1235526
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rs17114433
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+104043015
+</td>
+<td style="text-align:left;">
+G
+</td>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+0.0247393
 </td>
 </tr>
 </tbody>
 </table>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">cormat</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="co">#&gt;              [,1]          [,2]          [,3]</span></span>
-<span><span class="co">#&gt; [1,]  1.000000000 -0.0075102182 -0.0461570012</span></span>
-<span><span class="co">#&gt; [2,] -0.007510218  1.0000000000 -0.0007550191</span></span>
-<span><span class="co">#&gt; [3,] -0.046157001 -0.0007550191  1.0000000000</span></span></code></pre></div>
+<span><span class="co">#&gt;            [,1]      [,2]       [,3]</span></span>
+<span><span class="co">#&gt; [1,]  1.0000000 0.3862755 -0.2043549</span></span>
+<span><span class="co">#&gt; [2,]  0.3862755 1.0000000  0.3080546</span></span>
+<span><span class="co">#&gt; [3,] -0.2043549 0.3080546  1.0000000</span></span></code></pre></div>
 <p>Finally, we generate a heatmap to visually represent the LD
 estimates:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cormat</span> <span class="op">&lt;-</span> <span class="va">res</span><span class="op">$</span><span class="va">cormat</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">cormat</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span><span class="va">cormelt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/reshape2/man/melt.html" class="external-link">melt</a></span><span class="op">(</span><span class="va">cormat</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in melt(cormat, na.rm = TRUE): The melt generic in data.table has</span></span>
-<span><span class="co">#&gt; been passed a matrix and will attempt to redirect to the relevant reshape2</span></span>
-<span><span class="co">#&gt; method; please note that reshape2 is deprecated, and this redirection is now</span></span>
-<span><span class="co">#&gt; deprecated as well. To continue using melt methods from reshape2 while both</span></span>
-<span><span class="co">#&gt; libraries are attached, e.g. melt.list, you can prepend the namespace like</span></span>
-<span><span class="co">#&gt; reshape2::melt(cormat). In the next version, this warning will become an error.</span></span>
 <span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">cormelt</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">Var1</span>, y <span class="op">=</span> <span class="va">Var2</span>, fill <span class="op">=</span> <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">cormelt</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">Var1</span>, y <span class="op">=</span> <span class="va">Var2</span>, fill <span class="op">=</span> <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">geom_tile</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_fill_gradient2</a></span><span class="op">(</span>low <span class="op">=</span> <span class="st">"blue"</span>, high <span class="op">=</span> <span class="st">"red"</span>, </span>
 <span>                       mid <span class="op">=</span> <span class="st">"white"</span>, </span>
@@ -434,8 +429,22 @@ estimates:</p>
 <span>        panel.grid.major <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>        panel.grid.minor <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>        legend.position <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html" class="external-link">coord_fixed</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html" class="external-link">coord_fixed</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p1</span></span></code></pre></div>
 <p><img src="computeLD_example_files/figure-html/heatmap-1.png" width="576"></p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co">#ggsave(file="docs/figure/computeLD_example.pdf", p1)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<ul>
+<li>Lee et al. DISTMIX: direct imputation of summary statistics for
+unmeasured SNPs from mixed ethnicity cohorts. Bioinformatics. <a href="https://doi.org/10.1093/bioinformatics/btv348" class="external-link uri">https://doi.org/10.1093/bioinformatics/btv348</a>
+</li>
+</ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

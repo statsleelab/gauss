@@ -49,7 +49,7 @@ devtools::install_github("statsleelab/gauss")
 
 ## Suggested Workflow
 
-![GAUSS Flowchart](GAUSS_Flowchart_bioinfo.png)
+<img src="man/figures/GAUSS_Flowchart_bioinfo.png" width="100%" style="display: block; margin: auto;" />
 
 GAUSS functions utilize five core input datasets: i) Association Z-score
 Data (highlighted in blue), consisting of six columns of variables: SNP

@@ -25,12 +25,8 @@ navbar:
           href: articles/computeLD_example.html
         - text: Imputing Z-scores of unmeasured SNPs
           href: articles/dist_example.html
-        - text: Imputing Z-scores of unmeasured SNPs from muli-ethnic cohorts
-          href: articles/distmix_example.html
-        - text: Transcriptome wide association study for homogenous GWAS
+        - text: Transcriptome wide association study
           href: articles/jepeg_example.html
-        - text: Transcriptome wide association study for multi-ethnic GWAS
-          href: articles/jepegmix_example.html
     - text: Reference Panels
       menu:
         - text: 33KG Panel

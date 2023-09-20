@@ -204,3 +204,12 @@ ggplot(res.mix.info, aes(x = bp, y = -log10(pval),
        shape = "Type") +
   theme_minimal()
 ```
+
+## References
+
+* Lee et al. DIST: direct imputation of summary statistics for unmeasured SNPs. Bioinformatics
+. 2013 Nov 15;29(22):2925-7. doi: 10.1093/bioinformatics/btt500.
+* Lee et al. DISTMIX: direct imputation of summary statistics for unmeasured SNPs from mixed ethnicity cohorts. Bioinformatics. https://doi.org/10.1093/bioinformatics/btv348
+
+
+

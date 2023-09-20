@@ -183,3 +183,10 @@ res <- res[order(res$jepeg_pval),]
 ```{r}
 head(res) %>% kable("html")
 ```
+
+## References
+
+* Lee et al. JEPEG: a summary statistics based tool for gene-level joint testing of functional variants. Bioinformatics, Volume 31, Issue 8, April 2015, Pages 1176–1182, https://doi.org/10.1093/bioinformatics/btu816
+* Lee et al. JEPEGMIX: gene-level joint analysis of functional SNPs in cosmopolitan cohorts. Bioinformatics. 2016 Jan 15; 32(2): 295–297. doi: 10.1093/bioinformatics/btv567
+
+

@@ -16,6 +16,12 @@
     <loc>https://github.com/statsleelab/gauss/articles/distmix_example.html</loc>
   </url>
   <url>
+    <loc>https://github.com/statsleelab/gauss/articles/fiqt_example.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/statsleelab/gauss/articles/gsl_installation.html</loc>
+  </url>
+  <url>
     <loc>https://github.com/statsleelab/gauss/articles/index.html</loc>
   </url>
   <url>
@@ -56,6 +62,9 @@
   </url>
   <url>
     <loc>https://github.com/statsleelab/gauss/reference/distmix.html</loc>
+  </url>
+  <url>
+    <loc>https://github.com/statsleelab/gauss/reference/fiqt.html</loc>
   </url>
   <url>
     <loc>https://github.com/statsleelab/gauss/reference/gauss-package.html</loc>

@@ -27,6 +27,8 @@ navbar:
           href: articles/dist_example.html
         - text: Transcriptome wide association study
           href: articles/jepeg_example.html
+        - text: Winner's curse adjustment
+          href: articles/fiqt_example.html  
         - text: GSL Installation
           href: articles/gsl_installation.html
     - text: Reference Panels

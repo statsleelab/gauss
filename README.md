@@ -26,6 +26,7 @@ v) apply corrections for the ‘Winner’s Curse’ biases (`fiqt()`).
 Lee and Bacanu. GAUSS: A comprehensive R package for computation of
 linkage disequlibrium for variants, Gaussian imputation and TWAS
 analysis of cosmopolitan cohorts.
+[medRxiv](https://www.medrxiv.org/content/10.1101/2023.09.19.23295783v1).
 
 ## Author
 

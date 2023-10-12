@@ -23,7 +23,7 @@ GAUSS (Genome Analysis Using Summary Statistics) is a versatile R package design
 
 ## Citing GAUSS
 
-Lee and Bacanu. GAUSS: A comprehensive R package for computation of linkage disequlibrium for variants, Gaussian imputation and TWAS analysis of cosmopolitan cohorts. 
+Lee and Bacanu. GAUSS: A comprehensive R package for computation of linkage disequlibrium for variants, Gaussian imputation and TWAS analysis of cosmopolitan cohorts. [medRxiv](https://www.medrxiv.org/content/10.1101/2023.09.19.23295783v1).  
 
 ## Author
 

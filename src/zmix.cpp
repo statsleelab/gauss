@@ -27,12 +27,12 @@ void read_ref_index_zmix(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Argume
 ////' @param interval number of non-overlapping SNP sets used in calculating population weights 
 //' @return R data frame containing population IDs and weights 
 // [[Rcpp::export]]
-void zmix(std::string input_file,
-          std::string reference_index_file,
-          std::string reference_data_file,
-          std::string reference_pop_desc_file,
-          std::string output_file,
-          Rcpp::Nullable<int> interval = R_NilValue){
+NumericMatrix zmix(std::string input_file,
+                   std::string reference_index_file,
+                   std::string reference_data_file,
+                   std::string reference_pop_desc_file,
+                   //std::string output_file,
+                   Rcpp::Nullable<int> interval = R_NilValue){
   
   Arguments args;
   //args.chr = chr;
@@ -102,7 +102,35 @@ void zmix(std::string input_file,
     args.pop_flag_vec.push_back(1);
   }
   ReadGenotype(snp_subvec, args);
+
+  // Determine the total number of rows that will be needed in the matrix.
+  int total_rows = (snp_subvec_size * (snp_subvec_size - 1)) / 2;
   
+  // Create the output matrix with the appropriate number of rows and columns
+  NumericMatrix data_mat(total_rows, 1 + args.num_pops); 
+  int row_index = 0;
+  
+  for(int i = 0; i < snp_subvec_size; i++) {
+    std::vector<std::string>& snpi_geno_vec = snp_subvec[i]->GetGenotypeVec();
+    double snpi_z = snp_subvec[i]->GetZ();
+    for(int j = i + 1; j < snp_subvec_size; j++) {
+      std::vector<std::string>& snpj_geno_vec = snp_subvec[j]->GetGenotypeVec();
+      double snpj_z = snp_subvec[j]->GetZ();
+      
+      // The first column contains the product of snpi_z and snpj_z
+      data_mat(row_index, 0) = snpi_z * snpj_z;
+      
+      // The rest of the columns contain the correlations
+      for(int k = 0; k < args.num_pops; k++) {
+        double cor = CalCor(snpi_geno_vec[k], snpj_geno_vec[k]);
+        data_mat(row_index, k + 1) = cor;
+      }
+      row_index++;
+    }
+  }
+  
+  
+/*    
   std::ofstream data_out;
   data_out.open(output_file.c_str());
 
@@ -120,8 +148,9 @@ void zmix(std::string input_file,
       data_out<<std::endl;
     }
   }
-  //////////////////////////
   data_out.close(); //close output filestream
+*/ 
+ 
   // release memory allocated for genotype
   FreeGenotype(snp_subvec);
 
@@ -131,6 +160,8 @@ void zmix(std::string input_file,
     delete it_msm->second;        // delete snp object
     measured_snp_map.erase(it_msm++);      // delete map element
   }
+  
+  return data_mat;
 }
 
 

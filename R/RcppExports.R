@@ -181,6 +181,6 @@ NULL
 
 #' @return R data frame containing population IDs and weights 
 zmix <- function(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, output_file, interval = NULL) {
-    invisible(.Call(`_gauss_zmix`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, output_file, interval))
+    .Call(`_gauss_zmix`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, output_file, interval)
 }
 

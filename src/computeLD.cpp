@@ -12,8 +12,6 @@ using namespace Rcpp;
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_cdf.h>
 
-void cal_LD(std::vector<Snp*>& snp_vec, Arguments& args);
-
 //' Compute LD for measured SNPs from mixed ethnicity cohorts
 //' 
 //' @param chr chromosome number

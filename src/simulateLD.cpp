@@ -223,7 +223,7 @@ List simulateLD(int chr,
 
 double CalCor(NumericVector& x, NumericVector& y){
   int n = x.size();
-  double xi=0, yi=0, sumx=0, sumy=0, sumxsq=0, sumysq=0, sumxy=0;
+  double sumx=0, sumy=0, sumxsq=0, sumysq=0, sumxy=0;
   for(int i=0; i<n; i++){
     sumx += x[i];
     sumy += y[i];

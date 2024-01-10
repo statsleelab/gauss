@@ -214,9 +214,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// zmix
-NumericMatrix zmix(std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, //std::string output_file, Rcpp::Nullable<int> interval);
-RcppExport SEXP _gauss_zmix(SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP output_fileSEXP, SEXP intervalSEXP) {
+// zmix4
+NumericMatrix zmix4(std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<int> interval, Rcpp::Nullable<int> offset);
+RcppExport SEXP _gauss_zmix4(SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP intervalSEXP, SEXP offsetSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -224,9 +224,68 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::string >::type reference_index_file(reference_index_fileSEXP);
     Rcpp::traits::input_parameter< std::string >::type reference_data_file(reference_data_fileSEXP);
     Rcpp::traits::input_parameter< std::string >::type reference_pop_desc_file(reference_pop_desc_fileSEXP);
-    Rcpp::traits::input_parameter< //std::string >::type output_file(output_fileSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<int> >::type interval(intervalSEXP);
-    rcpp_result_gen = Rcpp::wrap(zmix(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, output_file, interval));
+    Rcpp::traits::input_parameter< Rcpp::Nullable<int> >::type offset(offsetSEXP);
+    rcpp_result_gen = Rcpp::wrap(zmix4(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval, offset));
+    return rcpp_result_gen;
+END_RCPP
+}
+// zmix3
+NumericMatrix zmix3(std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<int> interval, Rcpp::Nullable<int> steps);
+RcppExport SEXP _gauss_zmix3(SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP intervalSEXP, SEXP stepsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type input_file(input_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_index_file(reference_index_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_data_file(reference_data_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_pop_desc_file(reference_pop_desc_fileSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<int> >::type interval(intervalSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<int> >::type steps(stepsSEXP);
+    rcpp_result_gen = Rcpp::wrap(zmix3(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval, steps));
+    return rcpp_result_gen;
+END_RCPP
+}
+// zmix2
+NumericMatrix zmix2(std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<int> interval, Rcpp::Nullable<int> offset);
+RcppExport SEXP _gauss_zmix2(SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP intervalSEXP, SEXP offsetSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type input_file(input_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_index_file(reference_index_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_data_file(reference_data_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_pop_desc_file(reference_pop_desc_fileSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<int> >::type interval(intervalSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<int> >::type offset(offsetSEXP);
+    rcpp_result_gen = Rcpp::wrap(zmix2(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval, offset));
+    return rcpp_result_gen;
+END_RCPP
+}
+// zmix
+NumericMatrix zmix(std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<int> interval);
+RcppExport SEXP _gauss_zmix(SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP intervalSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type input_file(input_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_index_file(reference_index_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_data_file(reference_data_fileSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_pop_desc_file(reference_pop_desc_fileSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<int> >::type interval(intervalSEXP);
+    rcpp_result_gen = Rcpp::wrap(zmix(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval));
+    return rcpp_result_gen;
+END_RCPP
+}
+// zmixRcpp
+DataFrame zmixRcpp(NumericMatrix mat, std::string reference_pop_desc_file);
+RcppExport SEXP _gauss_zmixRcpp(SEXP matSEXP, SEXP reference_pop_desc_fileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< std::string >::type reference_pop_desc_file(reference_pop_desc_fileSEXP);
+    rcpp_result_gen = Rcpp::wrap(zmixRcpp(mat, reference_pop_desc_file));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -243,7 +302,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gauss_prep_qcatmix", (DL_FUNC) &_gauss_prep_qcatmix, 10},
     {"_gauss_qcat", (DL_FUNC) &_gauss_qcat, 10},
     {"_gauss_qcatmix", (DL_FUNC) &_gauss_qcatmix, 10},
-    {"_gauss_zmix", (DL_FUNC) &_gauss_zmix, 6},
+    {"_gauss_zmix4", (DL_FUNC) &_gauss_zmix4, 6},
+    {"_gauss_zmix3", (DL_FUNC) &_gauss_zmix3, 6},
+    {"_gauss_zmix2", (DL_FUNC) &_gauss_zmix2, 6},
+    {"_gauss_zmix", (DL_FUNC) &_gauss_zmix, 5},
+    {"_gauss_zmixRcpp", (DL_FUNC) &_gauss_zmixRcpp, 2},
     {NULL, NULL, 0}
 };
 

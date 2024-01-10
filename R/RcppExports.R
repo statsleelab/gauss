@@ -179,8 +179,51 @@ qcatmix <- function(chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, re
 #' @param reference_pop_desc_file file name of reference panel population description data
 NULL
 
+#' Calculate population weights using association Z-scores
+#' 
+#' @param input_file file name of input data containing rsid, chr, bp, a1, a2, and z 
+#' @param reference_index_file file name of reference panel index data
+#' @param reference_data_file  file name of reference panel data
+#' @param reference_pop_desc_file file name of reference panel population description data
+NULL
+
+#' Calculate population weights using association Z-scores
+#' 
+#' @param input_file file name of input data containing rsid, chr, bp, a1, a2, and z 
+#' @param reference_index_file file name of reference panel index data
+#' @param reference_data_file  file name of reference panel data
+#' @param reference_pop_desc_file file name of reference panel population description data
+NULL
+
+#' Calculate population weights using association Z-scores
+#' 
+#' @param input_file file name of input data containing rsid, chr, bp, a1, a2, and z 
+#' @param reference_index_file file name of reference panel index data
+#' @param reference_data_file  file name of reference panel data
+#' @param reference_pop_desc_file file name of reference panel population description data
+NULL
+
 #' @return R data frame containing population IDs and weights 
-zmix <- function(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, output_file, interval = NULL) {
-    .Call(`_gauss_zmix`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, output_file, interval)
+zmix4 <- function(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval = NULL, offset = NULL) {
+    .Call(`_gauss_zmix4`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval, offset)
+}
+
+#' @return R data frame containing population IDs and weights 
+zmix3 <- function(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval = NULL, steps = NULL) {
+    .Call(`_gauss_zmix3`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval, steps)
+}
+
+#' @return R data frame containing population IDs and weights 
+zmix2 <- function(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval = NULL, offset = NULL) {
+    .Call(`_gauss_zmix2`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval, offset)
+}
+
+#' @return R data frame containing population IDs and weights 
+zmix <- function(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval = NULL) {
+    .Call(`_gauss_zmix`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval)
+}
+
+zmixRcpp <- function(mat, reference_pop_desc_file) {
+    .Call(`_gauss_zmixRcpp`, mat, reference_pop_desc_file)
 }
 

@@ -1,0 +1,51 @@
+#include <Rcpp.h>
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+DataFrame zmixRcpp(NumericMatrix mat, std::string reference_pop_desc_file) {
+  int n = mat.nrow();
+  int m = mat.ncol();
+  
+  // Convert input matrix to Rcpp types
+  NumericMatrix Y(n, 1);
+  std::copy(mat.begin(), mat.begin() + n, Y.begin());
+  NumericMatrix X(n, m - 1);
+  std::copy(mat.begin() + n, mat.begin() + n * m, X.begin());
+  
+  // Matrix operations
+  NumericMatrix Dmat = transpose(X) * X;
+  int ncolx = X.ncol();
+  NumericMatrix Amat(ncolx, 2 * ncolx + 1);
+  NumericVector bvec(2 * ncolx + 1, -1);
+  bvec[0] = 1;
+  NumericMatrix dvec = transpose(Y) * X;
+  
+  // Fill Amat and adjust bvec
+  for (int i = 0; i < ncolx; ++i) {
+    Amat(i, i + 1) = 1;
+    Amat(i, i + 1 + ncolx) = -1;
+    bvec[i + 1] = 0;
+  }
+  
+  // Call the solve.QP function from R
+  Environment quadprog = Environment::namespace_env("quadprog");
+  Function solveQP = quadprog["solve.QP"];
+  List sol = solveQP(Dmat, wrap(dvec.column(0)), Amat, bvec, 1);
+  
+  // Read population description file
+  Environment data_table = Environment::namespace_env("data.table");
+  Function fread = data_table["fread"];
+  DataFrame pop_desc = fread(reference_pop_desc_file);
+  CharacterVector pops = pop_desc["Population_Abbreviation"];
+  CharacterVector suppops = pop_desc["Super_Population"];
+  
+  // Prepare the output
+  DataFrame output = DataFrame::create(
+    Named("Pop") = pops,
+    Named("Spop") = suppops,
+    Named("Wgt") = round(as<NumericVector>(sol["solution"]), 5)
+  );
+  
+  return output;
+}
+

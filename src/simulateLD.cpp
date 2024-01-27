@@ -55,12 +55,12 @@ List simulateLD(int chr,
   // and storing the result in pop_vec_in. 
   std::vector<std::string> pop_vec_in = as<std::vector<std::string>>(pop_wgt_df[0]);
   std::vector<double> pop_wgt_vec_in = as<std::vector<double>>(pop_wgt_df[1]);
-  std::vector<int> pop_num_sim_vec;
+  //std::vector<int> pop_num_sim_vec;
   for(int i=0; i<pop_vec_in.size(); i++){
     std::string pop = pop_vec_in[i];
     std::transform(pop.begin(), pop.end(), pop.begin(), ::toupper); //make capital
     args.pop_wgt_map[pop]=pop_wgt_vec_in[i];
-    pop_num_sim_vec.push_back(static_cast<int>(pop_wgt_vec_in[i]*sim_size));
+    //pop_num_sim_vec.push_back(static_cast<int>(pop_wgt_vec_in[i]*sim_size));
   }  
   
   args.input_file = input_file;
@@ -80,14 +80,22 @@ List simulateLD(int chr,
   
   std::map<MapKey, Snp*, LessThanMapKey> snp_map;
   ReadInputZ(snp_map, args, false);
-  //Rcpp::Rcout<<"size: "<< snp_map.size() <<std::endl;
+  
+  Rcpp::Rcout<<"Point 1"<<std::endl;
+  Rcpp::Rcout<<"snp_map size: "<< snp_map.size() <<std::endl;
+  
   ReadReferenceIndex(snp_map, args);
-  //Rcpp::Rcout<<"size: "<< snp_map.size() <<std::endl;
+  
+  Rcpp::Rcout<<"Point 2"<<std::endl;
+  Rcpp::Rcout<<"snp_map size: "<< snp_map.size() <<std::endl;
+  
   
   // make a snp vector containing all SNPs
   std::vector<Snp*> snp_vec;
   MakeSnpVecMix(snp_vec, snp_map, args);
-  //Rcpp::Rcout<<"size: "<< snp_vec.size() <<std::endl;
+  
+  Rcpp::Rcout<<"Point 3"<<std::endl;
+  Rcpp::Rcout<<"snp_vec size: "<< snp_vec.size() <<std::endl;
 
   /*------------------------------------------------------------*/
   // Simulate LD matrix
@@ -102,8 +110,13 @@ List simulateLD(int chr,
     } // if (type == 2) don't put the snp in the sliding window. Do nothing. 
   }
   
+  Rcpp::Rcout<<"Point 4"<<std::endl;
+  Rcpp::Rcout<<"snp_vec_measured size: "<< snp_vec_measured.size() <<std::endl;
+  
   // read SNP genotypes
   ReadGenotype(snp_vec_measured, args);
+  
+  Rcpp::Rcout<<"Point 5"<<std::endl;
   
   int num_measured = snp_vec_measured.size();
   if(num_measured <= args.min_num_measured_snp){
@@ -118,47 +131,64 @@ List simulateLD(int chr,
   // in geno_index_vec. The geno_index_vec will be used to simulate
   // genotypes
   
+  Rcpp::Rcout<<"Point 6"<<std::endl;
+  
   std::random_device rd;
   std::mt19937 gen(rd());  
   std::vector<int> geno_index_vec;
+  std::vector<int> pop_num_sim_vec;
   int num_pops = args.ref_pop_vec.size();
-  int pop_counter=0;
   for(int k=0; k<num_pops; k++){
     if(args.pop_flag_vec[k]) {
-      for(int j=0; j<pop_num_sim_vec[pop_counter]; j++){
+      std::string pop = args.ref_pop_vec[k];
+      int pop_num_sim = (int)(args.pop_wgt_map[pop]*sim_size);
+      pop_num_sim_vec.push_back(pop_num_sim);
+      Rcpp::Rcout<<args.ref_pop_vec[k]<<" "<<k<<" "<<args.pop_wgt_map[pop]<<" "<<pop_num_sim<<std::endl;
+      for(int j=0; j<pop_num_sim; j++){
         std::uniform_int_distribution<> dis(0, args.ref_pop_size_vec[k] - 1);
         int ran_index = dis(gen);
         geno_index_vec.push_back(ran_index);
       }
-      pop_counter++;
     }
   }
+  
+  Rcpp::Rcout<<"Point 7"<<std::endl;
+  for(int i = 0; i < geno_index_vec.size(); i++) {
+    Rcpp::Rcout << geno_index_vec[i] << " ";
+  }
+  Rcpp::Rcout << std::endl;
+  
   
   // Simulate genotypes using geno_index_vec
   NumericMatrix geno_mat(num_measured,sim_size);
-  int subj_counter=0;
   
   for(size_t i=0; i<num_measured; i++){
-    pop_counter=0;
-    subj_counter=0;
+  //for(size_t i=0; i<3; i++){
+    int subj_counter=0;
     std::vector<std::string>& geno_vec = (*snp_vec_measured[i]).GetGenotypeVec();
-    for(int k=0; k<num_pops; k++){
-      if(args.pop_flag_vec[k]) {
-        std::string geno_str = geno_vec[k];
-        for(int j=0; j<pop_num_sim_vec[pop_counter]; j++){
-          int ran_index = geno_index_vec[j+subj_counter];
-          double geno = (double)(geno_str[ran_index] - '0');
-          geno_mat(i,j+subj_counter)=geno;
-        }
-        subj_counter = subj_counter + pop_num_sim_vec[pop_counter];
-        pop_counter++;
+    //Rcpp::Rcout<<geno_vec.size()<<std::endl;
+    for(int k=0; k<geno_vec.size(); k++){
+      Rcpp::Rcout<<k<<" "<<pop_num_sim_vec[k]<<std::endl;
+      std::string geno_str = geno_vec[k];
+      //Rcpp::Rcout<<geno_str<<std::endl;
+      for(int j=0; j<pop_num_sim_vec[k]; j++){
+        int ran_index = geno_index_vec[j+subj_counter];
+        double geno = (double)(geno_str[ran_index] - '0');
+        geno_mat(i,j+subj_counter)=geno;
+        //Rcpp::Rcout<<i<<" "<<j+subj_counter<<" "<<geno<<std::endl;
       }
+      subj_counter = subj_counter + pop_num_sim_vec[k];
     }
   }
+  
+  Rcpp::Rcout<<"Point 8"<<std::endl;
+  
   
   // Calculate LD
   NumericMatrix Cor_Mat(num_measured, num_measured);
   Rcpp::Rcout<<"Computing correlations between variants..."<<std::endl;
+  
+  
   for(size_t i=0; i<num_measured; i++){
     Cor_Mat(i,i) = 1.0; //diagonals
     for(size_t j=i+1; j<num_measured; j++){
@@ -169,7 +199,10 @@ List simulateLD(int chr,
       Cor_Mat(j,i) = cor;
     }
   }  
-
+  
+  
+  Rcpp::Rcout<<"Point 9"<<std::endl;
+  
   // LD computation is done ! //
   Rcpp::Rcout<<std::endl;
   Rcpp::Rcout<<"Chromosome " <<args.chr<<" "<<args.start_bp<<"-"<<args.end_bp<<" locus LD computed!"<<std::endl; 		
@@ -187,6 +220,8 @@ List simulateLD(int chr,
   StringVector a2_vec;
   NumericVector af1mix_vec;
   
+  Rcpp::Rcout<<"Point 10"<<std::endl;
+  
   for(std::vector<Snp*>::iterator it_sv = snp_vec_measured.begin(); it_sv != snp_vec_measured.end(); ++it_sv){
     rsid_vec.push_back((*it_sv)->GetRsid());
     chr_vec.push_back((*it_sv)->GetChr());
@@ -202,7 +237,7 @@ List simulateLD(int chr,
                                    Named("a2")=a2_vec,
                                    Named("af1mix")=af1mix_vec);
   
-  
+  Rcpp::Rcout<<"Point 11"<<std::endl;
 
   //Delete snp_vec_measured.
   snp_vec_measured.clear();

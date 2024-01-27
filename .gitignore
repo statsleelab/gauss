@@ -9,6 +9,5 @@ src/etc
 R/test
 docs/figure
 ref
-data/*.txt
 
 inst/doc

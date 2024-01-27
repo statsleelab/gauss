@@ -190,53 +190,102 @@ simulateLD <- function(chr, start_bp, end_bp, pop_wgt_df, sim_size, input_file, 
 
 #' Calculate population weights using association Z-scores
 #' 
-#' @param input_file file name of input data containing rsid, chr, bp, a1, a2, and z 
-#' @param reference_index_file file name of reference panel index data
-#' @param reference_data_file  file name of reference panel data
-#' @param reference_pop_desc_file file name of reference panel population description data
-NULL
-
-#' Calculate population weights using association Z-scores
+#' This function first finds ancestry-informed SNPs by computing a normalized variance,
+#' ratio = var(af1)/(mean(af1)*(1-mean(af1))) and choose top 1% of SNPs with highest 
+#' ratio and use these SNPs in the zmix_prep procedure.
+#' It uses an interval parameter to determine how SNPs are selected for analysis. 
+#' If interval is not provided, it defaults to 1, meaning every SNP is considered.
+#' SNP Pairing: Pairs each SNP with every other SNP in the subvector (snp_subvec)
+#' If Interval=1000, it pairs SNP_0 with SNP_1000, SNP_0 with SNP_2000 ... and SNP_1000
+#' with SNP_2000, SNP_1000 with SNP_3000 ...
 #' 
 #' @param input_file file name of input data containing rsid, chr, bp, a1, a2, and z 
 #' @param reference_index_file file name of reference panel index data
 #' @param reference_data_file  file name of reference panel data
 #' @param reference_pop_desc_file file name of reference panel population description data
-NULL
+#' @param interval stepping distance within the SNP vector for selecting the first SNP of each pair. 
+#' @param percentile percentile cutoff for normalized variance
+#' @return R data frame containing population IDs and weights 
+prep_zmix5 <- function(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, percentile = NULL, interval = NULL) {
+    .Call(`_gauss_prep_zmix5`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, percentile, interval)
+}
 
 #' Calculate population weights using association Z-scores
+#' 
+#' ZMIX4 employs a more selective approach by using a fixed offset to 
+#' determine the SNP pairs. For instance, if the offset is set to 3 and 
+#' the interval is specified as 1000, the function will pair the first SNP 
+#' (SNP_0) with the fourth one (SNP_3), then SNP_1000 with SNP_1003, and so forth. 
+#' In subsequent iterations, this pattern continues in a similar manner - 
+#' SNP_1 gets paired with SNP_4, SNP_1001 with SNP_1004, and so on, 
+#' effectively creating pairs at specific intervals with a consistent offset.
 #' 
 #' @param input_file file name of input data containing rsid, chr, bp, a1, a2, and z 
 #' @param reference_index_file file name of reference panel index data
 #' @param reference_data_file  file name of reference panel data
 #' @param reference_pop_desc_file file name of reference panel population description data
-NULL
+#' @param interval stepping distance within the SNP vector for selecting the first SNP of each pair. 
+#' @param offset distance between the two SNPs in a pair
+#' @return R data frame containing population IDs and weights 
+prep_zmix4 <- function(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval = NULL, offset = NULL) {
+    .Call(`_gauss_prep_zmix4`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval, offset)
+}
 
 #' Calculate population weights using association Z-scores
+#' 
+#' Pairing Logic Based on Steps: This function pairs each SNP with a 
+#' specific number of subsequent SNPs as defined by the 'steps' parameter. 
+#' This function is a variant of ZMIX. While ZMIX2 pairs one SNP in the snp_vec
+#' with all the remaining SNPs, ZMIX3 limits the number of SNPs to be paired by 
+#' using the 'steps' argument. For example, if 'steps' is set to 5, 
+#' each SNP in the snp_subvec is paired with its next 5 subsequent SNPs.
 #' 
 #' @param input_file file name of input data containing rsid, chr, bp, a1, a2, and z 
 #' @param reference_index_file file name of reference panel index data
 #' @param reference_data_file  file name of reference panel data
 #' @param reference_pop_desc_file file name of reference panel population description data
-NULL
-
+#' @param interval stepping distance within the SNP vector for selecting the first SNP of each pair. 
+#' @param steps number of subsequent SNPs to pair with each SNP.
 #' @return R data frame containing population IDs and weights 
-zmix4 <- function(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval = NULL, offset = NULL) {
-    .Call(`_gauss_zmix4`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval, offset)
+prep_zmix3 <- function(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval = NULL, steps = NULL) {
+    .Call(`_gauss_prep_zmix3`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval, steps)
 }
 
+#' Calculate population weights using association Z-scores
+#' 
+#' Interval and Offset Logic: Instead of considering all pairwise combinations, 
+#' zmix2 selects SNP pairs based on a fixed offset. For example, if offset is 3 and
+#' and interval is 1000, it pairs SNP_0 with SNP_3, SNP_1000 with SNP_1003 ...
+#' Reduced Pairing Scope: This approach reduces the total number of SNP pairs 
+#' considered compared to zmix, focusing on pairs separated by a specific distance 
+#' (offset) in the SNP vector.
+#' 
+#' @param input_file file name of input data containing rsid, chr, bp, a1, a2, and z 
+#' @param reference_index_file file name of reference panel index data
+#' @param reference_data_file  file name of reference panel data
+#' @param reference_pop_desc_file file name of reference panel population description data
+#' @param interval stepping distance within the SNP vector for selecting the first SNP of each pair. 
+#' @param offset distance between the two SNPs in a pair
 #' @return R data frame containing population IDs and weights 
-zmix3 <- function(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval = NULL, steps = NULL) {
-    .Call(`_gauss_zmix3`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval, steps)
+prep_zmix2 <- function(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval = NULL, offset = NULL) {
+    .Call(`_gauss_prep_zmix2`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval, offset)
 }
 
+#' Calculate population weights using association Z-scores
+#' 
+#' It uses an interval parameter to determine how SNPs are selected for analysis. 
+#' If interval is not provided, it defaults to 1, meaning every SNP is considered.
+#' SNP Pairing: Pairs each SNP with every other SNP in the subvector (snp_subvec)
+#' If Interval=1000, it pairs SNP_0 with SNP_1000, SNP_0 with SNP_2000 ... and SNP_1000
+#' with SNP_2000, SNP_1000 with SNP_3000 ...
+#' 
+#' @param input_file file name of input data containing rsid, chr, bp, a1, a2, and z 
+#' @param reference_index_file file name of reference panel index data
+#' @param reference_data_file  file name of reference panel data
+#' @param reference_pop_desc_file file name of reference panel population description data
+#' @param interval stepping distance within the SNP vector for selecting the first SNP of each pair. 
 #' @return R data frame containing population IDs and weights 
-zmix2 <- function(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval = NULL, offset = NULL) {
-    .Call(`_gauss_zmix2`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval, offset)
-}
-
-#' @return R data frame containing population IDs and weights 
-zmix <- function(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval = NULL) {
-    .Call(`_gauss_zmix`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval)
+prep_zmix <- function(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval = NULL) {
+    .Call(`_gauss_prep_zmix`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, interval)
 }
 

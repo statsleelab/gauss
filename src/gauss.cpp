@@ -460,12 +460,47 @@ void ReadGenotype(std::vector<Snp*>& snp_vec, Arguments& args){
   bgzf_close(fp); //closes BGZF file connnection.
 }
 
+void ReadGenotypeOne(Snp* snp, Arguments& args){
+  //opens reference genotype matrix file (BGZF)
+  BGZF* fp = bgzf_open(args.reference_data_file.c_str(), "r");
+  if(fp == NULL){
+    Rcpp::Rcout<<std::endl;
+    Rcpp::stop("ERROR: can't open reference data file '"+args.reference_data_file+"'");
+  }
+  int type = snp->GetType();
+  if(type == 0 || type == 1){ // if unmeasured & exists in ref or measured & exists in ref
+    std::string line;
+    bgzf_seek(fp, snp->GetFpos(), SEEK_SET);
+    BgzfGetLine(fp, line);
+    std::istringstream buffer(line);
+    std::vector<std::string> geno_vec;
+    for(int i=0; i<args.num_pops; i++){
+      std::string geno_str;
+      buffer >> geno_str;
+      if(args.pop_flag_vec[i])
+        geno_vec.push_back(geno_str); 
+    }
+    //check flip variable
+    if(snp->GetFlip()){ //if flip is on, flip the genotypes.
+      FlipGenotypeVec(geno_vec); //std::string& genotype
+    }
+    snp->SetGenotypeVec(geno_vec);
+  } // if (type == 2) don't put the snp in the sliding window. Do nothing. 
+  bgzf_close(fp); //closes BGZF file connnection.
+}
+
 void FreeGenotype(std::vector<Snp*>& snp_vec){
   //Release memory allocated for genotypes of all SNPs in the window, 
   for(std::vector<Snp*>::iterator it_sv = snp_vec.begin(); it_sv != snp_vec.end(); ++it_sv){
     std::vector<std::string>& geno_vec = (*it_sv)->GetGenotypeVec();
     std::vector<std::string>().swap(geno_vec); //release memory allocated for genotype
   }
+}
+
+void FreeGenotypeOne(Snp* snp){
+  //Release memory allocated for genotypes of a SNP, 
+  std::vector<std::string>& geno_vec = snp->GetGenotypeVec();
+  std::vector<std::string>().swap(geno_vec); //release memory allocated for genotype
 }
 
 

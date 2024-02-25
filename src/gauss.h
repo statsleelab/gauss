@@ -122,7 +122,9 @@ void ReadReferenceIndexAll(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Argu
 void MakeSnpVec(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
 void MakeSnpVecMix(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
 void ReadGenotype(std::vector<Snp*>& snp_vec, Arguments& args);
+void ReadGenotypeOne(Snp* snp, Arguments& args);
 void FreeGenotype(std::vector<Snp*>& snp_vec);
+void FreeGenotypeOne(Snp* snp);
 void read_ref_desc(Arguments& args);
 void init_pop_flag_vec(Arguments& args);
 void init_pop_flag_wgt_vec(Arguments& args);

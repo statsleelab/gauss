@@ -571,11 +571,9 @@ NumericMatrix prep_zmix2(std::string input_file,
   for(int i=0; i<args.num_pops; i++){
     args.pop_flag_vec.push_back(1);
   }
-  Rcpp::Rcout<<"ReadGenotype Start"<<std::endl;
-  
-  ReadGenotype(snp_genovec, args);
-  
-  Rcpp::Rcout<<"ReadGenotype Done"<<std::endl;
+  //Rcpp::Rcout<<"ReadGenotype Start"<<std::endl;
+  //ReadGenotype(snp_genovec, args);
+  //Rcpp::Rcout<<"ReadGenotype Done"<<std::endl;
   
   // Determine the total number of rows that will be needed in the matrix.
   int total_rows = 0;
@@ -590,7 +588,10 @@ NumericMatrix prep_zmix2(std::string input_file,
   for(int i = 0; i < snp_vec_size; i += args.interval) {
     int index_i = i;
     int index_j = i + offset_value;
+    
     if(index_j < snp_vec_size){
+      ReadGenotypeOne(snp_vec[index_i], args); //load genotype data
+      ReadGenotypeOne(snp_vec[index_j], args); //load genotype data
       std::vector<std::string>& snpi_geno_vec = snp_vec[index_i]->GetGenotypeVec();
       double snpi_z = snp_vec[index_i]->GetZ();
       std::vector<std::string>& snpj_geno_vec = snp_vec[index_j]->GetGenotypeVec();
@@ -602,6 +603,8 @@ NumericMatrix prep_zmix2(std::string input_file,
         double cor = CalCor(snpi_geno_vec[k], snpj_geno_vec[k]);
         data_mat(row_index, k + 1) = cor;
       }
+      FreeGenotypeOne(snp_vec[index_i]); //release genotype data
+      FreeGenotypeOne(snp_vec[index_j]); //release genotype data
       row_index++;
     } else{
       break;
@@ -610,9 +613,8 @@ NumericMatrix prep_zmix2(std::string input_file,
   Rcpp::Rcout<<"Cor Compute Done"<<std::endl;
   
   // release memory allocated for genotype
-  FreeGenotype(snp_genovec);
-  
-  Rcpp::Rcout<<"Release Memory Done"<<std::endl;
+  //FreeGenotype(snp_genovec);
+  //Rcpp::Rcout<<"Release Memory Done"<<std::endl;
   
   //deletes measured_snp_map.
   for(it_msm = measured_snp_map.begin(); it_msm != measured_snp_map.end();){
@@ -623,6 +625,144 @@ NumericMatrix prep_zmix2(std::string input_file,
   
   return data_mat;
 }
+
+/*
+ NumericMatrix prep_zmix2(std::string input_file,
+ std::string reference_index_file,
+ std::string reference_data_file,
+ std::string reference_pop_desc_file,
+ Rcpp::Nullable<int> interval = R_NilValue,
+ Rcpp::Nullable<int> offset = R_NilValue){
+ 
+ Arguments args;
+ args.input_file = input_file;
+ args.reference_index_file = reference_index_file;
+ args.reference_data_file = reference_data_file;
+ args.reference_pop_desc_file = reference_pop_desc_file;
+ //args.interval = 1000;
+ 
+ if(interval.isNotNull()){
+ args.interval = Rcpp::as<int>(interval);
+ } else {
+ args.interval = 1000;
+ }
+ 
+ int offset_value = 0;
+ if(offset.isNotNull()){
+ offset_value = Rcpp::as<int>(offset);
+ } else {
+ offset_value = 3;
+ }
+ 
+ read_ref_desc(args);
+ 
+#ifdef ZMIX_Debug  
+ args.PrintArguments();
+#endif
+ 
+ std::map<MapKey, Snp*, LessThanMapKey> measured_snp_map;
+ std::map<MapKey, Snp*, LessThanMapKey>::iterator it_msm;
+ std::vector<Snp*> snp_vec;
+ 
+ read_input_zmix(measured_snp_map, args);
+ read_ref_index_zmix(measured_snp_map, args);
+ 
+#ifdef ZMIX_Debug    
+ Rcpp::Rcout<<"Measured snp map size: "<< measured_snp_map.size() <<std::endl;
+#endif
+ 
+ for(it_msm = measured_snp_map.begin(); it_msm != measured_snp_map.end(); ++it_msm){
+ int type = (it_msm->second)->GetType();
+ if(type == 1)
+ snp_vec.push_back(it_msm->second);
+ //(it_msm->second)->PrintSnpInfo();
+ }
+ 
+#ifdef ZMIX_Debug  
+ Rcpp::Rcout<<"Num of SNPs used for calculations: "<< snp_vec.size() <<std::endl;
+#endif
+ 
+ 
+ //////////////////////////
+ Rcpp::Rcout<<"Num of SNPs: "<<snp_vec.size()<<std::endl;
+ Rcpp::Rcout<<"Interval length: "<<args.interval<<std::endl;
+ Rcpp::Rcout<<"Num of populations: "<<args.num_pops<<std::endl;
+ 
+ Rcpp::Rcout<<"Calculating population weights..."<<std::endl;
+ 
+ std::vector<Snp*> snp_genovec;
+ for(int i=0;;i++){
+ int index = i*args.interval;
+ if(index + offset_value < snp_vec.size()){
+ snp_genovec.push_back(snp_vec[index]);
+ snp_genovec.push_back(snp_vec[index+offset_value]);
+ }else {
+ break;
+ }
+ }
+ Rcpp::Rcout<<"snp_genovec_size: "<<snp_genovec.size()<<std::endl;
+ 
+ int snp_vec_size = snp_vec.size();
+ 
+ 
+ for(int i=0; i<args.num_pops; i++){
+ args.pop_flag_vec.push_back(1);
+ }
+ Rcpp::Rcout<<"ReadGenotype Start"<<std::endl;
+ 
+ ReadGenotype(snp_genovec, args);
+ 
+ Rcpp::Rcout<<"ReadGenotype Done"<<std::endl;
+ 
+ // Determine the total number of rows that will be needed in the matrix.
+ int total_rows = 0;
+ // int offset = 3; // to get moderate LD  
+ for(int i = 0; i < snp_vec_size; i += args.interval) {
+ if(i + offset_value < snp_vec_size){total_rows++;}
+ }
+ 
+ // Create the output matrix with the appropriate number of rows and columns
+ NumericMatrix data_mat(total_rows, 1 + args.num_pops); 
+ int row_index = 0;
+ for(int i = 0; i < snp_vec_size; i += args.interval) {
+ int index_i = i;
+ int index_j = i + offset_value;
+ if(index_j < snp_vec_size){
+ std::vector<std::string>& snpi_geno_vec = snp_vec[index_i]->GetGenotypeVec();
+ double snpi_z = snp_vec[index_i]->GetZ();
+ std::vector<std::string>& snpj_geno_vec = snp_vec[index_j]->GetGenotypeVec();
+ double snpj_z = snp_vec[index_j]->GetZ();    
+ // The first column contains the product of snpi_z and snpj_z
+ data_mat(row_index, 0) = snpi_z * snpj_z;
+ // The rest of the columns contain the correlations
+ for(int k = 0; k < args.num_pops; k++) {
+ double cor = CalCor(snpi_geno_vec[k], snpj_geno_vec[k]);
+ data_mat(row_index, k + 1) = cor;
+ }
+ row_index++;
+ } else{
+ break;
+ }
+ }
+ Rcpp::Rcout<<"Cor Compute Done"<<std::endl;
+ 
+ // release memory allocated for genotype
+ FreeGenotype(snp_genovec);
+ 
+ Rcpp::Rcout<<"Release Memory Done"<<std::endl;
+ 
+ //deletes measured_snp_map.
+ for(it_msm = measured_snp_map.begin(); it_msm != measured_snp_map.end();){
+ (it_msm->second)->ClearSnp(); // clear categ map in each snp object
+ delete it_msm->second;        // delete snp object
+ measured_snp_map.erase(it_msm++);      // delete map element
+ }
+ 
+ return data_mat;
+ }
+*/
+
+
 
 //' Calculate population weights using association Z-scores
 //' 

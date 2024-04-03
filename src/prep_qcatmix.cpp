@@ -93,7 +93,8 @@ List prep_qcatmix(int chr,
     long long int bp = (*it_sv)->GetBp();
     if((type!=2)&(bp >= args.start_bp && bp <= args.end_bp)){ // all SNPs in the pred win. 
       sliding_window_all_pred.push_back(*it_sv);
-    } else if(type == 1) { // measured
+    }
+    if(type == 1) { // measured
       sliding_window_measured_ext.push_back(*it_sv);
     } // if (type == 2) don't put the snp in the sliding window. type=2: measured SNP but not exist in rep. panel
   }
@@ -101,13 +102,13 @@ List prep_qcatmix(int chr,
   int num_measured_ext = sliding_window_measured_ext.size();      // # of measured SNPs in ext win
   int num_all_pred = sliding_window_all_pred.size();       // # of all SNPs in pred win
   
-  Rcpp::Rcout<<"Number of measured SNPs: "<<num_measured_ext<<std::endl;
-  Rcpp::Rcout<<"Number of all SNPs in the prediction window: "<<num_all_pred<<std::endl;
+  Rcpp::Rcout<<"Number of measured SNPs in the ext window: "<<num_measured_ext<<std::endl;
+  Rcpp::Rcout<<"Number of all SNPs in the pred window: "<<num_all_pred<<std::endl;
   
   if(num_measured_ext <= args.min_num_measured_snp){
     Rcpp::Rcout<<std::endl;
-    Rcpp::Rcout<<"Number of measured SNPs: "<<num_measured_ext<<std::endl;
-    Rcpp::Rcout<<"Number of all SNPs in the prediction window: "<<num_all_pred<<std::endl;
+    Rcpp::Rcout<<"Number of measured SNPs in the ext window: "<<num_measured_ext<<std::endl;
+    Rcpp::Rcout<<"Number of all SNPs in the pred window: "<<num_all_pred<<std::endl;
     Rcpp::stop("Not enough number of SNPs loaded - QCAT not performed");
   }
   
@@ -166,20 +167,6 @@ List prep_qcatmix(int chr,
     }
   }
 
-  //Delete sliding_window_measured_ext.
-  sliding_window_measured_ext.clear();
-  std::deque<Snp*>().swap(sliding_window_measured_ext);
-  
-  //Delete sliding_window_all_pred.
-  sliding_window_all_pred.clear();
-  std::deque<Snp*>().swap(sliding_window_all_pred);
-  
-  /*----------------------------------------------------*/
-  
-  // release memory allocated for genotype
-  Rcpp::Rcout<<"release memory allocated for genotype"<<std::endl;
-  FreeGenotype(snp_vec); 
-  
   StringVector rsid_vec;
   IntegerVector chr_vec;
   IntegerVector bp_vec;
@@ -191,17 +178,14 @@ List prep_qcatmix(int chr,
   
   Rcpp::Rcout<<"push_vec"<<std::endl;
   for(std::vector<Snp*>::iterator it_sv = snp_vec.begin(); it_sv != snp_vec.end(); ++it_sv){
-    int bp = (*it_sv)->GetBp();
-    if(bp >= start_bp && bp <= end_bp){
-      rsid_vec.push_back((*it_sv)->GetRsid());
-      chr_vec.push_back((*it_sv)->GetChr());
-      bp_vec.push_back((*it_sv)->GetBp());
-      a1_vec.push_back((*it_sv)->GetA1());
-      a2_vec.push_back((*it_sv)->GetA2());
-      af1mix_vec.push_back((*it_sv)->GetAf1Mix());
-      z_vec.push_back((*it_sv)->GetZ());
-      type_vec.push_back((*it_sv)->GetType());
-    }
+    rsid_vec.push_back((*it_sv)->GetRsid());
+    chr_vec.push_back((*it_sv)->GetChr());
+    bp_vec.push_back((*it_sv)->GetBp());
+    a1_vec.push_back((*it_sv)->GetA1());
+    a2_vec.push_back((*it_sv)->GetA2());
+    af1mix_vec.push_back((*it_sv)->GetAf1Mix());
+    z_vec.push_back((*it_sv)->GetZ());
+    type_vec.push_back((*it_sv)->GetType());
   }
 
   Rcpp::Rcout<<"rsid:   "<<rsid_vec.length()<<std::endl;
@@ -222,6 +206,19 @@ List prep_qcatmix(int chr,
                                    Named("af1mix")=af1mix_vec,
                                    Named("z")=z_vec,
                                    Named("type")=type_vec);  
+  
+  //Delete sliding_window_measured_ext.
+  sliding_window_measured_ext.clear();
+  std::deque<Snp*>().swap(sliding_window_measured_ext);
+  
+  //Delete sliding_window_all_pred.
+  sliding_window_all_pred.clear();
+  std::deque<Snp*>().swap(sliding_window_all_pred);
+  
+  /*----------------------------------------------------*/
+  // release memory allocated for genotype
+  Rcpp::Rcout<<"release memory allocated for genotype"<<std::endl;
+  FreeGenotype(snp_vec); 
   
   //deletes snp_map.
   Rcpp::Rcout<<"deletes snp map"<<std::endl;

@@ -120,6 +120,25 @@ prep_qcat <- function(chr, start_bp, end_bp, wing_size, study_pop, input_file, r
     .Call(`_gauss_prep_qcat`, chr, start_bp, end_bp, wing_size, study_pop, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff)
 }
 
+#' Prepare datasets for Recessive Imputation
+#' 
+#' @param chr chromosome number
+#' @param start_bp start base pair position of prediction window
+#' @param end_bp end base pair position of prediction window
+#' @param wing_size the size of the area flanking the left and right of the prediction window
+#' @param pop_wgt_df R data frame containing population IDs and weights
+#' @param input_file file name of GWAS summary statistics data containing rsid, chr, bp, a1, a2, af1, and z
+#' @param reference_index_file file name of reference panel index data
+#' @param reference_data_file  file name of reference panel data
+#' @param reference_pop_desc_file file name of reference panel population description data
+#' @param af1_cutoff cutoff of reference allele, a1, frequency
+#' @return A List containing:
+#'         - snplist: A data frame of SNPs in the prediction window with columns rsid, chr, bp, a1, a2, af1mix, z, and type,
+#'         - z_vec: A numeric vector of Z-scores for measured SNPs in the extended window,
+#'         - cor_mat1: A correlation matrix (additive-coded) among measured SNPs in the extended window,
+#'         - cor_mat2: A correlation matrix between recessive-coded predicted SNPs and additive-coded measured SNPs.
+NULL
+
 #' Prepare datasets for QCATMIX analysis
 #' 
 #' @param chr chromosome number
@@ -137,19 +156,6 @@ prep_qcatmix <- function(chr, start_bp, end_bp, wing_size, pop_wgt_df, input_fil
     .Call(`_gauss_prep_qcatmix`, chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff)
 }
 
-#' Prepare datasets for Recessive Imputation
-#' 
-#' @param chr chromosome number
-#' @param start_bp start base pair position of prediction window
-#' @param end_bp end base pair position of prediction window
-#' @param wing_size the size of the area flanking the left and right of the prediction window
-#' @param pop_wgt_df R data frame containing population IDs and weights
-#' @param input_file file name of GWAS summary statistics data containing rsid, chr, bp, a1, a2, af1, and z
-#' @param reference_index_file file name of reference panel index data
-#' @param reference_data_file  file name of reference panel data
-#' @param reference_pop_desc_file file name of reference panel population description data
-#' @param af1_cutoff cutoff of reference allele, a1, frequency
-#' @return R dataframe containing rsid, chr, bp, a1, a2, af1mix, z, qcat_chisq, qcat_pval, type
 prep_recessive_impute <- function(chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff = NULL) {
     .Call(`_gauss_prep_recessive_impute`, chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff)
 }

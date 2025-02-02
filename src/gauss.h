@@ -129,6 +129,9 @@ void read_ref_desc(Arguments& args);
 void init_pop_flag_vec(Arguments& args);
 void init_pop_flag_wgt_vec(Arguments& args);
 
+void UpdateSnpToMinorAllele(std::vector<Snp*>& snp_vec);
+std::vector<std::string> ConvertGenotypesToRecessive(const std::vector<std::string>& genoVec);
+
 //JEPEG & JEPEGMIX  
 void ReadAnnotation(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args); 
 void MakeGeneStartEndVec(std::vector<StartEnd>& gene_start_end_vec, std::vector<Snp*>& snp_vec);

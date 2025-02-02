@@ -74,9 +74,38 @@ double CalCor(std::vector<std::string>& x, std::vector<std::string>& y){
   double r = numer/denor;
   return r;
 }
+
+/**
+ * @brief Calculates the weighted covariance between two genotype data vectors.
+ * 
+ * This function computes a weighted sum of covariances between the genotype strings 
+ * provided in vectors x and y across multiple populations. Each element in x and y is 
+ * a string representing the genotype data for a particular population, where each 
+ * character (typically '0', '1', or '2') represents the count of the reference allele 
+ * for an individual.
+ * 
+ * For each population, the function:
+ *  - Computes the sum of genotype counts from x and y.
+ *  - Computes the sum of cross-products of the genotype counts.
+ *  - Uses the formula with an unbiased correction factor: (m/(m-1)) * (m * sumxy - sumx * sumy),
+ *    where m is the number of individuals (length of the genotype string).
+ *  - Multiplies the result by the corresponding population weight from pop_wgt_vec.
+ * 
+ * The function then adjusts for the weighted means of the populations by combining the 
+ * accumulated values and returns the final weighted covariance.
+ * 
+ * @param x A vector of strings, each containing genotype calls (as digits) for a SNP in a specific population.
+ * @param y A vector of strings, each containing genotype calls (as digits) for a paired SNP corresponding to the populations in x.
+ * @param pop_wgt_vec A vector of population weights corresponding to each population in x and y.
+ * 
+ * @return double The computed weighted covariance between the genotype data vectors.
+ * 
+ * @note The function assumes that each genotype string has a length greater than 1. 
+ * 
+ * @warning Ensure that the genotype strings only contain valid digits ('0', '1', or '2').
+ */
 //This function is used when --mix flag is specified.
 //DISTMIX (ImputeMix) uses this function.
-//This function calculates weighted sum of Covariances
 double CalWgtCov(std::vector<std::string>& x, std::vector<std::string>& y, std::vector<double>& pop_wgt_vec){
   int n = x.size();
   double wsumcov=0, wsum_mi_mj=0, wsum_mi=0, wsum_mj=0;
@@ -91,13 +120,13 @@ double CalWgtCov(std::vector<std::string>& x, std::vector<std::string>& y, std::
       sumy += yij;
       sumxy += xij*yij;
     }
-    wsumcov += wgt_val*(m/(m-1))*(m*sumxy-sumx*sumy);
+    double factor = ((double)m) / (m - 1); // ensure floating-point division
+    wsumcov += wgt_val*factor*(m*sumxy-sumx*sumy);
     wsum_mi_mj += wgt_val*(sumx/m)*(sumy/m);
     wsum_mi += wgt_val*(sumx/m);
     wsum_mj += wgt_val*(sumy/m);
   }
   return (wsumcov + wsum_mi_mj - wsum_mi*wsum_mj);
-  //return wsumcov;
 }
 
 //This function is used when --mix flag is specified.

@@ -85,22 +85,22 @@ List prep_qcatmix(int chr,
   // prep data for QCAT
   
   /*----------------------------------------------------*/
-  std::deque<Snp*> sliding_window_measured_ext;    //stores measured SNPs in the extended window
-  std::deque<Snp*> sliding_window_all_pred;        //stores all SNPs in the prediction window
+  std::deque<Snp*> ext_window_measured;    //stores measured SNPs in the extended window
+  std::deque<Snp*> pred_window_all;        //stores all SNPs in the prediction window
 
   for(std::vector<Snp*>::iterator it_sv = snp_vec.begin(); it_sv != snp_vec.end(); ++it_sv){
     int type = (*it_sv)->GetType();
     long long int bp = (*it_sv)->GetBp();
     if((type!=2)&(bp >= args.start_bp && bp <= args.end_bp)){ // all SNPs in the pred win. 
-      sliding_window_all_pred.push_back(*it_sv);
+      pred_window_all.push_back(*it_sv);
     }
     if(type == 1) { // measured
-      sliding_window_measured_ext.push_back(*it_sv);
+      ext_window_measured.push_back(*it_sv);
     } // if (type == 2) don't put the snp in the sliding window. type=2: measured SNP but not exist in rep. panel
   }
   
-  int num_measured_ext = sliding_window_measured_ext.size();      // # of measured SNPs in ext win
-  int num_all_pred = sliding_window_all_pred.size();       // # of all SNPs in pred win
+  int num_measured_ext = ext_window_measured.size();      // # of measured SNPs in ext win
+  int num_all_pred = pred_window_all.size();       // # of all SNPs in pred win
   
   Rcpp::Rcout<<"Number of measured SNPs in the ext window: "<<num_measured_ext<<std::endl;
   Rcpp::Rcout<<"Number of all SNPs in the pred window: "<<num_all_pred<<std::endl;
@@ -128,16 +128,16 @@ List prep_qcatmix(int chr,
   
   // Init Z1 vector
   for(size_t i=0; i<num_measured_ext; i++){   
-    Z1(i) = (*sliding_window_measured_ext[i]).GetZ();
+    Z1(i) = (*ext_window_measured[i]).GetZ();
   }
   // Init SNP_Std_Measured_Ext	
   for(size_t i=0; i < num_measured_ext; i++){
-    double v = CalWgtCov((*sliding_window_measured_ext[i]).GetGenotypeVec(), (*sliding_window_measured_ext[i]).GetGenotypeVec(), args.pop_wgt_vec);
+    double v = CalWgtCov((*ext_window_measured[i]).GetGenotypeVec(), (*ext_window_measured[i]).GetGenotypeVec(), args.pop_wgt_vec);
     SNP_Std_Measured_Ext(i) = std::sqrt(v);
   }
   // Init SNP_Std_All_Pred
   for(size_t i=0; i < num_all_pred; i++){
-    double v = CalWgtCov((*sliding_window_all_pred[i]).GetGenotypeVec(), (*sliding_window_all_pred[i]).GetGenotypeVec(), args.pop_wgt_vec);
+    double v = CalWgtCov((*pred_window_all[i]).GetGenotypeVec(), (*pred_window_all[i]).GetGenotypeVec(), args.pop_wgt_vec);
     SNP_Std_All_Pred(i) = std::sqrt(v);
   }
   // Init B11 matrix
@@ -147,8 +147,8 @@ List prep_qcatmix(int chr,
     double stdi = SNP_Std_Measured_Ext(i);
     for(size_t j=i+1; j<num_measured_ext; j++){
       double stdj = SNP_Std_Measured_Ext(j);
-      double cov = CalWgtCov((*sliding_window_measured_ext[i]).GetGenotypeVec(), 
-                             (*sliding_window_measured_ext[j]).GetGenotypeVec(), args.pop_wgt_vec);
+      double cov = CalWgtCov((*ext_window_measured[i]).GetGenotypeVec(), 
+                             (*ext_window_measured[j]).GetGenotypeVec(), args.pop_wgt_vec);
       double cor = cov/(stdi*stdj);
       B11(i,j) = cor;
       B11(j,i) = cor;
@@ -160,8 +160,8 @@ List prep_qcatmix(int chr,
     double stdi = SNP_Std_All_Pred(i);
     for(size_t j=0; j<num_measured_ext; j++){
       double stdj = SNP_Std_Measured_Ext(j);
-      double cov = CalWgtCov((*sliding_window_all_pred[i]).GetGenotypeVec(),
-                             (*sliding_window_measured_ext[j]).GetGenotypeVec(), args.pop_wgt_vec);
+      double cov = CalWgtCov((*pred_window_all[i]).GetGenotypeVec(),
+                             (*ext_window_measured[j]).GetGenotypeVec(), args.pop_wgt_vec);
       double cor = cov/(stdi*stdj);
       B21(i,j) = cor;
     }
@@ -207,13 +207,13 @@ List prep_qcatmix(int chr,
                                    Named("z")=z_vec,
                                    Named("type")=type_vec);  
   
-  //Delete sliding_window_measured_ext.
-  sliding_window_measured_ext.clear();
-  std::deque<Snp*>().swap(sliding_window_measured_ext);
+  //Delete ext_window_measured.
+  ext_window_measured.clear();
+  std::deque<Snp*>().swap(ext_window_measured);
   
-  //Delete sliding_window_all_pred.
-  sliding_window_all_pred.clear();
-  std::deque<Snp*>().swap(sliding_window_all_pred);
+  //Delete pred_window_all.
+  pred_window_all.clear();
+  std::deque<Snp*>().swap(pred_window_all);
   
   /*----------------------------------------------------*/
   // release memory allocated for genotype
@@ -249,219 +249,250 @@ List prep_qcatmix(int chr,
 //' @param reference_data_file  file name of reference panel data
 //' @param reference_pop_desc_file file name of reference panel population description data
 //' @param af1_cutoff cutoff of reference allele, a1, frequency
-//' @return R dataframe containing rsid, chr, bp, a1, a2, af1mix, z, qcat_chisq, qcat_pval, type
+//' @return A List containing:
+//'         - snplist: A data frame of SNPs in the prediction window with columns rsid, chr, bp, a1, a2, af1mix, z, and type,
+//'         - z_vec: A numeric vector of Z-scores for measured SNPs in the extended window,
+//'         - cor_mat1: A correlation matrix (additive-coded) among measured SNPs in the extended window,
+//'         - cor_mat2: A correlation matrix between recessive-coded predicted SNPs and additive-coded measured SNPs.
+   
 // [[Rcpp::export]]
 List prep_recessive_impute(int chr, 
-                  long long int start_bp, 
-                  long long int end_bp, 
-                  long long int wing_size,
-                  DataFrame pop_wgt_df,
-                  std::string input_file, 
-                  std::string reference_index_file, 
-                  std::string reference_data_file,
-                  std::string reference_pop_desc_file,
-                  Rcpp::Nullable<double> af1_cutoff = R_NilValue){
+                           long long int start_bp, 
+                           long long int end_bp, 
+                           long long int wing_size,
+                           DataFrame pop_wgt_df,
+                           std::string input_file, 
+                           std::string reference_index_file, 
+                           std::string reference_data_file,
+                           std::string reference_pop_desc_file,
+                           Rcpp::Nullable<double> af1_cutoff = R_NilValue){
   
+  // Initialize an Arguments object to hold the input parameters
   Arguments args;
   args.chr = chr; 
   args.start_bp = start_bp;
   args.end_bp = end_bp;
   args.wing_size = wing_size;
   
-  // add pop_wgt_df info in args.pop_wgt_map
-  std::vector<std::string> pop_vec_in = as<std::vector<std::string>>(pop_wgt_df[0]);
-  std::vector<double> pop_wgt_vec_in = as<std::vector<double>>(pop_wgt_df[1]);
+  // Convert population ID and weight data from the R DataFrame (pop_wgt_df) to C++ vectors
+  std::vector<std::string> pop_vec_in = as<std::vector<std::string>>(pop_wgt_df[0]); // First column: Population IDs
+  std::vector<double> pop_wgt_vec_in = as<std::vector<double>>(pop_wgt_df[1]); // Second column: Population Weights
+  
+  // Store population weights in args.pop_wgt_map, converting population IDs to uppercase
   for(int i=0; i<pop_vec_in.size(); i++){
     std::string pop = pop_vec_in[i];
-    std::transform(pop.begin(), pop.end(), pop.begin(), ::toupper); //make capital
-    args.pop_wgt_map[pop]=pop_wgt_vec_in[i];
-  }  
+    std::transform(pop.begin(), pop.end(), pop.begin(), ::toupper); // Convert ID to uppercase
+    args.pop_wgt_map[pop] = pop_wgt_vec_in[i]; // Map population ID to its corresponding weight
+  }
   
+  // Set file paths for input and reference data in the Arguments object
   args.input_file = input_file;
   args.reference_index_file = reference_index_file;
   args.reference_data_file = reference_data_file;
   args.reference_pop_desc_file = reference_pop_desc_file;
   
-  if(af1_cutoff.isNotNull()){
-    args.af1_cutoff = Rcpp::as<double>(af1_cutoff);
+  // Set the allele frequency cutoff (af1_cutoff) if provided, otherwise use the default value (0.01)
+  if(af1_cutoff.isNotNull()) {
+    args.af1_cutoff = Rcpp::as<double>(af1_cutoff); // Convert R value to C++ double
   } else {
-    args.af1_cutoff = 0.01;
+    args.af1_cutoff = 0.01; // Default value
   }
   
-  read_ref_desc(args);
-  init_pop_flag_wgt_vec(args);
-  //args.PrintArguments();
+  // Read population description data and initialize population flag/weight vectors
+  read_ref_desc(args);  // Load population description from the reference file
+  init_pop_flag_wgt_vec(args); // Initialize population flags and weights
   
+  // Initialize an empty map to store SNPs (Snp objects) indexed by a unique MapKey
   std::map<MapKey, Snp*, LessThanMapKey> snp_map;
-  ReadInputZ(snp_map, args, false);
-  //Rcpp::Rcout<<"size: "<< snp_map.size() <<std::endl;
-  ReadReferenceIndex(snp_map, args);
-  //Rcpp::Rcout<<"size: "<< snp_map.size() <<std::endl;
   
-  // make a snp vector containing all SNPs
+  // Read GWAS summary statistics (SNP Z-scores) into snp_map
+  ReadInputZ(snp_map, args, false); 
+  
+  // Read the reference panel index file, updating snp_map with reference panel information
+  ReadReferenceIndex(snp_map, args); 
+  
+  // Create an empty vector to store SNP pointers
   std::vector<Snp*> snp_vec;
+  
+  // Compute weighted reference allele frequencies (af1_mix) and store SNPs that meet the cutoff criteria in snp_vec
   MakeSnpVecMix(snp_vec, snp_map, args);
-  //Rcpp::Rcout<<"size: "<< snp_vec.size() <<std::endl;
+  
+  // Read genotype data for the selected SNPs in snp_vec
   ReadGenotype(snp_vec, args);
+  
+  // Update each SNP in snp_vec so that the minor allele becomes the reference allele
+  UpdateSnpToMinorAllele(snp_vec);
   
   
   /*----------------------------------------------------*/
-  std::deque<Snp*> sliding_window_measured_ext;    //stores measured SNPs in the extended window
-  std::deque<Snp*> sliding_window_all_pred;        //stores all SNPs in the prediction window
+  // Partition SNPs into two windows: 
+  //  - ext_window_measured: measured SNPs (type==1) in the extended window
+  //  - pred_window_all: all SNPs (excluding type==2) in the prediction window
+  std::deque<Snp*> ext_window_measured;    // Measured SNPs in the extended window
+  std::deque<Snp*> pred_window_all;        // All SNPs in the prediction window
   
+  // The prediction window refers to the genomic region where the imputation will be conducted.
+  // The extended window encompasses the prediction window, with additional buffer regions (wings) on both sides.
+  // For instance, if the prediction window spans 1 MB and the wing size is 0.1 MB, the total size of the extended window
+  // becomes 1.2 MB, with 0.1 MB of flanking regions added on either side of the prediction window. 
+  // These extra regions help capture additional SNPs that may provide useful information for the imputation process.
+  
+  
+  // Iterate through the SNP vector and categorize SNPs into measured or predicted windows
   for(std::vector<Snp*>::iterator it_sv = snp_vec.begin(); it_sv != snp_vec.end(); ++it_sv){
     int type = (*it_sv)->GetType();
     long long int bp = (*it_sv)->GetBp();
-    if((type!=2)&(bp >= args.start_bp && bp <= args.end_bp)){ // all SNPs in the pred win. 
-      sliding_window_all_pred.push_back(*it_sv);
+    
+    // Add all SNPs within the prediction window to the prediction deque
+    if((type != 2) && (bp >= args.start_bp && bp <= args.end_bp)){
+      pred_window_all.push_back(*it_sv);
     }
-    if(type == 1) { // measured
-      sliding_window_measured_ext.push_back(*it_sv);
-    } // if (type == 2) don't put the snp in the sliding window. type=2: measured SNP but not exist in rep. panel
+    // Add measured SNPs to the extended window deque
+    if(type == 1) { 
+      ext_window_measured.push_back(*it_sv);
+    }
   }
   
-  int num_measured_ext = sliding_window_measured_ext.size();      // # of measured SNPs in ext win
-  int num_all_pred = sliding_window_all_pred.size();       // # of all SNPs in pred win
+  // Count SNPs in each window
+  int num_measured_ext = ext_window_measured.size();   // Number of measured SNPs in the extended window
+  int num_all_pred = pred_window_all.size();           // Number of all SNPs in the prediction window
   
-  Rcpp::Rcout<<"Number of measured SNPs in the ext window: "<<num_measured_ext<<std::endl;
-  Rcpp::Rcout<<"Number of all SNPs in the pred window: "<<num_all_pred<<std::endl;
+  // Print out the number of measured and predicted SNPs for reference
+  Rcpp::Rcout<<"Number of measured SNPs in the extended window: "<<num_measured_ext<<std::endl;
+  Rcpp::Rcout<<"Number of all SNPs in the prediction window: "<<num_all_pred<<std::endl;
   
+  // If there are not enough measured SNPs, stop the process
   if(num_measured_ext <= args.min_num_measured_snp){
-    Rcpp::Rcout<<std::endl;
-    Rcpp::Rcout<<"Number of measured SNPs in the ext window: "<<num_measured_ext<<std::endl;
-    Rcpp::Rcout<<"Number of all SNPs in the pred window: "<<num_all_pred<<std::endl;
-    Rcpp::stop("Not enough number of SNPs loaded - QCAT not performed");
+    Rcpp::stop("Not enough number of SNPs loaded - Recessive Imputation not performed");
   }
   
-  //////////////////////////
-  // run QCATMIX analysis //
-  //////////////////////////
-  //gsl_matrix* Z1 = gsl_matrix_calloc(num_measured_ext, 1);
-  //gsl_vector* SNP_STD_VEC = gsl_vector_calloc(num_measured_ext + num_unmeasured_pred); //vector of SNP genotype standard deviations
-  //gsl_matrix* B11 = gsl_matrix_calloc(num_measured_ext,num_measured_ext); // correlation matrix B11 : correlation among measured SNPs 
-  //gsl_matrix* B21 = gsl_matrix_calloc(num_unmeasured_pred, num_measured_ext); // correlation matrix B21 : correlation btw measured and unmeasured SNPs
-  
-  NumericVector Z1(num_measured_ext);
+  // Z-scores for measured SNPs in the extended window
+  NumericVector Z_vec(num_measured_ext);  
+  // Standard deviations for measured SNPs in the extended window
   NumericVector SNP_Std_Measured_Ext(num_measured_ext);
-  NumericVector SNP_Std_All_Pred(num_all_pred);
-  NumericMatrix B11(num_measured_ext,num_measured_ext);
-  NumericMatrix B21(num_all_pred,num_measured_ext);
+  // Standard deviations for all SNPs in the prediction window
+  NumericVector SNP_Std_All_Pred(num_all_pred);  
+  // Correlation mat between additive-coded genotypes of measured SNPs in the extended window
+  NumericMatrix cormat1(num_measured_ext, num_measured_ext);
+  // Correlation mat between recessive-coded genotypes of all SNPs in the prediction window
+  // and additive-coded genotypes of measured SNPs in the extended window
+  NumericMatrix cormat2(num_all_pred, num_measured_ext);  
+                                                      
   
-  // Init Z1 vector
-  for(size_t i=0; i<num_measured_ext; i++){   
-    Z1(i) = (*sliding_window_measured_ext[i]).GetZ();
+  // Initialize the Z_vec vector with Z-scores from the measured SNPs in the extended window
+  for(size_t i = 0; i < num_measured_ext; i++){   
+    Z_vec(i) = (*ext_window_measured[i]).GetZ();
   }
-  // Init SNP_Std_Measured_Ext	
-  for(size_t i=0; i < num_measured_ext; i++){
-    double v = CalWgtCov((*sliding_window_measured_ext[i]).GetGenotypeVec(), (*sliding_window_measured_ext[i]).GetGenotypeVec(), args.pop_wgt_vec);
+  
+  // Compute the standard deviation for each measured SNP in the extended window
+  for(size_t i = 0; i < num_measured_ext; i++){
+    double v = CalWgtCov((*ext_window_measured[i]).GetGenotypeVec(), 
+                         (*ext_window_measured[i]).GetGenotypeVec(), args.pop_wgt_vec);
     SNP_Std_Measured_Ext(i) = std::sqrt(v);
   }
-  // Init SNP_Std_All_Pred
-  for(size_t i=0; i < num_all_pred; i++){
-    double v = CalWgtCov((*sliding_window_all_pred[i]).GetGenotypeVec(), (*sliding_window_all_pred[i]).GetGenotypeVec(), args.pop_wgt_vec);
+  
+  // Compute the standard deviation for each SNP in the prediction window
+  for(size_t i = 0; i < num_all_pred; i++){
+    double v = CalWgtCov((*pred_window_all[i]).GetGenotypeVec(), 
+                         (*pred_window_all[i]).GetGenotypeVec(), args.pop_wgt_vec);
     SNP_Std_All_Pred(i) = std::sqrt(v);
   }
-  // Init B11 matrix
-  Rcpp::Rcout<<"Computing correlations between variants... B11"<<std::endl;
-  for(size_t i=0; i<num_measured_ext; i++){
-    B11(i,i) = 1.0; //diagonals
+  
+  // Compute the correlation matrix among measured SNPs in the extended window (additive-coded)
+  Rcpp::Rcout << "Computing correlations between additive-coded SNPs..." << std::endl;
+  for(size_t i = 0; i < num_measured_ext; i++){
+    cormat1(i, i) = 1.0;
     double stdi = SNP_Std_Measured_Ext(i);
-    for(size_t j=i+1; j<num_measured_ext; j++){
+    for(size_t j = i + 1; j < num_measured_ext; j++){
       double stdj = SNP_Std_Measured_Ext(j);
-      double cov = CalWgtCov((*sliding_window_measured_ext[i]).GetGenotypeVec(), 
-                             (*sliding_window_measured_ext[j]).GetGenotypeVec(), args.pop_wgt_vec);
-      double cor = cov/(stdi*stdj);
-      B11(i,j) = cor;
-      B11(j,i) = cor;
-    }
-  }  
-  // Init B21 matrix
-  Rcpp::Rcout<<"Computing correlations between variants... B21"<<std::endl;
-  for(size_t i=0; i<num_all_pred; i++){
-    double stdi = SNP_Std_All_Pred(i);
-    for(size_t j=0; j<num_measured_ext; j++){
-      double stdj = SNP_Std_Measured_Ext(j);
-      double cov = CalWgtCov((*sliding_window_all_pred[i]).GetGenotypeVec(),
-                             (*sliding_window_measured_ext[j]).GetGenotypeVec(), args.pop_wgt_vec);
-      double cor = cov/(stdi*stdj);
-      B21(i,j) = cor;
+      double cov = CalWgtCov((*ext_window_measured[i]).GetGenotypeVec(), 
+                             (*ext_window_measured[j]).GetGenotypeVec(), args.pop_wgt_vec);
+      double cor = cov / (stdi * stdj);
+      cormat1(i, j) = cor;
+      cormat1(j, i) = cor;
     }
   }
   
-  StringVector rsid_vec;
-  IntegerVector chr_vec;
-  IntegerVector bp_vec;
-  StringVector a1_vec;
-  StringVector a2_vec;
-  NumericVector af1mix_vec;
-  NumericVector z_vec;
-  IntegerVector type_vec;
-  
-  Rcpp::Rcout<<"push_vec"<<std::endl;
-  for(std::vector<Snp*>::iterator it_sv = snp_vec.begin(); it_sv != snp_vec.end(); ++it_sv){
-    rsid_vec.push_back((*it_sv)->GetRsid());
-    chr_vec.push_back((*it_sv)->GetChr());
-    bp_vec.push_back((*it_sv)->GetBp());
-    a1_vec.push_back((*it_sv)->GetA1());
-    a2_vec.push_back((*it_sv)->GetA2());
-    af1mix_vec.push_back((*it_sv)->GetAf1Mix());
-    z_vec.push_back((*it_sv)->GetZ());
-    type_vec.push_back((*it_sv)->GetType());
+  // ---- Compute cormat2: Correlation matrix between recessive-coded predicted SNPs and additive-coded measured SNPs ----
+  // Create a vector to store the recessive-coded genotype vectors for all SNPs in the prediction window.
+  std::vector< std::vector<std::string> > pred_recessive(num_all_pred);
+  // Compute standard deviations for predicted SNPs using recessive coding.
+  NumericVector SNP_Std_All_Pred_Recessive(num_all_pred);
+  for(size_t i = 0; i < num_all_pred; i++){
+    pred_recessive[i] = ConvertGenotypesToRecessive((*pred_window_all[i]).GetGenotypeVec());
+    double v = CalWgtCov(pred_recessive[i], pred_recessive[i], args.pop_wgt_vec);
+    SNP_Std_All_Pred_Recessive(i) = std::sqrt(v);
   }
   
-  Rcpp::Rcout<<"rsid:   "<<rsid_vec.length()<<std::endl;
-  Rcpp::Rcout<<"chr :   "<<chr_vec.length()<<std::endl;
-  Rcpp::Rcout<<"bp  :   "<<bp_vec.length()<<std::endl;
-  Rcpp::Rcout<<"a1  :   "<<a1_vec.length()<<std::endl;
-  Rcpp::Rcout<<"a2  :   "<<a2_vec.length()<<std::endl;
-  Rcpp::Rcout<<"af1mix: "<<af1mix_vec.length()<<std::endl;
-  Rcpp::Rcout<<"z   :   "<<z_vec.length()<<std::endl;
-  Rcpp::Rcout<<"type:   "<<type_vec.length()<<std::endl;
+  Rcpp::Rcout << "Computing correlations between recessive-coded predicted SNPs and additive-coded measured SNPs..." << std::endl;
+  for (size_t i = 0; i < num_all_pred; i++){
+    double stdi = SNP_Std_All_Pred_Recessive(i);
+    for (size_t j = 0; j < num_measured_ext; j++){
+      double stdj = SNP_Std_Measured_Ext(j);
+      double cov = CalWgtCov(pred_recessive[i], (*ext_window_measured[j]).GetGenotypeVec(), args.pop_wgt_vec);
+      double cor = cov / (stdi * stdj);
+      cormat2(i, j) = cor;
+    }
+  }
   
-  Rcpp::Rcout<<"Make dataframe"<<std::endl;
-  DataFrame df = DataFrame::create(Named("rsid")=rsid_vec,
-                                   Named("chr")=chr_vec,
-                                   Named("bp")=bp_vec,
-                                   Named("a1")=a1_vec,
-                                   Named("a2")=a2_vec,
-                                   Named("af1mix")=af1mix_vec,
-                                   Named("z")=z_vec,
-                                   Named("type")=type_vec);  
+  // Build a data frame from SNPs in the prediction window.
+  StringVector rsid_vec, a1_vec, a2_vec;
+  IntegerVector chr_vec, bp_vec, type_vec;
+  NumericVector af1mix_vec, z_vec_pred;
+  Rcpp::Rcout << "Building SNP data frame..." << std::endl;
+  for(std::deque<Snp*>::iterator it = pred_window_all.begin(); it != pred_window_all.end(); ++it){
+    rsid_vec.push_back((*it)->GetRsid());
+    chr_vec.push_back((*it)->GetChr());
+    bp_vec.push_back((*it)->GetBp());
+    a1_vec.push_back((*it)->GetA1());
+    a2_vec.push_back((*it)->GetA2());
+    af1mix_vec.push_back((*it)->GetAf1Mix());
+    z_vec_pred.push_back((*it)->GetZ());
+    type_vec.push_back((*it)->GetType());
+  }
   
-  //Delete sliding_window_measured_ext.
-  sliding_window_measured_ext.clear();
-  std::deque<Snp*>().swap(sliding_window_measured_ext);
+  DataFrame df = DataFrame::create(Named("rsid") = rsid_vec,
+                                   Named("chr") = chr_vec,
+                                   Named("bp") = bp_vec,
+                                   Named("a1") = a1_vec,
+                                   Named("a2") = a2_vec,
+                                   Named("af1mix") = af1mix_vec,
+                                   Named("z") = z_vec_pred,
+                                   Named("type") = type_vec);
   
-  //Delete sliding_window_all_pred.
-  sliding_window_all_pred.clear();
-  std::deque<Snp*>().swap(sliding_window_all_pred);
+  // Clear the sliding windows
+  ext_window_measured.clear();
+  std::deque<Snp*>().swap(ext_window_measured);
+  pred_window_all.clear();
+  std::deque<Snp*>().swap(pred_window_all);
   
-  /*----------------------------------------------------*/
-  // release memory allocated for genotype
-  Rcpp::Rcout<<"release memory allocated for genotype"<<std::endl;
-  FreeGenotype(snp_vec); 
+  // Release memory allocated for genotype vectors
+  Rcpp::Rcout << "Releasing genotype memory..." << std::endl;
+  FreeGenotype(snp_vec);
   
-  //deletes snp_map.
-  Rcpp::Rcout<<"deletes snp map"<<std::endl;
+  // Delete SNP objects and clear the SNP map
+  Rcpp::Rcout << "Deleting SNP map..." << std::endl;
   std::map<MapKey, Snp*, LessThanMapKey>::iterator it_sm;
-  for(it_sm = snp_map.begin(); it_sm != snp_map.end();){
-    (it_sm->second)->ClearSnp(); // clear categ map in each snp object
-    delete it_sm->second;        // delete snp object
-    snp_map.erase(it_sm++);      // delete map element
+  for(it_sm = snp_map.begin(); it_sm != snp_map.end(); ){
+    (it_sm->second)->ClearSnp();
+    delete it_sm->second;
+    snp_map.erase(it_sm++);
   }
   
-  Rcpp::Rcout<<"return"<<std::endl;
-  return List::create(Named("snplist")=df,
-                      Named("z_vec") = Z1,
-                      Named("cor_mat1") = B11,
-                      Named("cor_mat2") = B21);
+  Rcpp::Rcout << "Returning results..." << std::endl;
+  return List::create(Named("snplist") = df,     // Data frame of SNPs in the prediction window
+                      Named("z_vec") = Z_vec,       // Z-score vector of measured SNPs in the extended window
+                      Named("cor_mat1") = cormat1,   // Correlation matrix among measured SNPs (additive)
+                      Named("cor_mat2") = cormat2);  // Correlation matrix: recessive-coded predicted SNPs vs. additive-coded measured SNPs
 }
+
+
 
 
 
 /*
 void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args){
-  std::deque<Snp*> sliding_window_measured_ext;    //stores measured SNPs in the extended window
+  std::deque<Snp*> ext_window_measured;    //stores measured SNPs in the extended window
   std::deque<Snp*> sliding_window_unmeasured_pred; //stores unmeasured SNPs in the prediction window
   int num_measured_headwing = 0;
   int num_measured_pred = 0;
@@ -472,7 +503,7 @@ void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args){
     if(type == 0 && (bp >= args.start_bp && bp <= args.end_bp)){ // unmeasured and in the pred win.
       sliding_window_unmeasured_pred.push_back(*it_sv);
     } else if(type == 1) { // measured
-      sliding_window_measured_ext.push_back(*it_sv);
+      ext_window_measured.push_back(*it_sv);
       if(bp < args.start_bp)
         num_measured_headwing++;
       else if(bp >= args.start_bp && bp <= args.end_bp)
@@ -480,7 +511,7 @@ void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args){
     } // if (type == 2) don't put the snp in the sliding window. Do nothing. 
   }
   
-  int num_measured_ext = sliding_window_measured_ext.size();      // # of measured SNPs in ext win
+  int num_measured_ext = ext_window_measured.size();      // # of measured SNPs in ext win
   int num_unmeasured_pred = sliding_window_unmeasured_pred.size();// # of unmeasured SNPs in pred win
   
   if(num_measured_ext <= args.min_num_measured_snp || 
@@ -509,11 +540,11 @@ void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args){
   
   // Init Z1 vector
   for(size_t i=0; i<num_measured_ext; i++){   
-    gsl_matrix_set(Z1, i, 0, (*sliding_window_measured_ext[i]).GetZ());
+    gsl_matrix_set(Z1, i, 0, (*ext_window_measured[i]).GetZ());
   }
   // Init SNP_STD_VEC	
   for(size_t i=0; i < num_measured_ext; i++){
-    double v = CalWgtCov((*sliding_window_measured_ext[i]).GetGenotypeVec(), (*sliding_window_measured_ext[i]).GetGenotypeVec(), args.pop_wgt_vec);
+    double v = CalWgtCov((*ext_window_measured[i]).GetGenotypeVec(), (*ext_window_measured[i]).GetGenotypeVec(), args.pop_wgt_vec);
     gsl_vector_set(SNP_STD_VEC, i, std::sqrt(v));
   }
   for(size_t i=0; i < num_unmeasured_pred; i++){
@@ -527,7 +558,7 @@ void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args){
     double stdi = gsl_vector_get(SNP_STD_VEC, i);
     for(size_t j=i+1; j<B11->size1; j++){
       double stdj = gsl_vector_get(SNP_STD_VEC, j);
-      double cov = CalWgtCov((*sliding_window_measured_ext[i]).GetGenotypeVec(), (*sliding_window_measured_ext[j]).GetGenotypeVec(), args.pop_wgt_vec);
+      double cov = CalWgtCov((*ext_window_measured[i]).GetGenotypeVec(), (*ext_window_measured[j]).GetGenotypeVec(), args.pop_wgt_vec);
       double cor = cov/(stdi*stdj);
       gsl_matrix_set(B11, i, j, cor);
       gsl_matrix_set(B11, j, i, cor);
@@ -539,7 +570,7 @@ void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args){
     for(size_t j=0; j<num_measured_ext; j++){
       double stdj = gsl_vector_get(SNP_STD_VEC, j);
       double cov = CalWgtCov((*sliding_window_unmeasured_pred[i]).GetGenotypeVec(),
-                             (*sliding_window_measured_ext[j]).GetGenotypeVec(), args.pop_wgt_vec);
+                             (*ext_window_measured[j]).GetGenotypeVec(), args.pop_wgt_vec);
       double cor = cov/(stdi*stdj);
       gsl_matrix_set(B21, i, j, cor);
     }
@@ -567,9 +598,9 @@ void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args){
     //double r = CalCor(gsl_matrix_column(LInvZ1,0), gsl_matrix_column(LInvb11t,0))*std::sqrt(varLInvZ1/(varLInvZ1+1));
     double tscore = std::sqrt(num_eig-3)*r;
     double chisq = (num_eig-3)*r*r;
-    (*sliding_window_measured_ext[i+num_measured_headwing]).SetQcatM(num_eig);
-    (*sliding_window_measured_ext[i+num_measured_headwing]).SetQcatT(tscore);
-    (*sliding_window_measured_ext[i+num_measured_headwing]).SetQcatChisq(chisq);
+    (*ext_window_measured[i+num_measured_headwing]).SetQcatM(num_eig);
+    (*ext_window_measured[i+num_measured_headwing]).SetQcatT(tscore);
+    (*ext_window_measured[i+num_measured_headwing]).SetQcatChisq(chisq);
   }
   
   Rcpp::Rcout<<std::endl;
@@ -607,9 +638,9 @@ void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args){
   Rcpp::Rcout<<"Chromosome " <<args.chr<<" "<<args.start_bp<<"-"<<args.end_bp<<" locus successfully tested!"<<std::endl; 		
   Rcpp::Rcout<<"Number of tested SNPs: "<<num_unmeasured_pred+num_measured_pred<<std::endl;
 
-  //Delete sliding_window_measured_ext.
-  sliding_window_measured_ext.clear();
-  std::deque<Snp*>().swap(sliding_window_measured_ext);
+  //Delete ext_window_measured.
+  ext_window_measured.clear();
+  std::deque<Snp*>().swap(ext_window_measured);
   
   //Delete sliding_window_unmeasured_pred.
   sliding_window_unmeasured_pred.clear();

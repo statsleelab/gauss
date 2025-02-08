@@ -134,9 +134,11 @@ prep_qcat <- function(chr, start_bp, end_bp, wing_size, study_pop, input_file, r
 #' @param af1_cutoff cutoff of reference allele, a1, frequency
 #' @return A List containing:
 #'         - snplist: A data frame of SNPs in the prediction window with columns rsid, chr, bp, a1, a2, af1mix, z, and type,
-#'         - z_vec: A numeric vector of Z-scores for measured SNPs in the extended window,
-#'         - cor_mat1: A correlation matrix (additive-coded) among measured SNPs in the extended window,
-#'         - cor_mat2: A correlation matrix between recessive-coded predicted SNPs and additive-coded measured SNPs.
+#'         - zvec: A numeric vector of Z-scores for measured SNPs in the extended window,
+#'         - cormat: A correlation matrix (additive-coded) among measured SNPs in the extended window,
+#'         - cormat_add: A correlation matrix between additive-coded predicted SNPs and additive-coded measured SNPs,
+#'         - cormat_dom: A correlation matrix between dominant-coded predicted SNPs and additive-coded measured SNPs,
+#'         - cormat_rec: A correlation matrix between recessive-coded predicted SNPs and additive-coded measured SNPs.
 NULL
 
 #' Prepare datasets for QCATMIX analysis

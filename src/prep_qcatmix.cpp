@@ -251,10 +251,12 @@ List prep_qcatmix(int chr,
 //' @param af1_cutoff cutoff of reference allele, a1, frequency
 //' @return A List containing:
 //'         - snplist: A data frame of SNPs in the prediction window with columns rsid, chr, bp, a1, a2, af1mix, z, and type,
-//'         - z_vec: A numeric vector of Z-scores for measured SNPs in the extended window,
-//'         - cor_mat1: A correlation matrix (additive-coded) among measured SNPs in the extended window,
-//'         - cor_mat2: A correlation matrix between recessive-coded predicted SNPs and additive-coded measured SNPs.
-   
+//'         - zvec: A numeric vector of Z-scores for measured SNPs in the extended window,
+//'         - cormat: A correlation matrix (additive-coded) among measured SNPs in the extended window,
+//'         - cormat_add: A correlation matrix between additive-coded predicted SNPs and additive-coded measured SNPs,
+//'         - cormat_dom: A correlation matrix between dominant-coded predicted SNPs and additive-coded measured SNPs,
+//'         - cormat_rec: A correlation matrix between recessive-coded predicted SNPs and additive-coded measured SNPs.
+
 // [[Rcpp::export]]
 List prep_recessive_impute(int chr, 
                            long long int start_bp, 
@@ -367,73 +369,109 @@ List prep_recessive_impute(int chr,
   }
   
   // Z-scores for measured SNPs in the extended window
-  NumericVector Z_vec(num_measured_ext);  
-  // Standard deviations for measured SNPs in the extended window
-  NumericVector SNP_Std_Measured_Ext(num_measured_ext);
-  // Standard deviations for all SNPs in the prediction window
-  NumericVector SNP_Std_All_Pred(num_all_pred);  
-  // Correlation mat between additive-coded genotypes of measured SNPs in the extended window
-  NumericMatrix cormat1(num_measured_ext, num_measured_ext);
-  // Correlation mat between recessive-coded genotypes of all SNPs in the prediction window
-  // and additive-coded genotypes of measured SNPs in the extended window
-  NumericMatrix cormat2(num_all_pred, num_measured_ext);  
-                                                      
-  
-  // Initialize the Z_vec vector with Z-scores from the measured SNPs in the extended window
+  NumericVector Z_vec(num_measured_ext);
   for(size_t i = 0; i < num_measured_ext; i++){   
     Z_vec(i) = (*ext_window_measured[i]).GetZ();
   }
   
-  // Compute the standard deviation for each measured SNP in the extended window
+  // Compute standard deviations for measured SNPs in the extended window
+  NumericVector SNP_Std_Measured_Ext(num_measured_ext);
   for(size_t i = 0; i < num_measured_ext; i++){
     double v = CalWgtCov((*ext_window_measured[i]).GetGenotypeVec(), 
                          (*ext_window_measured[i]).GetGenotypeVec(), args.pop_wgt_vec);
     SNP_Std_Measured_Ext(i) = std::sqrt(v);
   }
   
-  // Compute the standard deviation for each SNP in the prediction window
+  // Compute standard deviations for all additive-coded SNPs in the prediction window
+  NumericVector SNP_Std_All_Pred(num_all_pred);
   for(size_t i = 0; i < num_all_pred; i++){
     double v = CalWgtCov((*pred_window_all[i]).GetGenotypeVec(), 
                          (*pred_window_all[i]).GetGenotypeVec(), args.pop_wgt_vec);
     SNP_Std_All_Pred(i) = std::sqrt(v);
-  }
+  }  
   
-  // Compute the correlation matrix among measured SNPs in the extended window (additive-coded)
+  // ---- Compute cormat: Correlation matrix among measured SNPs in the extended window (additive-coded)
+  NumericMatrix cormat(num_measured_ext, num_measured_ext);
   Rcpp::Rcout << "Computing correlations between additive-coded SNPs..." << std::endl;
   for(size_t i = 0; i < num_measured_ext; i++){
-    cormat1(i, i) = 1.0;
+    cormat(i, i) = 1.0;
     double stdi = SNP_Std_Measured_Ext(i);
     for(size_t j = i + 1; j < num_measured_ext; j++){
       double stdj = SNP_Std_Measured_Ext(j);
       double cov = CalWgtCov((*ext_window_measured[i]).GetGenotypeVec(), 
                              (*ext_window_measured[j]).GetGenotypeVec(), args.pop_wgt_vec);
       double cor = cov / (stdi * stdj);
-      cormat1(i, j) = cor;
-      cormat1(j, i) = cor;
+      cormat(i, j) = cor;
+      cormat(j, i) = cor;
     }
+  }  
+  
+  
+  // ---- Compute predicted SNP coding conversions and corresponding standard deviations ----
+  // For additive coding, we use the genotype vector as is.
+  // For dominant coding, convert using ConvertGenotypesToDominant.
+  // For recessive coding, convert using ConvertGenotypesToRecessive.
+  
+  // Already computed standard deviations for additive-coded SNPs in pred win : SNP_Std_All_Pred
+  
+  // Compute standard deviations for all dominant-coded SNPs in the prediction window
+  NumericVector SNP_Std_All_Pred_Dominant(num_all_pred);
+  std::vector< std::vector<std::string> > pred_dominant(num_all_pred);
+  for(size_t i = 0; i < num_all_pred; i++){
+    pred_dominant[i] = ConvertGenotypesToDominant((*pred_window_all[i]).GetGenotypeVec());
+    double v = CalWgtCov(pred_dominant[i], pred_dominant[i], args.pop_wgt_vec);
+    SNP_Std_All_Pred_Dominant(i) = std::sqrt(v);
   }
   
-  // ---- Compute cormat2: Correlation matrix between recessive-coded predicted SNPs and additive-coded measured SNPs ----
-  // Create a vector to store the recessive-coded genotype vectors for all SNPs in the prediction window.
-  std::vector< std::vector<std::string> > pred_recessive(num_all_pred);
-  // Compute standard deviations for predicted SNPs using recessive coding.
+  // Compute standard deviations for all recessive-coded SNPs in the prediction window
   NumericVector SNP_Std_All_Pred_Recessive(num_all_pred);
+  std::vector< std::vector<std::string> > pred_recessive(num_all_pred);
   for(size_t i = 0; i < num_all_pred; i++){
     pred_recessive[i] = ConvertGenotypesToRecessive((*pred_window_all[i]).GetGenotypeVec());
     double v = CalWgtCov(pred_recessive[i], pred_recessive[i], args.pop_wgt_vec);
     SNP_Std_All_Pred_Recessive(i) = std::sqrt(v);
   }
   
-  Rcpp::Rcout << "Computing correlations between recessive-coded predicted SNPs and additive-coded measured SNPs..." << std::endl;
+  // ---- Compute cormat.add: Correlation matrix between additive-coded SNPs (in pred) vs. additive-coded measured SNPs (in ext) ----
+  NumericMatrix cormat_add(num_all_pred, num_measured_ext);
+  Rcpp::Rcout << "Computing correlations between additive-coded SNPs (pred) and additive-coded measured SNPs (ext)..." << std::endl;
+  for (size_t i = 0; i < num_all_pred; i++){
+    double stdi = SNP_Std_All_Pred(i);
+    for (size_t j = 0; j < num_measured_ext; j++){
+      double stdj = SNP_Std_Measured_Ext(j);
+      double cov = CalWgtCov((*pred_window_all[i]).GetGenotypeVec(), 
+                             (*ext_window_measured[j]).GetGenotypeVec(), args.pop_wgt_vec);
+      double cor = cov / (stdi * stdj);
+      cormat_add(i, j) = cor;
+    }
+  }
+  
+  // ---- Compute cormat.dom: Correlation matrix between dominant-coded SNPs (in pred) vs. additive-coded measured SNPs (in ext) ----
+  NumericMatrix cormat_dom(num_all_pred, num_measured_ext);
+  Rcpp::Rcout << "Computing correlations between dominant-coded SNPs (pred) and additive-coded measured SNPs (ext)..." << std::endl;
+  for (size_t i = 0; i < num_all_pred; i++){
+    double stdi = SNP_Std_All_Pred_Dominant(i);
+    for (size_t j = 0; j < num_measured_ext; j++){
+      double stdj = SNP_Std_Measured_Ext(j);
+      double cov = CalWgtCov(pred_dominant[i], (*ext_window_measured[j]).GetGenotypeVec(), args.pop_wgt_vec);
+      double cor = cov / (stdi * stdj);
+      cormat_dom(i, j) = cor;
+    }
+  }
+  
+  // ---- Compute cormat.rec: Correlation matrix between recessive-coded SNPs (in pred) vs. additive-coded measured SNPs (in ext) ----
+  NumericMatrix cormat_rec(num_all_pred, num_measured_ext);
+  Rcpp::Rcout << "Computing correlations between recessive-coded SNPs (pred) and additive-coded measured SNPs (ext)..." << std::endl;
   for (size_t i = 0; i < num_all_pred; i++){
     double stdi = SNP_Std_All_Pred_Recessive(i);
     for (size_t j = 0; j < num_measured_ext; j++){
       double stdj = SNP_Std_Measured_Ext(j);
       double cov = CalWgtCov(pred_recessive[i], (*ext_window_measured[j]).GetGenotypeVec(), args.pop_wgt_vec);
       double cor = cov / (stdi * stdj);
-      cormat2(i, j) = cor;
+      cormat_rec(i, j) = cor;
     }
   }
+  
   
   // Build a data frame from SNPs in the prediction window.
   StringVector rsid_vec, a1_vec, a2_vec;
@@ -480,10 +518,13 @@ List prep_recessive_impute(int chr,
   }
   
   Rcpp::Rcout << "Returning results..." << std::endl;
-  return List::create(Named("snplist") = df,     // Data frame of SNPs in the prediction window
-                      Named("z_vec") = Z_vec,       // Z-score vector of measured SNPs in the extended window
-                      Named("cor_mat1") = cormat1,   // Correlation matrix among measured SNPs (additive)
-                      Named("cor_mat2") = cormat2);  // Correlation matrix: recessive-coded predicted SNPs vs. additive-coded measured SNPs
+  return List::create(Named("snplist") = df,         // Data frame of SNPs in the prediction window
+                      Named("zvec") = Z_vec,           // Z-score vector of measured SNPs in the extended window
+                      Named("cormat") = cormat,        // Correlation matrix among measured SNPs (additive) in the extended window
+                      Named("cormat_add") = cormat_add,// Correlation matrix: additive-coded SNPs (in prediction window) vs. additive-coded measured SNPs (in extended window)
+                      Named("cormat_dom") = cormat_dom,// Correlation matrix: dominant-coded SNPs (in prediction window) vs. additive-coded measured SNPs (in extended window)
+                      Named("cormat_rec") = cormat_rec // Correlation matrix: recessive-coded SNPs (in prediction window) vs. additive-coded measured SNPs (in extended window)
+  );
 }
 
 

@@ -1185,6 +1185,38 @@ void UpdateSnpToMinorAllele(std::vector<Snp*>& snp_vec) {
 
 
 /**
+ * @brief Converts an additive-coded genotype vector to dominant-coded.
+ *
+ * For each genotype string, each character (assumed to be '0', '1', or '2')
+ * is converted such that '0' remains '0' and both '1' and '2' become '1'.
+ *
+ * @param genoVec The original additive-coded genotype vector.
+ * @return std::vector<std::string> The dominant-coded genotype vector.
+ */
+std::vector<std::string> ConvertGenotypesToDominant(const std::vector<std::string>& genoVec) {
+  std::vector<std::string> dominantVec;
+  dominantVec.reserve(genoVec.size());
+  for (size_t i = 0; i < genoVec.size(); i++) {
+    std::string oldGeno = genoVec[i];
+    std::string newGeno;
+    newGeno.reserve(oldGeno.size());
+    for (size_t j = 0; j < oldGeno.size(); j++) {
+      char c = oldGeno[j];
+      if (c >= '0' && c <= '2') {
+        int val = c - '0';
+        int domVal = (val == 0) ? 0 : 1;
+        newGeno.push_back('0' + domVal);
+      } else {
+        newGeno.push_back(c);
+      }
+    }
+    dominantVec.push_back(newGeno);
+  }
+  return dominantVec;
+}
+
+
+/**
  * @brief Converts an additive-coded genotype vector to recessive-coded.
  *
  * For each genotype string in the vector, each character (assumed to be '0', '1', or '2')

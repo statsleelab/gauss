@@ -130,6 +130,7 @@ void init_pop_flag_vec(Arguments& args);
 void init_pop_flag_wgt_vec(Arguments& args);
 
 void UpdateSnpToMinorAllele(std::vector<Snp*>& snp_vec);
+std::vector<std::string> ConvertGenotypesToDominant(const std::vector<std::string>& genoVec);
 std::vector<std::string> ConvertGenotypesToRecessive(const std::vector<std::string>& genoVec);
 
 //JEPEG & JEPEGMIX  

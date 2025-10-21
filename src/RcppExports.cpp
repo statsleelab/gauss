@@ -154,26 +154,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// prep_qcatmix
-List prep_qcatmix(int chr, long long int start_bp, long long int end_bp, long long int wing_size, DataFrame pop_wgt_df, std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<double> af1_cutoff);
-RcppExport SEXP _gauss_prep_qcatmix(SEXP chrSEXP, SEXP start_bpSEXP, SEXP end_bpSEXP, SEXP wing_sizeSEXP, SEXP pop_wgt_dfSEXP, SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP af1_cutoffSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type chr(chrSEXP);
-    Rcpp::traits::input_parameter< long long int >::type start_bp(start_bpSEXP);
-    Rcpp::traits::input_parameter< long long int >::type end_bp(end_bpSEXP);
-    Rcpp::traits::input_parameter< long long int >::type wing_size(wing_sizeSEXP);
-    Rcpp::traits::input_parameter< DataFrame >::type pop_wgt_df(pop_wgt_dfSEXP);
-    Rcpp::traits::input_parameter< std::string >::type input_file(input_fileSEXP);
-    Rcpp::traits::input_parameter< std::string >::type reference_index_file(reference_index_fileSEXP);
-    Rcpp::traits::input_parameter< std::string >::type reference_data_file(reference_data_fileSEXP);
-    Rcpp::traits::input_parameter< std::string >::type reference_pop_desc_file(reference_pop_desc_fileSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<double> >::type af1_cutoff(af1_cutoffSEXP);
-    rcpp_result_gen = Rcpp::wrap(prep_qcatmix(chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff));
-    return rcpp_result_gen;
-END_RCPP
-}
 // prep_recessive_impute
 List prep_recessive_impute(int chr, long long int start_bp, long long int end_bp, long long int wing_size, DataFrame pop_wgt_df, std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<double> af1_cutoff);
 RcppExport SEXP _gauss_prep_recessive_impute(SEXP chrSEXP, SEXP start_bpSEXP, SEXP end_bpSEXP, SEXP wing_sizeSEXP, SEXP pop_wgt_dfSEXP, SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP af1_cutoffSEXP) {
@@ -343,7 +323,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gauss_jepeg", (DL_FUNC) &_gauss_jepeg, 7},
     {"_gauss_jepegmix", (DL_FUNC) &_gauss_jepegmix, 7},
     {"_gauss_prep_qcat", (DL_FUNC) &_gauss_prep_qcat, 10},
-    {"_gauss_prep_qcatmix", (DL_FUNC) &_gauss_prep_qcatmix, 10},
     {"_gauss_prep_recessive_impute", (DL_FUNC) &_gauss_prep_recessive_impute, 10},
     {"_gauss_qcat", (DL_FUNC) &_gauss_qcat, 10},
     {"_gauss_qcatmix", (DL_FUNC) &_gauss_qcatmix, 10},

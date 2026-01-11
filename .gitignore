@@ -7,8 +7,9 @@ src/*.so
 src/*.dll
 src/etc
 src/Makevars
-R/test
 docs/figure
 ref
 
-inst/doc
+.Rlib/
+gauss_*.tar.gz
+inst/dev-tests/

@@ -1,4 +1,4 @@
-#include <Rcpp.h>
+#include <RcppEigen.h>
 
 #include <string>
 #include <vector>
@@ -116,12 +116,10 @@ void cpw2_vec(std::vector<Snp*>& snp_vec, Arguments& args){
   Rcpp::Rcout<<"Interval length: "<<interval<<std::endl;
   Rcpp::Rcout<<"Num of populations: "<<args.num_pops<<std::endl;
 
-  gsl_matrix* af1_cor_mat = gsl_matrix_calloc(args.num_pops+1, args.num_pops+1);
-  gsl_matrix* W_mat_i = gsl_matrix_calloc(args.num_pops, 1);
-  gsl_matrix* W_mat = gsl_matrix_calloc(args.num_pops, 1);
-  gsl_matrix_view Cxy;
-  gsl_matrix_view Cxx;
-  gsl_matrix* CxxInv = gsl_matrix_calloc(args.num_pops, args.num_pops);
+  Eigen::MatrixXd af1_cor_mat = Eigen::MatrixXd::Zero(args.num_pops + 1, args.num_pops + 1);
+  Eigen::MatrixXd W_mat_i = Eigen::MatrixXd::Zero(args.num_pops, 1);
+  Eigen::MatrixXd W_mat = Eigen::MatrixXd::Zero(args.num_pops, 1);
+  Eigen::MatrixXd CxxInv = Eigen::MatrixXd::Zero(args.num_pops, args.num_pops);
   
   //opens reference genotype matrix file (BGZF)
   BGZF* fp = bgzf_open(args.reference_data_file.c_str(), "r");
@@ -144,9 +142,9 @@ void cpw2_vec(std::vector<Snp*>& snp_vec, Arguments& args){
     int snp_subvec_size = snp_subvec.size();
     //Rcpp::Rcout<<"snp_subvec_size: "<<snp_subvec_size<<std::endl;
     
-    gsl_matrix* af1_mat = gsl_matrix_calloc(snp_subvec_size, args.num_pops+1);
+    Eigen::MatrixXd af1_mat = Eigen::MatrixXd::Zero(snp_subvec_size, args.num_pops + 1);
     for(int j=0; j<snp_subvec_size; j++){
-      gsl_matrix_set(af1_mat, j, 0, std::asin(std::sqrt(snp_subvec[j]->GetAf1Study()))); //use arcsine square root transformation to stabilize the variance    
+      af1_mat(j, 0) = std::asin(std::sqrt(snp_subvec[j]->GetAf1Study())); //use arcsine square root transformation to stabilize the variance    
       //Rcpp::Rcout<<"af1study :"<<snp_subvec[j]->GetAf1Study();
       std::string line;
       bgzf_seek(fp, (*snp_subvec[j]).GetFpos(), SEEK_SET);
@@ -165,7 +163,7 @@ void cpw2_vec(std::vector<Snp*>& snp_vec, Arguments& args){
         double af1;
         buffer >> af1;
         //Rcpp::Rcout<<af1<<std::endl;
-        gsl_matrix_set(af1_mat, j, kk, std::asin(std::sqrt(af1))); // use arcsine square root transformation to stabilize the variance
+        af1_mat(j, kk) = std::asin(std::sqrt(af1)); // use arcsine square root transformation to stabilize the variance
         kk++;
       }
     }
@@ -173,18 +171,16 @@ void cpw2_vec(std::vector<Snp*>& snp_vec, Arguments& args){
     CalCovMat(af1_cor_mat, af1_mat);
     
     //Calculate W
-    Cxy = gsl_matrix_submatrix(af1_cor_mat, 1, 0, args.num_pops, 1);
-    Cxx = gsl_matrix_submatrix(af1_cor_mat, 1, 1, args.num_pops, args.num_pops);
-    MakePosDef(&Cxx.matrix, args.min_abs_eig);
-    InvMat(CxxInv, &Cxx.matrix);
-    MpMatMat(W_mat_i, CxxInv, &Cxy.matrix);
+    Eigen::MatrixXd Cxy = af1_cor_mat.block(1, 0, args.num_pops, 1);
+    Eigen::MatrixXd Cxx = af1_cor_mat.block(1, 1, args.num_pops, args.num_pops);
+    MakePosDef(Cxx, args.min_abs_eig);
+    InvMat(CxxInv, Cxx);
+    MpMatMat(W_mat_i, CxxInv, Cxy);
     
     for(int j=0; j<args.num_pops; j++){
-      double wval = gsl_matrix_get(W_mat, j, 0) + gsl_matrix_get(W_mat_i, j, 0)/interval;
-      gsl_matrix_set(W_mat, j, 0, wval);
+      double wval = W_mat(j, 0) + W_mat_i(j, 0) / interval;
+      W_mat(j, 0) = wval;
     }
-    
-    gsl_matrix_free(af1_mat);
     
     if((i%10)==9){
       int percent = static_cast<int>(0.1+100*(i/(double)(interval)));
@@ -194,25 +190,20 @@ void cpw2_vec(std::vector<Snp*>& snp_vec, Arguments& args){
   }
   // if w is less than zero then make it zero.
   for(int i=0; i<args.num_pops; i++){
-    double wval = gsl_matrix_get(W_mat, i, 0);
+    double wval = W_mat(i, 0);
     if(wval < 0)
-      gsl_matrix_set(W_mat, i, 0, 0);
+      W_mat(i, 0) = 0;
     else
-      gsl_matrix_set(W_mat, i, 0, floor(wval*1000+0.5)/1000);
+      W_mat(i, 0) = floor(wval * 1000 + 0.5) / 1000;
   }
 
   double sum_pop_wgt = 0.0;
   for(int i=0; i<args.num_pops; i++){
-    double wval = gsl_matrix_get(W_mat, i, 0);
+    double wval = W_mat(i, 0);
     args.pop_wgt_vec.push_back(wval);
     sum_pop_wgt += wval;
   }
   args.sum_pop_wgt = sum_pop_wgt;
-
-  gsl_matrix_free(af1_cor_mat);
-  gsl_matrix_free(W_mat_i);
-  gsl_matrix_free(W_mat);
-  gsl_matrix_free(CxxInv);
   
   //closes file connections
   bgzf_close(fp); //closes BGZF file connnection.

@@ -1,0 +1,175 @@
+# GAUSS
+
+GAUSS (Genome Analysis Using Summary Statistics) is a versatile R
+package designed for the analysis of multi-ethnic GWAS summary
+statistics. It leverages a large multi-ethnic reference panel consisting
+of 32,953 genomes ([33KG
+Panel](https://statsleelab.github.io/gauss/articles/ref_33KG.html)),
+including 20,281 Europeans, 10,800 East Asians, 522 South Asians, 817
+Africans, and 533 Native Americans. The GAUSS package offers a robust
+set of tools that enable researchers to: i) accurately estimate the
+ancestry proportions within a multi-ethnic GWAS
+([`afmix()`](https://github.com/statsleelab/gauss/reference/afmix.md)
+and `zimx()`), ii) calculate ancestry-informed linkage disequilibrium
+(LD) metrics
+([`computeLD()`](https://github.com/statsleelab/gauss/reference/computeLD.md)),
+iii) impute Z-scores for genetic variants not originally measured
+([`dist()`](https://github.com/statsleelab/gauss/reference/dist.md) and
+[`distmix()`](https://github.com/statsleelab/gauss/reference/distmix.md)),
+iv) conduct in-depth transcriptome-wide association studies
+([`jepeg()`](https://github.com/statsleelab/gauss/reference/jepeg.md)
+and
+[`jepegmix()`](https://github.com/statsleelab/gauss/reference/jepegmix.md)),
+and v) apply corrections for the ‘Winner’s Curse’ biases
+([`fiqt()`](https://github.com/statsleelab/gauss/reference/fiqt.md)).
+
+## Citing GAUSS
+
+Lee and Bacanu. GAUSS: a summary-statistics-based R package for accurate
+estimation of linkage disequilibrium for variants, Gaussian imputation,
+and TWAS analysis of cosmopolitan cohorts.
+[Bioinformatics](https://doi.org/10.1093/bioinformatics/btae203).
+
+## Author
+
+Donghyung Lee <leed13@miamioh.edu>
+
+## Pre-installation
+
+GAUSS no longer requires the GNU Scientific Library (GSL). Installation
+only needs standard R tooling plus the package dependencies.
+
+## GAUSS Installation
+
+You can install the development version of gauss from GitHub with:
+
+``` r
+
+# install.packages("devtools")
+devtools::install_github("statsleelab/gauss")
+```
+
+## Suggested Workflow
+
+![](reference/figures/GAUSS_Flowchart_bioinfo.png)
+
+GAUSS functions utilize five core input datasets: i) Association Z-score
+Data (highlighted in blue), consisting of six columns of variables: SNP
+ID (rsid), chromosome number (chr), base pair position (bp), reference
+allele (a1), alternative allele (a2), and Z-score (z); ii) Allele
+Frequency Data (colored in red), encapsulating rsid, chr, bp, a1, a2,
+and reference allele frequency (af1); iii) Ethnic Mixing Proportion Data
+(colored in green), comprising population name abbreviations and
+corresponding mixing proportions; iv) SNP Annotation Data (colored in
+orange), offering functional annotation information of SNPs; v)
+Reference Panel Data (colored in yellow), e.g., [33KG
+Panel](https://statsleelab.github.io/gauss/articles/ref_33KG.html)
+offering genotype information for a significant pool of 32,953
+individuals from 29 diverse ethnic groups.
+
+Initially, users should determine whether their input summary statistics
+data originate from mixed ethnicity cohorts. If they do not (suggesting
+the data comes from a homogeneous cohort), users can use a variety of
+analysis functions specific to homogeneous cohorts, including
+[`computeLD()`](https://github.com/statsleelab/gauss/reference/computeLD.md)
+for LD estimation,
+[`dist()`](https://github.com/statsleelab/gauss/reference/dist.md) for
+imputing Z-scores of missing SNPs, and
+[`jepeg()`](https://github.com/statsleelab/gauss/reference/jepeg.md) for
+conducting trascriptome-wide associaton study (TWAS). These functions
+primarily require Association Z-score Data and Reference Panel Data.
+
+Conversely, if the data derive from mixed ethnicity cohorts and the
+ethnic mixing proportions are known, GAUSS provides a range of tools for
+multi-ethnic cohort analysis. These encompass
+[`computeLD()`](https://github.com/statsleelab/gauss/reference/computeLD.md)
+for LD estimation,
+[`distmix()`](https://github.com/statsleelab/gauss/reference/distmix.md)
+for Z-score imputation, and
+[`jepegmix()`](https://github.com/statsleelab/gauss/reference/jepegmix.md)
+for TWAS. These tools require Association Z-score Data, Reference Panel
+Data, and Mixing Proportion Data. If ethnic mixing proportions are not
+known, they should be estimated using either the
+[`afmix()`](https://github.com/statsleelab/gauss/reference/afmix.md)
+function (if Allele Frequency Data is available) or the `zmix()`
+function (if it is not). Upon determining the ethnic mixing proportions,
+users can apply the genome analysis functions designed for multi-ethnic
+cohorts.
+
+Small colored squares on arrows pointing to GAUSS functions denote the
+required input data sets for each function. For instance, an arrow
+pointing to the afmix() function is marked by two colored squares (red
+and yellow), indicating that this function utilizes both Allele
+Frequency Data and Reference Panel Data as inputs.
+
+For more detailed examples that demonstrate each functionality, please
+visit [GAUSS vignettes](https://statsleelab.github.io/gauss/)
+
+# Package index
+
+## All functions
+
+- [`PGC2_SCZ_ANC_Prop`](https://github.com/statsleelab/gauss/reference/PGC2_SCZ_ANC_Prop.md)
+  : PGC2 Schizophrenia GWAS Ancestry Proportion
+- [`afmix()`](https://github.com/statsleelab/gauss/reference/afmix.md) :
+  Calculate population weights using RAF
+- [`computeLD()`](https://github.com/statsleelab/gauss/reference/computeLD.md)
+  : Compute LD for measured SNPs from mixed ethnicity cohorts
+- [`cpw2()`](https://github.com/statsleelab/gauss/reference/cpw2.md) :
+  Calculate population weights using RAF
+- [`dist()`](https://github.com/statsleelab/gauss/reference/dist.md) :
+  Direct imputation of summary statistics for unmeasured SNPs from
+  ethnically homogeneous cohorts
+- [`distmix()`](https://github.com/statsleelab/gauss/reference/distmix.md)
+  : Direct imputation of summary statistics for unmeasured SNPs from
+  mixed ethnicity cohorts
+- [`fiqt()`](https://github.com/statsleelab/gauss/reference/fiqt.md) :
+  FDR Inverse Quantile Transformation (FIQT)
+- [`gauss-package`](https://github.com/statsleelab/gauss/reference/gauss-package.md)
+  [`gauss`](https://github.com/statsleelab/gauss/reference/gauss-package.md)
+  : A short title line describing what the package does
+- [`jepeg()`](https://github.com/statsleelab/gauss/reference/jepeg.md) :
+  Joint effect on phenotype of eQTLs/functional SNPs associated with a
+  gene
+- [`jepegmix()`](https://github.com/statsleelab/gauss/reference/jepegmix.md)
+  : JEPEGMIX: gene-level joint analysis of functional SNPs in
+  cosmopolitan cohorts
+- [`prep_qcat()`](https://github.com/statsleelab/gauss/reference/prep_qcat.md)
+  : Prepare datasets for QCAT analysis
+- [`prep_recessive_impute()`](https://github.com/statsleelab/gauss/reference/prep_recessive_impute.md)
+  : Prepare datasets for Recessive Imputation
+- [`prep_zmix()`](https://github.com/statsleelab/gauss/reference/prep_zmix.md)
+  : Calculate population weights using association Z-scores
+- [`prep_zmix2()`](https://github.com/statsleelab/gauss/reference/prep_zmix2.md)
+  : Calculate population weights using association Z-scores
+- [`prep_zmix3()`](https://github.com/statsleelab/gauss/reference/prep_zmix3.md)
+  : Calculate population weights using association Z-scores
+- [`prep_zmix4()`](https://github.com/statsleelab/gauss/reference/prep_zmix4.md)
+  : Calculate population weights using association Z-scores
+- [`prep_zmix5()`](https://github.com/statsleelab/gauss/reference/prep_zmix5.md)
+  : Calculate population weights using association Z-scores
+- [`qcat()`](https://github.com/statsleelab/gauss/reference/qcat.md) :
+  Testing causality of variants from ethnically homogeneous cohorts
+- [`qcatmix()`](https://github.com/statsleelab/gauss/reference/qcatmix.md)
+  : Testing causality of variants from mixed ethnicity cohorts
+- [`simulateLD()`](https://github.com/statsleelab/gauss/reference/simulateLD.md)
+  : Simulate LD for user provided SNPs from mixed ethnicity cohorts
+
+# Articles
+
+### All vignettes
+
+- [Estimating ancestry
+  proportions](https://github.com/statsleelab/gauss/articles/afmix_example.md):
+- [Estimating Linkage Disequilibrium within a multi-ethnic
+  cohort](https://github.com/statsleelab/gauss/articles/computeLD_example.md):
+- [Imputing Z-scores of unmeasured
+  SNPs](https://github.com/statsleelab/gauss/articles/dist_example.md):
+- [Winner's curse
+  adjustment](https://github.com/statsleelab/gauss/articles/fiqt_example.md):
+- [Transcriptome wide association study with
+  GAUSS](https://github.com/statsleelab/gauss/articles/jepeg_example.md):
+- [1000 Genomes Reference Panel
+  (1KG)](https://github.com/statsleelab/gauss/articles/ref_1KG.md):
+- [33000 Genomes Reference Panel
+  (33KG)](https://github.com/statsleelab/gauss/articles/ref_33KG.md):

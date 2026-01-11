@@ -26,6 +26,19 @@
   2009-06-25 by lh3: optionally use my knetfile library to access file on a FTP.
   2009-06-12 by lh3: support a mode string like "wu" where 'u' for uncompressed output */
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu-pointer-arith"
+#pragma clang diagnostic ignored "-Wvla"
+#pragma clang diagnostic ignored "-Wgnu-folding-constant"
+#pragma clang diagnostic ignored "-Wunused-but-set-variable"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpointer-arith"
+#pragma GCC diagnostic ignored "-Wvla"
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -75,7 +88,7 @@ static const int GZIP_WINDOW_BITS = -15; // no zlib header
 static const int Z_DEFAULT_MEM_LEVEL = 8;
 
 
-inline
+static inline
 void
 packInt16(uint8_t* buffer, uint16_t value)
 {
@@ -83,14 +96,14 @@ packInt16(uint8_t* buffer, uint16_t value)
     buffer[1] = value >> 8;
 }
 
-inline
+static inline
 int
 unpackInt16(const uint8_t* buffer)
 {
     return (buffer[0] | (buffer[1] << 8));
 }
 
-inline
+static inline
 void
 packInt32(uint8_t* buffer, uint32_t value)
 {
@@ -714,3 +727,9 @@ int64_t bgzf_seek(BGZF* fp, int64_t pos, int where)
     fp->block_offset = block_offset;
     return 0;
 }
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif

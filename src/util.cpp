@@ -14,13 +14,7 @@
 #include <string>
 #include <vector>
 
-//#include <RcppGSL.h>
-#include <gsl/gsl_vector.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_blas.h>
-#include <gsl/gsl_linalg.h>
-#include <gsl/gsl_eigen.h>
-#include <gsl/gsl_statistics_double.h>
+#include <RcppEigen.h>
 
 #include "gauss.h"
 //#include "bgzf.h"
@@ -197,246 +191,180 @@ double CalCor(std::vector<unsigned char>& x, std::vector<unsigned char>& y){
 }
 
 
-double CalCor(gsl_vector_view x, gsl_vector_view y){
-  
-  size_t n = (&x.vector)->size;
-  double cor = gsl_stats_correlation( x.vector.data, x.vector.stride, 
-                                      y.vector.data, y.vector.stride,
-                                      n);
-  return cor;
-  
+double CalCor(const Eigen::Ref<const Eigen::VectorXd>& x, const Eigen::Ref<const Eigen::VectorXd>& y){
+  double mean_x = x.mean();
+  double mean_y = y.mean();
+  Eigen::ArrayXd dx = x.array() - mean_x;
+  Eigen::ArrayXd dy = y.array() - mean_y;
+  double sxx = (dx * dx).sum();
+  double syy = (dy * dy).sum();
+  double sxy = (dx * dy).sum();
+  return sxy / std::sqrt(sxx * syy);
 }
 
-
-double CalCov(gsl_vector_view x, gsl_vector_view y){
-  
-  size_t n = (&x.vector)->size;
-  double cov =  gsl_stats_covariance( x.vector.data, x.vector.stride, 
-                                      y.vector.data, y.vector.stride,
-                                      n);
-  return cov;
-  
+double CalCov(const Eigen::Ref<const Eigen::VectorXd>& x, const Eigen::Ref<const Eigen::VectorXd>& y){
+  double mean_x = x.mean();
+  double mean_y = y.mean();
+  Eigen::ArrayXd dx = x.array() - mean_x;
+  Eigen::ArrayXd dy = y.array() - mean_y;
+  double sxy = (dx * dy).sum();
+  double denom = static_cast<double>(x.size() - 1);
+  return sxy / denom;
 }
 
-double CalVar(gsl_vector_view x){
-  
-  size_t n = (&x.vector)->size;
-  double var =  gsl_stats_variance(x.vector.data, x.vector.stride, n);
-  return var;
+double CalVar(const Eigen::Ref<const Eigen::VectorXd>& x){
+  double mean_x = x.mean();
+  Eigen::ArrayXd dx = x.array() - mean_x;
+  double denom = static_cast<double>(x.size() - 1);
+  return (dx * dx).sum() / denom;
 }
-double CalMeanSumSq(gsl_matrix* m){
-  size_t n = m->size1;
+
+double CalMeanSumSq(const Eigen::Ref<const Eigen::MatrixXd>& m){
+  int n = static_cast<int>(m.rows());
   double ss = 0;
   for(int i=0; i < n; i++){
-    ss += gsl_matrix_get(m, i, 0)*gsl_matrix_get(m, i, 0);
+    ss += m(i, 0) * m(i, 0);
   }
-  return ss/n;
+  return ss / n;
 }
 
-void CalCorMat(gsl_matrix* result, gsl_matrix* m){ //calculate correlation between columns of m
-  
+void CalCorMat(Eigen::MatrixXd& result, const Eigen::Ref<const Eigen::MatrixXd>& m){ //calculate correlation between columns of m
   double cor;
-  for(int i=0; i < m->size2; i++){
-    for(int j=i; j < m->size2; j++){
-      cor = CalCor(gsl_matrix_column(m,i), gsl_matrix_column(m,j));
-      gsl_matrix_set(result, i, j, cor);
+  for(int i=0; i < m.cols(); i++){
+    for(int j=i; j < m.cols(); j++){
+      cor = CalCor(m.col(i), m.col(j));
+      result(i, j) = cor;
       if(i != j)
-        gsl_matrix_set(result, j, i, cor);
+        result(j, i) = cor;
     }
-  } 
+  }
 }
 
-void CalCovMat(gsl_matrix* result, gsl_matrix* m){ //calculate covariance between columns of m
-  
+void CalCovMat(Eigen::MatrixXd& result, const Eigen::Ref<const Eigen::MatrixXd>& m){ //calculate covariance between columns of m
   double cov;
-  for(int i=0; i < m->size2; i++){
-    for(int j=i; j < m->size2; j++){
-      cov = CalCov(gsl_matrix_column(m,i), gsl_matrix_column(m,j));
-      gsl_matrix_set(result, i, j, cov);
+  for(int i=0; i < m.cols(); i++){
+    for(int j=i; j < m.cols(); j++){
+      cov = CalCov(m.col(i), m.col(j));
+      result(i, j) = cov;
       if(i != j)
-        gsl_matrix_set(result, j, i, cov);
+        result(j, i) = cov;
     }
-  } 
+  }
 }
 
-void GetDiagMat(gsl_matrix* result, gsl_matrix* m){
-  for(int i=0; i < m->size1; i++){
-    gsl_matrix_set(result, i, i, gsl_matrix_get(m, i, i));
-  } 
+void GetDiagMat(Eigen::MatrixXd& result, const Eigen::Ref<const Eigen::MatrixXd>& m){
+  result.setZero();
+  for(int i=0; i < m.rows(); i++){
+    result(i, i) = m(i, i);
+  }
 }
 
-void MpMatMat(gsl_matrix* result, gsl_matrix* m1, gsl_matrix* m2){
-  gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, m1, m2, 0.0, result);
+void MpMatMat(Eigen::MatrixXd& result, const Eigen::Ref<const Eigen::MatrixXd>& m1, const Eigen::Ref<const Eigen::MatrixXd>& m2){
+  result.noalias() = m1 * m2;
 }
 
-void MpNumMat(gsl_matrix* result, double num, gsl_matrix* m){
-  for(int i=0; i < m->size1; i++){
-    for(int j=0; j < m->size2; j++){
-      gsl_matrix_set(result, i, j, gsl_matrix_get(m, i, j)*num);
-    }
-  } 
+void MpNumMat(Eigen::MatrixXd& result, double num, const Eigen::Ref<const Eigen::MatrixXd>& m){
+  result = m * num;
 }
 
 //Cholesky decomposition (M=L*Lt) return L 
-void CholeskyMat(gsl_matrix* result, gsl_matrix* m){
-  gsl_matrix_memcpy(result, m);
-  gsl_linalg_cholesky_decomp(result); 
-  //make upper triangular part zero to make result as a lower triangular matrix.  
-  for(int i=0; i < m->size1; i++){
-    for(int j=i+1; j < m->size2; j++){
-      gsl_matrix_set(result, i, j, 0);
-    }
-  }
-}
-void SubMatMat(gsl_matrix* result, gsl_matrix* x1, gsl_matrix* x2){
-  gsl_matrix_memcpy(result, x1);
-  gsl_matrix_sub(result, x2);
+void CholeskyMat(Eigen::MatrixXd& result, const Eigen::Ref<const Eigen::MatrixXd>& m){
+  Eigen::LLT<Eigen::MatrixXd> llt(m);
+  result = llt.matrixL();
 }
 
-void AddNumMatDiag(gsl_matrix* x1, double num){
-  for(int i=0; i < x1->size1; i++){
-    gsl_matrix_set(x1, i, i, gsl_matrix_get(x1, i, i) + num);
-  }
+void SubMatMat(Eigen::MatrixXd& result, const Eigen::Ref<const Eigen::MatrixXd>& x1, const Eigen::Ref<const Eigen::MatrixXd>& x2){
+  result = x1 - x2;
 }
 
-void CnvrtCovToCor(gsl_matrix* cor_mat, gsl_matrix* cov_mat){
-  
+void AddNumMatDiag(Eigen::MatrixXd& x1, double num){
+  x1.diagonal().array() += num;
+}
+
+void CnvrtCovToCor(Eigen::MatrixXd& cor_mat, const Eigen::Ref<const Eigen::MatrixXd>& cov_mat){
   double std1, std2, cor;
-  for(int i=0; i<cov_mat->size1; i++){
-    for(int j=i; j<cov_mat->size2; j++){
-      std1 = std::sqrt(gsl_matrix_get(cov_mat, i, i));
-      std2 = std::sqrt(gsl_matrix_get(cov_mat, j, j));
-      cor = gsl_matrix_get(cov_mat, i, j)/(std1*std2);
-      gsl_matrix_set(cor_mat, i, j, cor);
+  for(int i=0; i<cov_mat.rows(); i++){
+    for(int j=i; j<cov_mat.cols(); j++){
+      std1 = std::sqrt(cov_mat(i, i));
+      std2 = std::sqrt(cov_mat(j, j));
+      cor = cov_mat(i, j) / (std1 * std2);
+      cor_mat(i, j) = cor;
       if(i!=j)
-        gsl_matrix_set(cor_mat, j, i, cor);
+        cor_mat(j, i) = cor;
     }
   }
 }
 
-void InvMat(gsl_matrix* inverse, gsl_matrix* m1){
-  int s;
-  int size = m1->size1;
-  gsl_matrix* tmp = gsl_matrix_calloc(m1->size1, m1->size2);
-  gsl_matrix_memcpy(tmp, m1);
-  //makePosDef(tmp, 1e-3); //
-  gsl_permutation* perm = gsl_permutation_alloc(size);
-  gsl_linalg_LU_decomp(tmp, perm, &s);
-  gsl_linalg_LU_invert(tmp, perm, inverse);
-  gsl_permutation_free(perm);
-  gsl_matrix_free(tmp);
+void InvMat(Eigen::MatrixXd& inverse, const Eigen::Ref<const Eigen::MatrixXd>& m1){
+  inverse = m1.fullPivLu().inverse();
 }
 
-
-void MakePosDef(gsl_matrix* m1, double min_abs_eig){
-  int size = m1->size1;
-  gsl_matrix* tmp = gsl_matrix_calloc(m1->size1, m1->size2);
-  gsl_matrix_memcpy(tmp, m1);
-  
-  gsl_vector* eig_vals = gsl_vector_calloc(size);
-  gsl_matrix* eig_vecs = gsl_matrix_calloc(size, size);
-  gsl_eigen_symmv_workspace* w = gsl_eigen_symmv_alloc(size);
-  gsl_eigen_symmv(tmp, eig_vals, eig_vecs, w);
-  gsl_eigen_symmv_free(w);
-  gsl_eigen_symmv_sort(eig_vals, eig_vecs, GSL_EIGEN_SORT_VAL_ASC); // ascending order in numerical value.
-  
-  gsl_matrix* res = gsl_matrix_calloc(size, size);
-  gsl_matrix* eig_vec_sq = gsl_matrix_calloc(size, size);
-  gsl_matrix_view eig_vec;
-  gsl_matrix* eig_vec_trans = gsl_matrix_calloc(1, size);
-  
-  if(gsl_vector_get(eig_vals,0) < min_abs_eig){
-    
+void MakePosDef(Eigen::MatrixXd& m1, double min_abs_eig){
+  int size = static_cast<int>(m1.rows());
+  Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> solver(m1);
+  if(solver.info() != Eigen::Success){
+    return;
+  }
+  Eigen::VectorXd eig_vals = solver.eigenvalues();
+  Eigen::MatrixXd eig_vecs = solver.eigenvectors();
+  if(eig_vals.minCoeff() < min_abs_eig){
     for(int i=0; i<size; i++){
-      if(gsl_vector_get(eig_vals,i) < min_abs_eig){	      
-        gsl_vector_set(eig_vals, i, min_abs_eig);    
-      }  
-      eig_vec = gsl_matrix_submatrix(eig_vecs, 0, i, size, 1);
-      gsl_matrix_transpose_memcpy(eig_vec_trans, &eig_vec.matrix);
-      MpMatMat(eig_vec_sq, &eig_vec.matrix, eig_vec_trans);
-      gsl_matrix_scale(eig_vec_sq, gsl_vector_get(eig_vals, i));
-      gsl_matrix_add(res, eig_vec_sq);
+      if(eig_vals(i) < min_abs_eig){
+        eig_vals(i) = min_abs_eig;
+      }
     }
-    gsl_matrix_memcpy(m1, res);
+    m1 = eig_vecs * eig_vals.asDiagonal() * eig_vecs.transpose();
   }
-  
-  gsl_matrix_free(tmp);
-  gsl_vector_free(eig_vals);
-  gsl_matrix_free(eig_vecs);
-  gsl_matrix_free(res);
-  gsl_matrix_free(eig_vec_sq);
-  gsl_matrix_free(eig_vec_trans);
 }
 
-int RmvPC(gsl_matrix* m1, double eig_cutoff){
+int RmvPC(Eigen::MatrixXd& m1, double eig_cutoff){
 #ifdef RmvPC_Debug
   Rcpp::Rcout<<std::endl;
   Rcpp::Rcout<<"RmvPC start!"<<std::endl;
 #endif
   
-  int size = m1->size1;
+  int size = static_cast<int>(m1.rows());
   int num_eig = size;
-  gsl_matrix* tmp = gsl_matrix_calloc(m1->size1, m1->size2);
-  gsl_matrix_memcpy(tmp, m1);
-  
-  gsl_vector* eig_vals = gsl_vector_calloc(size);
-  gsl_matrix* eig_vecs = gsl_matrix_calloc(size, size);
-  gsl_eigen_symmv_workspace* w = gsl_eigen_symmv_alloc(size);
-  gsl_eigen_symmv(tmp, eig_vals, eig_vecs, w);
-  gsl_eigen_symmv_free(w);
-  gsl_eigen_symmv_sort(eig_vals, eig_vecs, GSL_EIGEN_SORT_VAL_ASC); // ascending order in numerical value.
-  
-  gsl_matrix* res = gsl_matrix_calloc(size, size);
-  gsl_matrix* eig_vec_sq = gsl_matrix_calloc(size, size);
-  gsl_matrix_view eig_vec;
-  gsl_matrix* eig_vec_trans = gsl_matrix_calloc(1, size);
+  Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> solver(m1);
+  if(solver.info() != Eigen::Success){
+    return num_eig;
+  }
+  Eigen::VectorXd eig_vals = solver.eigenvalues();
+  Eigen::MatrixXd eig_vecs = solver.eigenvectors();
+  Eigen::MatrixXd res = Eigen::MatrixXd::Zero(size, size);
   
 #ifdef RmvPC_Debug
   Rcpp::Rcout<<std::endl;
-  Rcpp::Rcout<<"min_eig_val: "<<gsl_vector_get(eig_vals,0)<<std::endl;
+  Rcpp::Rcout<<"min_eig_val: "<<eig_vals(0)<<std::endl;
   Rcpp::Rcout<<"eig_cutoff: "<<eig_cutoff<<std::endl;
 #endif
   
-  if(gsl_vector_get(eig_vals,0) < eig_cutoff){  // if the smallest eig value is less than eig_cutoff, investigate all eig values.
+  if(eig_vals(0) < eig_cutoff){  // if the smallest eig value is less than eig_cutoff, investigate all eig values.
     for(int i=0; i<size; i++){
-      if(gsl_vector_get(eig_vals,i) > eig_cutoff){	        
-        eig_vec = gsl_matrix_submatrix(eig_vecs, 0, i, size, 1);
-        gsl_matrix_transpose_memcpy(eig_vec_trans, &eig_vec.matrix);
-        MpMatMat(eig_vec_sq, &eig_vec.matrix, eig_vec_trans);
-        gsl_matrix_scale(eig_vec_sq, gsl_vector_get(eig_vals, i));
-        gsl_matrix_add(res, eig_vec_sq);
+      if(eig_vals(i) > eig_cutoff){	        
+        res.noalias() += eig_vals(i) * eig_vecs.col(i) * eig_vecs.col(i).transpose();
       } else {
         num_eig--;
       }
     }
-    gsl_matrix_memcpy(m1, res);
+    m1 = res;
   }
-  gsl_matrix_free(tmp);
-  gsl_vector_free(eig_vals);
-  gsl_matrix_free(eig_vecs);
-  gsl_matrix_free(res);
-  gsl_matrix_free(eig_vec_sq);
-  gsl_matrix_free(eig_vec_trans);
   return num_eig;
 }
 
-int CountPC(gsl_matrix* m1, double eig_cutoff){
+int CountPC(const Eigen::Ref<const Eigen::MatrixXd>& m1, double eig_cutoff){
 #ifdef CountPC_Debug
   Rcpp::Rcout<<std::endl;
   Rcpp::Rcout<<"CountPC start!"<<std::endl;
 #endif
   
-  int size = m1->size1;
+  int size = static_cast<int>(m1.rows());
   int num_eig = size;
-  gsl_matrix* tmp = gsl_matrix_calloc(m1->size1, m1->size2);
-  gsl_matrix_memcpy(tmp, m1);
-  
-  gsl_vector* eig_vals = gsl_vector_calloc(size);
-  gsl_matrix* eig_vecs = gsl_matrix_calloc(size, size);
-  gsl_eigen_symmv_workspace* w = gsl_eigen_symmv_alloc(size);
-  gsl_eigen_symmv(tmp, eig_vals, eig_vecs, w);
-  gsl_eigen_symmv_free(w);
-  gsl_eigen_symmv_sort(eig_vals, eig_vecs, GSL_EIGEN_SORT_VAL_ASC); // ascending order in numerical value.
+  Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> solver(m1);
+  if(solver.info() != Eigen::Success){
+    return num_eig;
+  }
+  Eigen::VectorXd eig_vals = solver.eigenvalues();
   
   //gsl_matrix* res = gsl_matrix_calloc(size, size);
   //gsl_matrix* eig_vec_sq = gsl_matrix_calloc(size, size);
@@ -445,37 +373,31 @@ int CountPC(gsl_matrix* m1, double eig_cutoff){
   
 #ifdef RmvPC_Debug
   Rcpp::Rcout<<std::endl;
-  Rcpp::Rcout<<"min_eig_val: "<<gsl_vector_get(eig_vals,0)<<std::endl;
+  Rcpp::Rcout<<"min_eig_val: "<<eig_vals(0)<<std::endl;
   Rcpp::Rcout<<"eig_cutoff: "<<eig_cutoff<<std::endl;
 #endif
   
-  if(gsl_vector_get(eig_vals,0) < eig_cutoff){  // if the smallest eig value is less than eig_cutoff, investigate all eig values.
+  if(eig_vals(0) < eig_cutoff){  // if the smallest eig value is less than eig_cutoff, investigate all eig values.
     for(int i=0; i<size; i++){
-      if(gsl_vector_get(eig_vals,i) < eig_cutoff){	        
+      if(eig_vals(i) < eig_cutoff){	        
         num_eig--;
       }
     }
   }
-  gsl_matrix_free(tmp);
-  gsl_vector_free(eig_vals);
-  gsl_matrix_free(eig_vecs);
-  //gsl_matrix_free(res);
-  //gsl_matrix_free(eig_vec_sq);
-  //gsl_matrix_free(eig_vec_trans);
   return num_eig;
 }
 
 
-void PrintVector(gsl_vector* x){
-  for(size_t i=0 ; i<x->size ; i++){
-    Rcpp::Rcout<<" "<<gsl_vector_get(x,i);
+void PrintVector(const Eigen::VectorXd& x){
+  for(int i=0 ; i<x.size() ; i++){
+    Rcpp::Rcout<<" "<<x(i);
   }
   Rcpp::Rcout<<std::endl;
 }
 
-void PrintVector(gsl_vector* x, std::ofstream& outFile){
-  for(size_t i=0 ; i<x->size ; i++){
-    outFile<<" "<<gsl_vector_get(x,i);
+void PrintVector(const Eigen::VectorXd& x, std::ofstream& outFile){
+  for(int i=0 ; i<x.size() ; i++){
+    outFile<<" "<<x(i);
   }
   outFile<<std::endl;
 }
@@ -494,20 +416,20 @@ void PrintVector(std::vector<int>& x){
   Rcpp::Rcout<<std::endl;
 }
 
-void PrintMatrix(gsl_matrix* x){
-  for(size_t i=0 ; i< x->size1 ; i++){
-    for(size_t j=0 ; j<x->size2 ; j++){
-      Rcpp::Rcout<<" "<<gsl_matrix_get(x,i,j);
+void PrintMatrix(const Eigen::MatrixXd& x){
+  for(int i=0 ; i< x.rows() ; i++){
+    for(int j=0 ; j<x.cols() ; j++){
+      Rcpp::Rcout<<" "<<x(i,j);
     }
     Rcpp::Rcout<<std::endl;  
   }
   Rcpp::Rcout<<std::endl;
 }
 
-void PrintMatrix(gsl_matrix* x, std::ofstream& outFile){
-  for(size_t i=0 ; i< x->size1 ; i++){
-    for(size_t j=0 ; j<x->size2 ; j++){
-      outFile<<" "<<gsl_matrix_get(x,i,j);
+void PrintMatrix(const Eigen::MatrixXd& x, std::ofstream& outFile){
+  for(int i=0 ; i< x.rows() ; i++){
+    for(int j=0 ; j<x.cols() ; j++){
+      outFile<<" "<<x(i,j);
     }
     outFile<<std::endl;  
   }

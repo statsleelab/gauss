@@ -1,17 +1,15 @@
-pandoc: 2.19.2
-pkgdown: 2.0.6
+pandoc: 3.8.3
+pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   afmix_example: afmix_example.html
   computeLD_example: computeLD_example.html
   dist_example: dist_example.html
   fiqt_example: fiqt_example.html
-  gsl_installation: gsl_installation.html
   jepeg_example: jepeg_example.html
   ref_1KG: ref_1KG.html
   ref_33KG: ref_33KG.html
-last_built: 2023-09-20T03:00Z
+last_built: 2026-01-11T01:17Z
 urls:
   reference: https://github.com/statsleelab/gauss/reference
   article: https://github.com/statsleelab/gauss/articles
-

@@ -1,4 +1,5 @@
-#include <Rcpp.h>
+#include <RcppEigen.h>
+#include <Rmath.h>
 
 using namespace Rcpp;
 
@@ -9,8 +10,6 @@ using namespace Rcpp;
 #include "snp.h"
 #include "gauss.h"
 #include "util.h"
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_cdf.h>
 
 void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args);
 
@@ -113,7 +112,7 @@ DataFrame qcatmix(int chr,
       qcat_m_vec.push_back((*it_sv)->GetQcatM());
       qcat_t_vec.push_back((*it_sv)->GetQcatT());
       qcat_chisq_vec.push_back((*it_sv)->GetQcatChisq());
-      qcat_pval_vec.push_back(gsl_cdf_chisq_Q((*it_sv)->GetQcatChisq(), 1));
+      qcat_pval_vec.push_back(R::pchisq((*it_sv)->GetQcatChisq(), 1, 0, 0));
       type_vec.push_back((*it_sv)->GetType());
     }
   }
@@ -177,54 +176,54 @@ void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args){
   //////////////////////////
   // run QCATMIX analysis //
   //////////////////////////
-  gsl_matrix* Z1 = gsl_matrix_calloc(num_measured_ext, 1);
-  gsl_vector* SNP_STD_VEC = gsl_vector_calloc(num_measured_ext + num_unmeasured_pred); //vector of SNP genotype standard deviations
-  gsl_matrix* B11 = gsl_matrix_calloc(num_measured_ext,num_measured_ext); // correlation matrix B11 : correlation among measured SNPs 
-  gsl_matrix* B21 = gsl_matrix_calloc(num_unmeasured_pred, num_measured_ext); // correlation matrix B21 : correlation btw measured and unmeasured SNPs
+  Eigen::MatrixXd Z1 = Eigen::MatrixXd::Zero(num_measured_ext, 1);
+  Eigen::VectorXd SNP_STD_VEC = Eigen::VectorXd::Zero(num_measured_ext + num_unmeasured_pred); //vector of SNP genotype standard deviations
+  Eigen::MatrixXd B11 = Eigen::MatrixXd::Zero(num_measured_ext, num_measured_ext); // correlation matrix B11 : correlation among measured SNPs 
+  Eigen::MatrixXd B21 = Eigen::MatrixXd::Zero(num_unmeasured_pred, num_measured_ext); // correlation matrix B21 : correlation btw measured and unmeasured SNPs
   
-  gsl_matrix* L = gsl_matrix_calloc(num_measured_ext,num_measured_ext); // L = square root (lower triangular matrix) of B11
-  gsl_matrix* LInv = gsl_matrix_calloc(num_measured_ext,num_measured_ext); // L Inverse
-  gsl_matrix* LInvZ1 = gsl_matrix_calloc(num_measured_ext, 1); // L Inverse * Z1
-  gsl_matrix* b11t = gsl_matrix_calloc(num_measured_ext, 1); // b11 (row vector of B11)
-  gsl_matrix* LInvb11t = gsl_matrix_calloc(num_measured_ext, 1); // L Inverse * b11 (row vector of B11)
-  gsl_matrix* b21t = gsl_matrix_calloc(num_measured_ext, 1); // b21 (row vector of B21)
-  gsl_matrix* LInvb21t = gsl_matrix_calloc(num_measured_ext, 1); // L Inverse * b21 (row vector of B21)
+  Eigen::MatrixXd L = Eigen::MatrixXd::Zero(num_measured_ext, num_measured_ext); // L = square root (lower triangular matrix) of B11
+  Eigen::MatrixXd LInv = Eigen::MatrixXd::Zero(num_measured_ext, num_measured_ext); // L Inverse
+  Eigen::MatrixXd LInvZ1 = Eigen::MatrixXd::Zero(num_measured_ext, 1); // L Inverse * Z1
+  Eigen::MatrixXd b11t = Eigen::MatrixXd::Zero(num_measured_ext, 1); // b11 (row vector of B11)
+  Eigen::MatrixXd LInvb11t = Eigen::MatrixXd::Zero(num_measured_ext, 1); // L Inverse * b11 (row vector of B11)
+  Eigen::MatrixXd b21t = Eigen::MatrixXd::Zero(num_measured_ext, 1); // b21 (row vector of B21)
+  Eigen::MatrixXd LInvb21t = Eigen::MatrixXd::Zero(num_measured_ext, 1); // L Inverse * b21 (row vector of B21)
   
   // Init Z1 vector
   for(size_t i=0; i<num_measured_ext; i++){   
-    gsl_matrix_set(Z1, i, 0, (*sliding_window_measured_ext[i]).GetZ());
+    Z1(i, 0) = (*sliding_window_measured_ext[i]).GetZ();
   }
   // Init SNP_STD_VEC	
   for(size_t i=0; i < num_measured_ext; i++){
     double v = CalWgtCov((*sliding_window_measured_ext[i]).GetGenotypeVec(), (*sliding_window_measured_ext[i]).GetGenotypeVec(), args.pop_wgt_vec);
-    gsl_vector_set(SNP_STD_VEC, i, std::sqrt(v));
+    SNP_STD_VEC(i) = std::sqrt(v);
   }
   for(size_t i=0; i < num_unmeasured_pred; i++){
     double v = CalWgtCov((*sliding_window_unmeasured_pred[i]).GetGenotypeVec(), (*sliding_window_unmeasured_pred[i]).GetGenotypeVec(), args.pop_wgt_vec);
-    gsl_vector_set(SNP_STD_VEC, i + num_measured_ext, std::sqrt(v));
+    SNP_STD_VEC(i + num_measured_ext) = std::sqrt(v);
   }
   // Init B11 matrix
   Rcpp::Rcout<<"Computing correlations between variants..."<<std::endl;
-  for(size_t i=0; i<B11->size1; i++){
-    gsl_matrix_set(B11, i, i, 1.0 + args.lambda); //add LAMBDA here (ridge regression trick)
-    double stdi = gsl_vector_get(SNP_STD_VEC, i);
-    for(size_t j=i+1; j<B11->size1; j++){
-      double stdj = gsl_vector_get(SNP_STD_VEC, j);
+  for(size_t i=0; i<static_cast<size_t>(B11.rows()); i++){
+    B11(i, i) = 1.0 + args.lambda; //add LAMBDA here (ridge regression trick)
+    double stdi = SNP_STD_VEC(i);
+    for(size_t j=i+1; j<static_cast<size_t>(B11.rows()); j++){
+      double stdj = SNP_STD_VEC(j);
       double cov = CalWgtCov((*sliding_window_measured_ext[i]).GetGenotypeVec(), (*sliding_window_measured_ext[j]).GetGenotypeVec(), args.pop_wgt_vec);
       double cor = cov/(stdi*stdj);
-      gsl_matrix_set(B11, i, j, cor);
-      gsl_matrix_set(B11, j, i, cor);
+      B11(i, j) = cor;
+      B11(j, i) = cor;
     }
   }  
   // Init B21 matrix
   for(size_t i=0; i<num_unmeasured_pred; i++){
-    double stdi = gsl_vector_get(SNP_STD_VEC, i + num_measured_ext);
+    double stdi = SNP_STD_VEC(i + num_measured_ext);
     for(size_t j=0; j<num_measured_ext; j++){
-      double stdj = gsl_vector_get(SNP_STD_VEC, j);
+      double stdj = SNP_STD_VEC(j);
       double cov = CalWgtCov((*sliding_window_unmeasured_pred[i]).GetGenotypeVec(),
                              (*sliding_window_measured_ext[j]).GetGenotypeVec(), args.pop_wgt_vec);
       double cor = cov/(stdi*stdj);
-      gsl_matrix_set(B21, i, j, cor);
+      B21(i, j) = cor;
     }
   }
   
@@ -242,10 +241,9 @@ void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args){
   //Testing measured SNPs in the prediction window    
   Rcpp::Rcout<<"Testing measured variants..."<<std::endl;
   for(size_t i=0; i<num_measured_pred; i++){        
-    gsl_matrix_view b11 = gsl_matrix_submatrix(B11, i+num_measured_headwing, 0, 1, num_measured_ext); //extract ith row vector b11 (as matrix image) from B11.
-    gsl_matrix_transpose_memcpy(b11t, &b11.matrix);
+    b11t = B11.block(i + num_measured_headwing, 0, 1, num_measured_ext).transpose();
     MpMatMat(LInvb11t, LInv, b11t); // Cholesky transformation to uncorrelate b11.
-    double r = CalCor(gsl_matrix_column(LInvZ1,0), gsl_matrix_column(LInvb11t,0)); 
+    double r = CalCor(LInvZ1.col(0), LInvb11t.col(0)); 
     //double r = CalCor(gsl_matrix_column(Z1,0), gsl_matrix_column(b11t,0));
     //double r = CalCor(gsl_matrix_column(LInvZ1,0), gsl_matrix_column(LInvb11t,0))*std::sqrt(varLInvZ1/(varLInvZ1+1));
     double tscore = std::sqrt(num_eig-3)*r;
@@ -258,10 +256,9 @@ void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args){
   Rcpp::Rcout<<std::endl;
   Rcpp::Rcout<<"Testing unmeasured variants..."<<std::endl;
   for(size_t i=0; i<num_unmeasured_pred; i++){  // for loop, unmeasured SNPs in the prediction window. 
-    gsl_matrix_view b21 = gsl_matrix_submatrix(B21, i, 0, 1, num_measured_ext); //extract ith row vector b21 (as matrix image) from B21.
-    gsl_matrix_transpose_memcpy(b21t, &b21.matrix);
+    b21t = B21.block(i, 0, 1, num_measured_ext).transpose();
     MpMatMat(LInvb21t, LInv, b21t); // Cholesky transformation to uncorrelate b21.
-    double r = CalCor(gsl_matrix_column(LInvZ1,0), gsl_matrix_column(LInvb21t,0)); 
+    double r = CalCor(LInvZ1.col(0), LInvb21t.col(0)); 
     //double r = CalCor(gsl_matrix_column(Z1,0), gsl_matrix_column(b21t,0));
     //double r = CalCor(gsl_matrix_column(LInvZ1,0), gsl_matrix_column(LInvb21t,0))*std::sqrt(varLInvZ1/(varLInvZ1+1));
     double tscore = std::sqrt(num_eig-3)*r; 
@@ -271,17 +268,6 @@ void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args){
     (*sliding_window_unmeasured_pred[i]).SetQcatChisq(chisq);
   }
   
-  gsl_matrix_free(Z1);
-  gsl_vector_free(SNP_STD_VEC);
-  gsl_matrix_free(B11);
-  gsl_matrix_free(B21);
-  gsl_matrix_free(L);
-  gsl_matrix_free(LInv);
-  gsl_matrix_free(LInvZ1);
-  gsl_matrix_free(b11t);
-  gsl_matrix_free(LInvb11t);
-  gsl_matrix_free(b21t);
-  gsl_matrix_free(LInvb21t);
   
   ////////////////////
   // QCAT is done ! //
@@ -298,4 +284,3 @@ void run_qcatmix(std::vector<Snp*>& snp_vec, Arguments& args){
   sliding_window_unmeasured_pred.clear();
   std::deque<Snp*>().swap(sliding_window_unmeasured_pred);
 }
-

@@ -1,4 +1,5 @@
-#include <Rcpp.h>
+#include <RcppEigen.h>
+#include <Rmath.h>
 
 using namespace Rcpp;
 
@@ -9,8 +10,6 @@ using namespace Rcpp;
 #include "snp.h"
 #include "gauss.h"
 #include "util.h"
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_cdf.h>
 
 void run_distmix(std::vector<Snp*>& snp_vec, Arguments& args);
 
@@ -108,7 +107,7 @@ DataFrame distmix(int chr,
       a2_vec.push_back((*it_sv)->GetA2());
       af1mix_vec.push_back((*it_sv)->GetAf1Mix());
       z_vec.push_back((*it_sv)->GetZ());
-      pval_vec.push_back(2*gsl_cdf_ugaussian_Q(std::abs((*it_sv)->GetZ())));
+      pval_vec.push_back(2 * R::pnorm5(std::abs((*it_sv)->GetZ()), 0.0, 1.0, 0, 0));
       info_vec.push_back((*it_sv)->GetInfo());
       type_vec.push_back((*it_sv)->GetType());
     }
@@ -163,40 +162,40 @@ void run_distmix(std::vector<Snp*>& snp_vec, Arguments& args){
   /////////////////////////
   // run DIST imputation //
   /////////////////////////
-  gsl_matrix* Z1 = gsl_matrix_calloc(num_measured, 1);
-  gsl_vector* SNP_STD_VEC = gsl_vector_calloc(num_measured + num_unmeasured); //vector of SNP genotype standard deviations
-  gsl_matrix* B11 = gsl_matrix_calloc(num_measured,num_measured); // correlation matrix B11 : correlation among measured SNPs 
-  gsl_matrix* B11Inv = gsl_matrix_calloc(num_measured, num_measured);
+  Eigen::MatrixXd Z1 = Eigen::MatrixXd::Zero(num_measured, 1);
+  Eigen::VectorXd SNP_STD_VEC = Eigen::VectorXd::Zero(num_measured + num_unmeasured); //vector of SNP genotype standard deviations
+  Eigen::MatrixXd B11 = Eigen::MatrixXd::Zero(num_measured, num_measured); // correlation matrix B11 : correlation among measured SNPs 
+  Eigen::MatrixXd B11Inv = Eigen::MatrixXd::Zero(num_measured, num_measured);
   
-  gsl_matrix* b21 = gsl_matrix_calloc(1, num_measured);
-  gsl_matrix* b12 = gsl_matrix_calloc(num_measured, 1);
-  gsl_matrix* b21B11Inv = gsl_matrix_calloc(1, num_measured);
-  gsl_matrix* val = gsl_matrix_calloc(1, 1);
+  Eigen::MatrixXd b21 = Eigen::MatrixXd::Zero(1, num_measured);
+  Eigen::MatrixXd b12 = Eigen::MatrixXd::Zero(num_measured, 1);
+  Eigen::MatrixXd b21B11Inv = Eigen::MatrixXd::Zero(1, num_measured);
+  Eigen::MatrixXd val = Eigen::MatrixXd::Zero(1, 1);
   
   // Init Z1 vector
   for(size_t i=0; i<num_measured; i++){   
-    gsl_matrix_set(Z1, i, 0, (*sliding_window_measured[i]).GetZ());
+    Z1(i, 0) = (*sliding_window_measured[i]).GetZ();
   }
   // Init SNP_STD_VEC	
   for(size_t i=0; i < num_measured; i++){
     double v = CalWgtCov((*sliding_window_measured[i]).GetGenotypeVec(), (*sliding_window_measured[i]).GetGenotypeVec(), args.pop_wgt_vec);
-    gsl_vector_set(SNP_STD_VEC, i, std::sqrt(v));
+    SNP_STD_VEC(i) = std::sqrt(v);
   }
   for(size_t i=0; i < num_unmeasured; i++){
     double v = CalWgtCov((*sliding_window_unmeasured[i]).GetGenotypeVec(), (*sliding_window_unmeasured[i]).GetGenotypeVec(), args.pop_wgt_vec);
-    gsl_vector_set(SNP_STD_VEC, i + num_measured, std::sqrt(v));
+    SNP_STD_VEC(i + num_measured) = std::sqrt(v);
   }
   // Init B11 matrix
   Rcpp::Rcout<<"Computing correlations between variants..."<<std::endl;
-  for(size_t i=0; i<B11->size1; i++){
-    gsl_matrix_set(B11, i, i, 1.0 + args.lambda); //add LAMBDA here (ridge regression trick)
-    double stdi = gsl_vector_get(SNP_STD_VEC, i);
-    for(size_t j=i+1; j<B11->size1; j++){
-      double stdj = gsl_vector_get(SNP_STD_VEC, j);
+  for(size_t i=0; i<static_cast<size_t>(B11.rows()); i++){
+    B11(i, i) = 1.0 + args.lambda; //add LAMBDA here (ridge regression trick)
+    double stdi = SNP_STD_VEC(i);
+    for(size_t j=i+1; j<static_cast<size_t>(B11.rows()); j++){
+      double stdj = SNP_STD_VEC(j);
       double cov = CalWgtCov((*sliding_window_measured[i]).GetGenotypeVec(), (*sliding_window_measured[j]).GetGenotypeVec(), args.pop_wgt_vec);
       double cor = cov/(stdi*stdj);
-      gsl_matrix_set(B11, i, j, cor);
-      gsl_matrix_set(B11, j, i, cor);
+      B11(i, j) = cor;
+      B11(j, i) = cor;
     }
   }  
   // Init B11 Inverse matrix
@@ -208,21 +207,21 @@ void run_distmix(std::vector<Snp*>& snp_vec, Arguments& args){
   double prog_prev = 0;
   double prog = 0;
   for(size_t i=0; i<num_unmeasured; i++){
-    double stdi = gsl_vector_get(SNP_STD_VEC, i + num_measured);
+    double stdi = SNP_STD_VEC(i + num_measured);
     for(size_t j=0; j<num_measured; j++){
-      double stdj = gsl_vector_get(SNP_STD_VEC, j);
+      double stdj = SNP_STD_VEC(j);
       double cov = CalWgtCov((*sliding_window_unmeasured[i]).GetGenotypeVec(),
                              (*sliding_window_measured[j]).GetGenotypeVec(), args.pop_wgt_vec);
       double cor = cov/(stdi*stdj);
-      gsl_matrix_set(b21, 0, j, cor);
+      b21(0, j) = cor;
     }
-    gsl_matrix_transpose_memcpy(b12, b21);
+    b12 = b21.transpose();
     MpMatMat(b21B11Inv, b21, B11Inv);
     MpMatMat(val, b21B11Inv, Z1); //z2
-    double z = gsl_matrix_get(val, 0, 0);
+    double z = val(0, 0);
     //double pval = 2*gsl_cdf_ugaussian_Q(std::abs(z));
     MpMatMat(val, b21B11Inv, b12); // information of z2
-    double info = std::abs(gsl_matrix_get(val, 0, 0));
+    double info = std::abs(val(0, 0));
     
     (*sliding_window_unmeasured[i]).SetZ(z/std::sqrt(info)); // use normalized z2 (imputed z-score)
     //(*sliding_window_unmeasured[i]).SetPval(pval); //pvalue
@@ -236,15 +235,6 @@ void run_distmix(std::vector<Snp*>& snp_vec, Arguments& args){
     }
   }
   
-  gsl_matrix_free(Z1);
-  gsl_vector_free(SNP_STD_VEC);
-  gsl_matrix_free(B11);
-  gsl_matrix_free(B11Inv);
-
-  gsl_matrix_free(b21);
-  gsl_matrix_free(b12);
-  gsl_matrix_free(b21B11Inv);
-  gsl_matrix_free(val);
   //////////////////////////
   // Imputation is done ! //
   //////////////////////////

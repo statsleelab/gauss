@@ -86,9 +86,9 @@ head(input_data)
 Next, we assign the paths to reference panel data files:
 ```{r prep_ref_path}
 # Paths to the reference files (replace these with your actual paths)
-reference_index_file <-"../ref/Human/33KG/33kg_index.gz"
-reference_data_file <- "../ref/Human/33KG/33kg_geno.gz"
-reference_pop_desc_file<-"../ref/Human/33KG/33kg_pop_desc.txt"
+reference_index_file <-"../ref/33KG/33kg_index.gz"
+reference_data_file <- "../ref/33KG/33kg_geno.gz"
+reference_pop_desc_file<-"../ref/33KG/33kg_pop_desc.txt"
 ```
 
 
@@ -122,7 +122,7 @@ Finally, we generate a heatmap to visually represent the LD estimates:
 ```{r heatmap, fig.height=6, fig.width=6, warning=FALSE}
 cormat <- res$cormat
 diag(cormat) <- NA
-cormelt <- melt(cormat, na.rm = TRUE)
+cormelt <- reshape2::melt(cormat, na.rm = TRUE)
 
 p1 <- ggplot(data = cormelt, aes(x = Var1, y = Var2, fill = value)) +
   geom_tile() +
@@ -150,5 +150,6 @@ p1
 
 ## References
 
-* Lee et al. DISTMIX: direct imputation of summary statistics for unmeasured SNPs from mixed ethnicity cohorts. Bioinformatics. https://doi.org/10.1093/bioinformatics/btv348
+* Lee et al. DISTMIX: direct imputation of summary statistics for unmeasured SNPs from mixed ethnicity cohorts. Bioinformatics. https://doi.org/10.1093/bioinformatics/btv348.
+* Lee and Bacanu. GAUSS: a summary-statistics-based R package for accurate estimation of linkage disequilibrium for variants, Gaussian imputation, and TWAS analysis of cosmopolitan cohorts. Bioinformatics. https://doi.org/10.1093/bioinformatics/btae203.
 

@@ -1,87 +1,35 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://github.com/statsleelab/gauss/404.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/articles/afmix_example.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/articles/computeLD_example.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/articles/dist_example.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/articles/distmix_example.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/articles/fiqt_example.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/articles/gsl_installation.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/articles/jepeg_example.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/articles/jepegmix_example.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/articles/ref_1KG.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/articles/ref_33KG.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/authors.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/index.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/reference/PGC2_SCZ_ANC_Prop.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/reference/afmix.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/reference/cal_pop_wgt.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/reference/computeLD.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/reference/cpw2.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/reference/dist.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/reference/distmix.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/reference/fiqt.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/reference/gauss-package.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/reference/jepeg.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/reference/jepegmix.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/reference/qcat.html</loc>
-  </url>
-  <url>
-    <loc>https://github.com/statsleelab/gauss/reference/qcatmix.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://github.com/statsleelab/gauss/404.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/articles/afmix_example.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/articles/computeLD_example.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/articles/dist_example.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/articles/fiqt_example.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/articles/index.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/articles/jepeg_example.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/articles/ref_1KG.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/articles/ref_33KG.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/authors.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/index.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/PGC2_SCZ_ANC_Prop.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/afmix.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/computeLD.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/cpw2.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/dist.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/distmix.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/fiqt.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/gauss-package.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/index.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/jepeg.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/jepegmix.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/prep_qcat.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/prep_recessive_impute.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/prep_zmix.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/prep_zmix2.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/prep_zmix3.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/prep_zmix4.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/prep_zmix5.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/qcat.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/qcatmix.html</loc></url>
+<url><loc>https://github.com/statsleelab/gauss/reference/simulateLD.html</loc></url>
 </urlset>
+

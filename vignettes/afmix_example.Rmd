@@ -64,9 +64,9 @@ head(input.data)
 Next, we assign the paths to reference panel data files. In this example, we use [the 33KG reference panel](https://statsleelab.github.io/gauss/articles/ref_33KG.html).
 ```{r prep_ref_path}
 # Paths to the reference files (replace these with your actual paths)
-reference_index_file <-"../ref/Human/33KG/33kg_index.gz"
-reference_data_file <- "../ref/Human/33KG/33kg_geno.gz"
-reference_pop_desc_file<-"../ref/Human/33KG/33kg_pop_desc.txt"
+reference_index_file <-"../ref/33KG/33kg_index.gz"
+reference_data_file <- "../ref/33KG/33kg_geno.gz"
+reference_pop_desc_file<-"../ref/33KG/33kg_pop_desc.txt"
 ```
 
 

@@ -1,4 +1,5 @@
-#include <Rcpp.h>
+#include <RcppEigen.h>
+#include <Rmath.h>
 
 using namespace Rcpp;
 
@@ -9,8 +10,6 @@ using namespace Rcpp;
 #include "snp.h"
 #include "gauss.h"
 #include "util.h"
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_cdf.h>
 
 void run_dist(std::vector<Snp*>& snp_vec, Arguments& args);
 
@@ -99,7 +98,7 @@ DataFrame dist(int chr,
       a2_vec.push_back((*it_sv)->GetA2());
       af1ref_vec.push_back((*it_sv)->GetAf1Ref());
       z_vec.push_back((*it_sv)->GetZ());
-      pval_vec.push_back(2*gsl_cdf_ugaussian_Q(std::abs((*it_sv)->GetZ())));
+      pval_vec.push_back(2 * R::pnorm5(std::abs((*it_sv)->GetZ()), 0.0, 1.0, 0, 0));
       info_vec.push_back((*it_sv)->GetInfo());
       type_vec.push_back((*it_sv)->GetType());
     }
@@ -154,28 +153,28 @@ void run_dist(std::vector<Snp*>& snp_vec, Arguments& args){
   /////////////////////////
   // run DIST imputation //
   /////////////////////////
-  gsl_matrix* Z1 = gsl_matrix_calloc(num_measured, 1);
-  gsl_matrix* B11 = gsl_matrix_calloc(num_measured,num_measured); // correlation matrix B11
-  gsl_matrix* B11Inv = gsl_matrix_calloc(num_measured, num_measured);
+  Eigen::MatrixXd Z1 = Eigen::MatrixXd::Zero(num_measured, 1);
+  Eigen::MatrixXd B11 = Eigen::MatrixXd::Zero(num_measured, num_measured); // correlation matrix B11
+  Eigen::MatrixXd B11Inv = Eigen::MatrixXd::Zero(num_measured, num_measured);
 
-  gsl_matrix* b21 = gsl_matrix_calloc(1, num_measured);
-  gsl_matrix* b12 = gsl_matrix_calloc(num_measured, 1);
-  gsl_matrix* b21B11Inv = gsl_matrix_calloc(1, num_measured);
-  gsl_matrix* val = gsl_matrix_calloc(1, 1);
+  Eigen::MatrixXd b21 = Eigen::MatrixXd::Zero(1, num_measured);
+  Eigen::MatrixXd b12 = Eigen::MatrixXd::Zero(num_measured, 1);
+  Eigen::MatrixXd b21B11Inv = Eigen::MatrixXd::Zero(1, num_measured);
+  Eigen::MatrixXd val = Eigen::MatrixXd::Zero(1, 1);
   
   // Init Z1 vector
   for(size_t i=0; i<num_measured; i++){   
-    gsl_matrix_set(Z1, i, 0, (*sliding_window_measured[i]).GetZ());
+    Z1(i, 0) = (*sliding_window_measured[i]).GetZ();
   }	
   // Init B11 matrix
   Rcpp::Rcout<<"Computing correlations between variants..."<<std::endl;
-  for(size_t i=0; i<B11->size1; i++){
-    gsl_matrix_set(B11, i, i, 1.0 + args.lambda); //add LAMBDA here (ridge regression trick)
-    for(size_t j=i+1; j<B11->size1; j++){
+  for(size_t i=0; i<static_cast<size_t>(B11.rows()); i++){
+    B11(i, i) = 1.0 + args.lambda; //add LAMBDA here (ridge regression trick)
+    for(size_t j=i+1; j<static_cast<size_t>(B11.rows()); j++){
       double v = CalCor((*sliding_window_measured[i]).GetGenotypeVec(), (*sliding_window_measured[j]).GetGenotypeVec());
       //v = floor(v*DECIMAL+0.5)/DECIMAL;
-      gsl_matrix_set(B11, i, j, v);
-      gsl_matrix_set(B11, j, i, v);
+      B11(i, j) = v;
+      B11(j, i) = v;
     }
   }
   
@@ -188,15 +187,15 @@ void run_dist(std::vector<Snp*>& snp_vec, Arguments& args){
   for(size_t i=0; i<num_unmeasured; i++){ 
     for(size_t j=0; j<num_measured; j++){
       double v = CalCor((*sliding_window_unmeasured[i]).GetGenotypeVec(), (*sliding_window_measured[j]).GetGenotypeVec());
-      gsl_matrix_set(b21, 0, j, v);
+      b21(0, j) = v;
     }
-    gsl_matrix_transpose_memcpy(b12, b21);
+    b12 = b21.transpose();
     MpMatMat(b21B11Inv, b21, B11Inv);
     MpMatMat(val, b21B11Inv, Z1); //z2
-    double z = gsl_matrix_get(val, 0, 0);
+    double z = val(0, 0);
     //double pval = 2*gsl_cdf_ugaussian_Q(std::abs(z));
     MpMatMat(val, b21B11Inv, b12); // information of z2
-    double info = std::abs(gsl_matrix_get(val, 0, 0));
+    double info = std::abs(val(0, 0));
     
     (*sliding_window_unmeasured[i]).SetZ(z/std::sqrt(info)); // use normalized z2 (imputed z-score)
     //(*sliding_window_unmeasured[i]).SetPval(pval); //pvalue
@@ -209,13 +208,6 @@ void run_dist(std::vector<Snp*>& snp_vec, Arguments& args){
       prog_prev++;
     }
   }
-  gsl_matrix_free(Z1);
-  gsl_matrix_free(B11);
-  gsl_matrix_free(B11Inv);
-  gsl_matrix_free(b21);
-  gsl_matrix_free(b12);
-  gsl_matrix_free(b21B11Inv);
-  gsl_matrix_free(val);
   //////////////////////////
   // Imputation is done ! //
   //////////////////////////
@@ -233,7 +225,6 @@ void run_dist(std::vector<Snp*>& snp_vec, Arguments& args){
   sliding_window_unmeasured.clear();
   std::deque<Snp*>().swap(sliding_window_unmeasured);
 }
-
 
 
 

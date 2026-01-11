@@ -10,7 +10,7 @@ class Snp;
 #include <fstream>
 #include <string>
 #include <vector>
-#include <gsl/gsl_matrix.h>
+#include <RcppEigen.h>
 
 
 struct Categ{
@@ -107,10 +107,10 @@ private:
   void CalJepegPval(std::vector<Snp*>& gene_snp_vec);
   void CalJepegmixPval(std::vector<Snp*>& gene_snp_vec);
   
-  void GetW(gsl_matrix*, std::vector<Snp*>& gene_snp_vec);
-  void GetZ(gsl_matrix*, std::vector<Snp*>& gene_snp_vec);
-  double CalBonfePval(gsl_matrix*);
-  double CalSumUPval(gsl_matrix*, gsl_matrix*);
+  void GetW(Eigen::MatrixXd& w, std::vector<Snp*>& gene_snp_vec);
+  void GetZ(Eigen::MatrixXd& z, std::vector<Snp*>& gene_snp_vec);
+  double CalBonfePval(const Eigen::MatrixXd& u);
+  double CalSumUPval(const Eigen::MatrixXd& u, const Eigen::MatrixXd& cov_u);
   
   Categ GetTopCateg(std::vector<Categ>& categ_vec);
   Snp* GetTopSNP(std::vector<Snp*>& gene_snp_vec);

@@ -4,6 +4,7 @@
 # GAUSS
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 GAUSS (Genome Analysis Using Summary Statistics) is a versatile R
@@ -23,21 +24,19 @@ v) apply corrections for the ‘Winner’s Curse’ biases (`fiqt()`).
 
 ## Citing GAUSS
 
-Lee and Bacanu. GAUSS: A comprehensive R package for computation of
-linkage disequlibrium for variants, Gaussian imputation and TWAS
-analysis of cosmopolitan cohorts.
-[medRxiv](https://www.medrxiv.org/content/10.1101/2023.09.19.23295783v1).
+Lee and Bacanu. GAUSS: a summary-statistics-based R package for accurate
+estimation of linkage disequilibrium for variants, Gaussian imputation,
+and TWAS analysis of cosmopolitan cohorts.
+[Bioinformatics](https://doi.org/10.1093/bioinformatics/btae203).
 
 ## Author
 
 Donghyung Lee <leed13@miamioh.edu>
 
-## Pre-installation: Setting Up GSL
+## Pre-installation
 
-Before installing GAUSS, it is essential to set up the GNU Scientific
-Library (GSL), a dependency for the GAUSS package. Detailed installation
-instructions for GSL are available
-[here](https://statsleelab.github.io/gauss/articles/gsl_installation.html).
+GAUSS no longer requires the GNU Scientific Library (GSL). Installation
+only needs standard R tooling plus the package dependencies.
 
 ## GAUSS Installation
 
@@ -50,7 +49,7 @@ devtools::install_github("statsleelab/gauss")
 
 ## Suggested Workflow
 
-<img src="man/figures/GAUSS_Flowchart_bioinfo.png" width="100%" style="display: block; margin: auto;" />
+<img src="man/figures/GAUSS_Flowchart_bioinfo.png" alt="" width="100%" style="display: block; margin: auto;" />
 
 GAUSS functions utilize five core input datasets: i) Association Z-score
 Data (highlighted in blue), consisting of six columns of variables: SNP

@@ -10,8 +10,6 @@ using namespace Rcpp;
 #include "gene.h"
 #include "gauss.h"
 #include "util.h"
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_cdf.h>
 
 //void read_input_jepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
 //void read_ref_index_jepeg(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);

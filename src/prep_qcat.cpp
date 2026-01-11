@@ -9,8 +9,6 @@ using namespace Rcpp;
 #include "snp.h"
 #include "gauss.h"
 #include "util.h"
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_cdf.h>
 
 //void run_qcatR(std::vector<Snp*>& snp_vec, Arguments& args);
 

@@ -11,8 +11,6 @@ using namespace Rcpp;
 #include "snp.h"
 #include "gauss.h"
 #include "util.h"
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_cdf.h>
 
 
 double CalCor(NumericVector& x, NumericVector& y);

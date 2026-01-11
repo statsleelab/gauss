@@ -139,8 +139,6 @@ prep_qcat <- function(chr, start_bp, end_bp, wing_size, study_pop, input_file, r
 #'         - cormat_add: A correlation matrix between additive-coded predicted SNPs and additive-coded measured SNPs,
 #'         - cormat_dom: A correlation matrix between dominant-coded predicted SNPs and additive-coded measured SNPs,
 #'         - cormat_rec: A correlation matrix between recessive-coded predicted SNPs and additive-coded measured SNPs.
-NULL
-
 prep_recessive_impute <- function(chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff = NULL) {
     .Call(`_gauss_prep_recessive_impute`, chr, start_bp, end_bp, wing_size, pop_wgt_df, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff)
 }

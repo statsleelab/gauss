@@ -7,8 +7,7 @@
 #include <vector>
 #include <map>
 #include <cmath>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_cdf.h>
+#include <Rmath.h>
 
 
 #include "snp.h"
@@ -288,30 +287,30 @@ void Gene::RunJepegmix(std::vector<Snp*>& gene_snp_vec){
 
 void Gene::CalJepegPval(std::vector<Snp*>& gene_snp_vec){
   
-  gsl_matrix* CorG = gsl_matrix_calloc(gene_snp_vec.size(), gene_snp_vec.size()); // =CorZ
-  gsl_matrix* W = gsl_matrix_calloc(num_avail_categ_, gene_snp_vec.size()); // weight matrix
-  gsl_matrix* Wt = gsl_matrix_calloc(gene_snp_vec.size(), num_avail_categ_);
-  gsl_matrix* WWt = gsl_matrix_calloc(num_avail_categ_, num_avail_categ_);
-  gsl_matrix* W_CorG = gsl_matrix_calloc(num_avail_categ_, gene_snp_vec.size());
-  gsl_matrix* CovU = gsl_matrix_calloc(num_avail_categ_, num_avail_categ_); // CovU (covariance matrix of U)= W * CorG * Wt
+  Eigen::MatrixXd CorG = Eigen::MatrixXd::Zero(gene_snp_vec.size(), gene_snp_vec.size()); // =CorZ
+  Eigen::MatrixXd W = Eigen::MatrixXd::Zero(num_avail_categ_, gene_snp_vec.size()); // weight matrix
+  Eigen::MatrixXd Wt = Eigen::MatrixXd::Zero(gene_snp_vec.size(), num_avail_categ_);
+  Eigen::MatrixXd WWt = Eigen::MatrixXd::Zero(num_avail_categ_, num_avail_categ_);
+  Eigen::MatrixXd W_CorG = Eigen::MatrixXd::Zero(num_avail_categ_, gene_snp_vec.size());
+  Eigen::MatrixXd CovU = Eigen::MatrixXd::Zero(num_avail_categ_, num_avail_categ_); // CovU (covariance matrix of U)= W * CorG * Wt
   //To remove collinear categs
-  gsl_matrix* CorU = gsl_matrix_calloc(num_avail_categ_, num_avail_categ_); // CorU (correlation matrix of U)
+  Eigen::MatrixXd CorU = Eigen::MatrixXd::Zero(num_avail_categ_, num_avail_categ_); // CorU (correlation matrix of U)
   
-  gsl_matrix* Z = gsl_matrix_calloc(gene_snp_vec.size(), 1);
-  gsl_matrix* U = gsl_matrix_calloc(num_avail_categ_, 1); 
-  gsl_matrix* Ut = gsl_matrix_calloc(1, num_avail_categ_); 
-  gsl_matrix* normU = gsl_matrix_calloc(num_avail_categ_, 1); //normalized U
+  Eigen::MatrixXd Z = Eigen::MatrixXd::Zero(gene_snp_vec.size(), 1);
+  Eigen::MatrixXd U = Eigen::MatrixXd::Zero(num_avail_categ_, 1); 
+  Eigen::MatrixXd Ut = Eigen::MatrixXd::Zero(1, num_avail_categ_); 
+  Eigen::MatrixXd normU = Eigen::MatrixXd::Zero(num_avail_categ_, 1); //normalized U
   
   
   //Get CorG (correlation matrix[n by n] btw snp genotypes)  
-  for(size_t i=0; i<CorG->size1; i++){
-    gsl_matrix_set(CorG, i, i, 1.0 + lambda_); //add LAMBDA here (ridge regression trick)
-    for(size_t j=i+1; j<CorG->size1; j++){
+  for(size_t i=0; i<static_cast<size_t>(CorG.rows()); i++){
+    CorG(i, i) = 1.0 + lambda_; //add LAMBDA here (ridge regression trick)
+    for(size_t j=i+1; j<static_cast<size_t>(CorG.rows()); j++){
       double v = CalCor((*gene_snp_vec[i]).GetGenotypeVec(), 
                         (*gene_snp_vec[j]).GetGenotypeVec());
       //v = floor(v*DECIMAL+0.5)/DECIMAL;
-      gsl_matrix_set(CorG, i, j, v);
-      gsl_matrix_set(CorG, j, i, v);
+      CorG(i, j) = v;
+      CorG(j, i) = v;
     }
   }
 #ifdef CalJepegPval_Debug
@@ -327,7 +326,7 @@ void Gene::CalJepegPval(std::vector<Snp*>& gene_snp_vec){
 #endif
   
   //Get Wt
-  gsl_matrix_transpose_memcpy(Wt, W);
+  Wt = W.transpose();
 #ifdef CalJepegPval_Debug
   Rcpp::Rcout<<"############# Wt" << std::endl;
   PrintMatrix(Wt);
@@ -370,11 +369,11 @@ void Gene::CalJepegPval(std::vector<Snp*>& gene_snp_vec){
 #endif 
   
   //Get normU (normalized U)
-  for(int i=0; i< normU->size1; i++){
-    double var = gsl_matrix_get(CovU, i, i);
-    double u = gsl_matrix_get(U,i,0)/std::sqrt(var);
-    gsl_matrix_set(normU,i,0,u);
-    categ_vec_[i].SetPval(2*gsl_cdf_ugaussian_Q(std::abs(u)));
+  for(int i=0; i< normU.rows(); i++){
+    double var = CovU(i, i);
+    double u = U(i, 0) / std::sqrt(var);
+    normU(i, 0) = u;
+    categ_vec_[i].SetPval(2 * R::pnorm5(std::abs(u), 0.0, 1.0, 0, 0));
   }
 #ifdef CalJepegPval_Debug
   Rcpp::Rcout<<"############# normU (nomalized U) = U/sqrt(varU)" << std::endl;
@@ -391,7 +390,7 @@ void Gene::CalJepegPval(std::vector<Snp*>& gene_snp_vec){
   //TODO: find collinear categs (to be removed).
   for(int j=num_avail_categ_-1; j>0; j--){
     for(int i=0; i<j; i++){
-      double cor = gsl_matrix_get(CorU, i, j);
+      double cor = CorU(i, j);
       if(std::abs(cor) > categ_cor_cutoff_){
         categ_vec_[j].SetRmv(true);
         break;
@@ -407,8 +406,8 @@ void Gene::CalJepegPval(std::vector<Snp*>& gene_snp_vec){
   
   //TODO: find categs with low variance (to be removed).  
   for(int i=0; i<num_avail_categ_; i++){
-    double varU = gsl_matrix_get(CovU, i, i); 
-    double normW = gsl_matrix_get(WWt, i, i)/denorm_norm_w_;
+    double varU = CovU(i, i); 
+    double normW = WWt(i, i)/denorm_norm_w_;
     if(varU < normW){
       categ_vec_[i].SetRmv(true);
     }
@@ -440,19 +439,19 @@ void Gene::CalJepegPval(std::vector<Snp*>& gene_snp_vec){
   //1. make new U (X) and CovU (CovX) after removing collinear or low variance categs
   //2. calculate JEPEG pvalue 
   if(df_){
-    gsl_matrix* X = gsl_matrix_calloc(df_ , 1);
-    gsl_matrix* Xt = gsl_matrix_calloc(1, df_);
-    gsl_matrix* CovX = gsl_matrix_calloc(df_, df_);
-    gsl_matrix* CovXInv = gsl_matrix_calloc(df_, df_);
-    gsl_matrix* Xt_CovXInv = gsl_matrix_calloc(1, df_);
-    gsl_matrix* Xt_CovXInv_X = gsl_matrix_calloc(1, 1); //chisq
+    Eigen::MatrixXd X = Eigen::MatrixXd::Zero(df_, 1);
+    Eigen::MatrixXd Xt = Eigen::MatrixXd::Zero(1, df_);
+    Eigen::MatrixXd CovX = Eigen::MatrixXd::Zero(df_, df_);
+    Eigen::MatrixXd CovXInv = Eigen::MatrixXd::Zero(df_, df_);
+    Eigen::MatrixXd Xt_CovXInv = Eigen::MatrixXd::Zero(1, df_);
+    Eigen::MatrixXd Xt_CovXInv_X = Eigen::MatrixXd::Zero(1, 1); //chisq
     
     //Remove rmv categs from U.
     //Make new vector X.
     int ii=0;
     for(int i=0; i<num_avail_categ_; i++){
       if(!(categ_vec_[i].GetRmv())){
-        gsl_matrix_set(X, ii, 0, gsl_matrix_get(U, i, 0));
+        X(ii, 0) = U(i, 0);
         ii++;
       }
     }
@@ -470,7 +469,7 @@ void Gene::CalJepegPval(std::vector<Snp*>& gene_snp_vec){
       if(!(categ_vec_[i].GetRmv())){
         for(int j=0; j<num_avail_categ_; j++){
           if(!(categ_vec_[j].GetRmv())){
-            gsl_matrix_set(CovX, n, m, gsl_matrix_get(CovU, i, j));
+            CovX(n, m) = CovU(i, j);
             m++;
           }
         }
@@ -484,7 +483,7 @@ void Gene::CalJepegPval(std::vector<Snp*>& gene_snp_vec){
 #endif
     
     //Get Xt
-    gsl_matrix_transpose_memcpy(Xt, X);
+    Xt = X.transpose();
 #ifdef CalJepegPval_Debug
     Rcpp::Rcout<<"############# Xt" << std::endl;
     PrintMatrix(Xt);
@@ -506,8 +505,8 @@ void Gene::CalJepegPval(std::vector<Snp*>& gene_snp_vec){
     PrintMatrix(Xt_CovXInv_X);
 #endif 
     
-    chisq_ = gsl_matrix_get(Xt_CovXInv_X, 0, 0);
-    jepeg_pval_ = gsl_cdf_chisq_Q(chisq_, df_);
+    chisq_ = Xt_CovXInv_X(0, 0);
+    jepeg_pval_ = R::pchisq(chisq_, df_, 0, 0);
     
     //bonfe_pval_bf_ = CalBonfePval(U);
     //bonfe_pval_af_ = CalBonfePval(X);
@@ -520,7 +519,7 @@ void Gene::CalJepegPval(std::vector<Snp*>& gene_snp_vec){
     
     Snp* top_snp = GetTopSNP(gene_snp_vec);
     top_snp_id_ = (*top_snp).GetRsid();
-    top_snp_pval_ = 2*gsl_cdf_ugaussian_Q(std::abs((*top_snp).GetZ()));
+    top_snp_pval_ = 2 * R::pnorm5(std::abs((*top_snp).GetZ()), 0.0, 1.0, 0, 0);
     
     geneid_ = (*gene_snp_vec[0]).GetGeneid();
     
@@ -542,66 +541,47 @@ void Gene::CalJepegPval(std::vector<Snp*>& gene_snp_vec){
     //Rcpp::Rcout<<"sumU_pval_: "<<sumU_pval_<<std::endl<<std::endl;
 #endif   
     
-    gsl_matrix_free(X);
-    gsl_matrix_free(Xt);
-    gsl_matrix_free(CovX);
-    gsl_matrix_free(CovXInv);
-    gsl_matrix_free(Xt_CovXInv);
-    gsl_matrix_free(Xt_CovXInv_X);
-    
     //END 
     //1. make new U (X) and CovU (CovX) after removing collinear or low variance categs
     //2. calculate JEPEG pvalue 
     ////////////////////////////////////////////////////////////////////////////////////
   }
   
-  gsl_matrix_free(CorG);
-  gsl_matrix_free(W);
-  gsl_matrix_free(Wt);
-  gsl_matrix_free(WWt);
-  gsl_matrix_free(W_CorG);
-  gsl_matrix_free(CovU);
-  gsl_matrix_free(CorU);
-  
-  gsl_matrix_free(Z);
-  gsl_matrix_free(U);
-  gsl_matrix_free(Ut);
-  gsl_matrix_free(normU);
 }
 
 
 void Gene::CalJepegmixPval(std::vector<Snp*>& gene_snp_vec){
   
-  gsl_matrix* CorG = gsl_matrix_calloc(gene_snp_vec.size(), gene_snp_vec.size()); // =CorZ
-  gsl_matrix* W = gsl_matrix_calloc(num_avail_categ_, gene_snp_vec.size()); // weight matrix
-  gsl_matrix* Wt = gsl_matrix_calloc(gene_snp_vec.size(), num_avail_categ_);
-  gsl_matrix* WWt = gsl_matrix_calloc(num_avail_categ_, num_avail_categ_);
-  gsl_matrix* W_CorG = gsl_matrix_calloc(num_avail_categ_, gene_snp_vec.size());
-  gsl_matrix* CovU = gsl_matrix_calloc(num_avail_categ_, num_avail_categ_); // CovU (covariance matrix of U)= W * CorG * Wt
+  Eigen::MatrixXd CorG = Eigen::MatrixXd::Zero(gene_snp_vec.size(), gene_snp_vec.size()); // =CorZ
+  Eigen::MatrixXd W = Eigen::MatrixXd::Zero(num_avail_categ_, gene_snp_vec.size()); // weight matrix
+  Eigen::MatrixXd Wt = Eigen::MatrixXd::Zero(gene_snp_vec.size(), num_avail_categ_);
+  Eigen::MatrixXd WWt = Eigen::MatrixXd::Zero(num_avail_categ_, num_avail_categ_);
+  Eigen::MatrixXd W_CorG = Eigen::MatrixXd::Zero(num_avail_categ_, gene_snp_vec.size());
+  Eigen::MatrixXd CovU = Eigen::MatrixXd::Zero(num_avail_categ_, num_avail_categ_); // CovU (covariance matrix of U)= W * CorG * Wt
   //To remove collinear categs
-  gsl_matrix* CorU = gsl_matrix_calloc(num_avail_categ_, num_avail_categ_); // CorU (correlation matrix of U)
+  Eigen::MatrixXd CorU = Eigen::MatrixXd::Zero(num_avail_categ_, num_avail_categ_); // CorU (correlation matrix of U)
   
-  gsl_matrix* Z = gsl_matrix_calloc(gene_snp_vec.size(), 1);
-  gsl_matrix* U = gsl_matrix_calloc(num_avail_categ_, 1); 
-  gsl_matrix* Ut = gsl_matrix_calloc(1, num_avail_categ_); 
-  gsl_matrix* normU = gsl_matrix_calloc(num_avail_categ_, 1); //normalized U
+  Eigen::MatrixXd Z = Eigen::MatrixXd::Zero(gene_snp_vec.size(), 1);
+  Eigen::MatrixXd U = Eigen::MatrixXd::Zero(num_avail_categ_, 1); 
+  Eigen::MatrixXd Ut = Eigen::MatrixXd::Zero(1, num_avail_categ_); 
+  Eigen::MatrixXd normU = Eigen::MatrixXd::Zero(num_avail_categ_, 1); //normalized U
   
-  gsl_vector* SNP_STD_VEC = gsl_vector_calloc(gene_snp_vec.size()); //vector of standard deviations for SNPs in a gene
+  Eigen::VectorXd SNP_STD_VEC = Eigen::VectorXd::Zero(gene_snp_vec.size()); //vector of standard deviations for SNPs in a gene
   
   for(size_t i=0; i < gene_snp_vec.size(); i++){
     double v = CalWgtCov((*gene_snp_vec[i]).GetGenotypeVec(), (*gene_snp_vec[i]).GetGenotypeVec(), pop_wgt_vec_);
-    gsl_vector_set(SNP_STD_VEC, i, std::sqrt(v));
+    SNP_STD_VEC(i) = std::sqrt(v);
   }
   //Cal CorG (correlation matrix[n by n] btw snp genotypes)  
-  for(size_t i=0; i<CorG->size1; i++){
-    gsl_matrix_set(CorG, i, i, 1.0 + lambda_); //add LAMBDA here (ridge regression trick)
-    double stdi = gsl_vector_get(SNP_STD_VEC, i);
-    for(size_t j=i+1; j<CorG->size1; j++){
-      double stdj = gsl_vector_get(SNP_STD_VEC, j);
+  for(size_t i=0; i<static_cast<size_t>(CorG.rows()); i++){
+    CorG(i, i) = 1.0 + lambda_; //add LAMBDA here (ridge regression trick)
+    double stdi = SNP_STD_VEC(i);
+    for(size_t j=i+1; j<static_cast<size_t>(CorG.rows()); j++){
+      double stdj = SNP_STD_VEC(j);
       double cov = CalWgtCov((*gene_snp_vec[i]).GetGenotypeVec(), (*gene_snp_vec[j]).GetGenotypeVec(), pop_wgt_vec_);
       double cor = cov/(stdi*stdj);
-      gsl_matrix_set(CorG, i, j, cor);
-      gsl_matrix_set(CorG, j, i, cor);
+      CorG(i, j) = cor;
+      CorG(j, i) = cor;
     }
   }
   
@@ -618,7 +598,7 @@ void Gene::CalJepegmixPval(std::vector<Snp*>& gene_snp_vec){
 #endif
   
   //Get Wt
-  gsl_matrix_transpose_memcpy(Wt, W);
+  Wt = W.transpose();
 #ifdef CalJepegmixPval_Debug
   Rcpp::Rcout<<"############# Wt" << std::endl;
   PrintMatrix(Wt);
@@ -661,11 +641,11 @@ void Gene::CalJepegmixPval(std::vector<Snp*>& gene_snp_vec){
 #endif 
   
   //Get normU (normalized U)
-  for(int i=0; i< normU->size1; i++){
-    double var = gsl_matrix_get(CovU, i, i);
-    double u = gsl_matrix_get(U,i,0)/std::sqrt(var);
-    gsl_matrix_set(normU,i,0,u);
-    categ_vec_[i].SetPval(2*gsl_cdf_ugaussian_Q(std::abs(u)));
+  for(int i=0; i< normU.rows(); i++){
+    double var = CovU(i, i);
+    double u = U(i, 0) / std::sqrt(var);
+    normU(i, 0) = u;
+    categ_vec_[i].SetPval(2 * R::pnorm5(std::abs(u), 0.0, 1.0, 0, 0));
   }
 #ifdef CalJepegmixPval_Debug
   Rcpp::Rcout<<"############# normU (nomalized U) = U/sqrt(varU)" << std::endl;
@@ -682,7 +662,7 @@ void Gene::CalJepegmixPval(std::vector<Snp*>& gene_snp_vec){
   //TODO: find collinear categs (to be removed).
   for(int j=num_avail_categ_-1; j>0; j--){
     for(int i=0; i<j; i++){
-      double cor = gsl_matrix_get(CorU, i, j);
+      double cor = CorU(i, j);
       if(std::abs(cor) > categ_cor_cutoff_){
         categ_vec_[j].SetRmv(true);
         break;
@@ -698,8 +678,8 @@ void Gene::CalJepegmixPval(std::vector<Snp*>& gene_snp_vec){
   
   //TODO: find categs with low variance (to be removed).  
   for(int i=0; i<num_avail_categ_; i++){
-    double varU = gsl_matrix_get(CovU, i, i); 
-    double normW = gsl_matrix_get(WWt, i, i)/denorm_norm_w_;
+    double varU = CovU(i, i); 
+    double normW = WWt(i, i)/denorm_norm_w_;
     if(varU < normW){
       categ_vec_[i].SetRmv(true);
     }
@@ -731,19 +711,19 @@ void Gene::CalJepegmixPval(std::vector<Snp*>& gene_snp_vec){
   //1. make new U (X) and CovU (CovX) after removing collinear or low variance categs
   //2. calculate JEPEG pvalue 
   if(df_){
-    gsl_matrix* X = gsl_matrix_calloc(df_ , 1);
-    gsl_matrix* Xt = gsl_matrix_calloc(1, df_);
-    gsl_matrix* CovX = gsl_matrix_calloc(df_, df_);
-    gsl_matrix* CovXInv = gsl_matrix_calloc(df_, df_);
-    gsl_matrix* Xt_CovXInv = gsl_matrix_calloc(1, df_);
-    gsl_matrix* Xt_CovXInv_X = gsl_matrix_calloc(1, 1); //chisq
+    Eigen::MatrixXd X = Eigen::MatrixXd::Zero(df_, 1);
+    Eigen::MatrixXd Xt = Eigen::MatrixXd::Zero(1, df_);
+    Eigen::MatrixXd CovX = Eigen::MatrixXd::Zero(df_, df_);
+    Eigen::MatrixXd CovXInv = Eigen::MatrixXd::Zero(df_, df_);
+    Eigen::MatrixXd Xt_CovXInv = Eigen::MatrixXd::Zero(1, df_);
+    Eigen::MatrixXd Xt_CovXInv_X = Eigen::MatrixXd::Zero(1, 1); //chisq
     
     //Remove rmv categs from U.
     //Make new vector X.
     int ii=0;
     for(int i=0; i<num_avail_categ_; i++){
       if(!(categ_vec_[i].GetRmv())){
-        gsl_matrix_set(X, ii, 0, gsl_matrix_get(U, i, 0));
+        X(ii, 0) = U(i, 0);
         ii++;
       }
     }
@@ -761,7 +741,7 @@ void Gene::CalJepegmixPval(std::vector<Snp*>& gene_snp_vec){
       if(!(categ_vec_[i].GetRmv())){
         for(int j=0; j<num_avail_categ_; j++){
           if(!(categ_vec_[j].GetRmv())){
-            gsl_matrix_set(CovX, n, m, gsl_matrix_get(CovU, i, j));
+            CovX(n, m) = CovU(i, j);
             m++;
           }
         }
@@ -775,7 +755,7 @@ void Gene::CalJepegmixPval(std::vector<Snp*>& gene_snp_vec){
 #endif
     
     //Get Xt
-    gsl_matrix_transpose_memcpy(Xt, X);
+    Xt = X.transpose();
 #ifdef CalJepegmixPval_Debug
     Rcpp::Rcout<<"############# Xt" << std::endl;
     PrintMatrix(Xt);
@@ -797,8 +777,8 @@ void Gene::CalJepegmixPval(std::vector<Snp*>& gene_snp_vec){
     PrintMatrix(Xt_CovXInv_X);
 #endif 
     
-    chisq_ = gsl_matrix_get(Xt_CovXInv_X, 0, 0);
-    jepeg_pval_ = gsl_cdf_chisq_Q(chisq_, df_);
+    chisq_ = Xt_CovXInv_X(0, 0);
+    jepeg_pval_ = R::pchisq(chisq_, df_, 0, 0);
     
     //bonfe_pval_bf_ = CalBonfePval(U);
     //bonfe_pval_af_ = CalBonfePval(X);
@@ -811,7 +791,7 @@ void Gene::CalJepegmixPval(std::vector<Snp*>& gene_snp_vec){
     
     Snp* top_snp = GetTopSNP(gene_snp_vec);
     top_snp_id_ = (*top_snp).GetRsid();
-    top_snp_pval_ = 2*gsl_cdf_ugaussian_Q(std::abs((*top_snp).GetZ()));
+    top_snp_pval_ = 2 * R::pnorm5(std::abs((*top_snp).GetZ()), 0.0, 1.0, 0, 0);
     
     geneid_ = (*gene_snp_vec[0]).GetGeneid();
     
@@ -833,72 +813,50 @@ void Gene::CalJepegmixPval(std::vector<Snp*>& gene_snp_vec){
     //Rcpp::Rcout<<"sumU_pval_: "<<sumU_pval_<<std::endl<<std::endl;
 #endif   
     
-    gsl_matrix_free(X);
-    gsl_matrix_free(Xt);
-    gsl_matrix_free(CovX);
-    gsl_matrix_free(CovXInv);
-    gsl_matrix_free(Xt_CovXInv);
-    gsl_matrix_free(Xt_CovXInv_X);
-    
     //END 
     //1. make new U (X) and CovU (CovX) after removing collinear or low variance categs
     //2. calculate JEPEG pvalue 
     ////////////////////////////////////////////////////////////////////////////////////
   }
   
-  gsl_matrix_free(CorG);
-  gsl_matrix_free(W);
-  gsl_matrix_free(Wt);
-  gsl_matrix_free(WWt);
-  gsl_matrix_free(W_CorG);
-  gsl_matrix_free(CovU);
-  gsl_matrix_free(CorU);
-  
-  gsl_matrix_free(Z);
-  gsl_matrix_free(U);
-  gsl_matrix_free(Ut);
-  gsl_matrix_free(normU);
-  
-  gsl_vector_free(SNP_STD_VEC);
 }
 
-double Gene::CalBonfePval(gsl_matrix* U){
-  gsl_vector* pval_vec = gsl_vector_calloc(U->size1);
-  double u, p;
-  for(int i=0; i<U->size1; i++){
-    u = gsl_matrix_get(U, i, 0);
-    gsl_vector_set(pval_vec, i, 2*gsl_cdf_ugaussian_Q(std::abs(u))*(U->size1) );
+double Gene::CalBonfePval(const Eigen::MatrixXd& U){
+  Eigen::VectorXd pval_vec = Eigen::VectorXd::Zero(U.rows());
+  double u = 0.0;
+  for(int i=0; i<U.rows(); i++){
+    u = U(i, 0);
+    pval_vec(i) = 2 * R::pnorm5(std::abs(u), 0.0, 1.0, 0, 0) * U.rows();
   }
-  p = gsl_vector_min(pval_vec);
+  double p = pval_vec.minCoeff();
   if(p > 1)
     p = 1.0;
-  gsl_vector_free(pval_vec);
   return p;
 }
 
-double Gene::CalSumUPval(gsl_matrix* U, gsl_matrix* CovU){
+double Gene::CalSumUPval(const Eigen::MatrixXd& U, const Eigen::MatrixXd& CovU){
   double sumU=0;
   double var_sumU=0;
-  for(int i=0; i<CovU->size1; i++){
-    sumU = sumU + gsl_matrix_get(U, i, 0);
-    for(int j=0; j<CovU->size1; j++){
-      var_sumU = var_sumU + gsl_matrix_get(CovU, i ,j);
+  for(int i=0; i<CovU.rows(); i++){
+    sumU = sumU + U(i, 0);
+    for(int j=0; j<CovU.rows(); j++){
+      var_sumU = var_sumU + CovU(i ,j);
     }
   }
-  double p = 2*gsl_cdf_gaussian_Q(std::abs(sumU), std::sqrt(var_sumU));
+  double p = 2 * R::pnorm5(std::abs(sumU), 0.0, std::sqrt(var_sumU), 0, 0);
   return p;
 }
 
 
 
-void Gene::GetZ(gsl_matrix* Z, std::vector<Snp*>& gene_snp_vec){
+void Gene::GetZ(Eigen::MatrixXd& Z, std::vector<Snp*>& gene_snp_vec){
   for(int i=0; i<gene_snp_vec.size(); i++){
-    gsl_matrix_set(Z, i, 0, (*gene_snp_vec[i]).GetZ());
+    Z(i, 0) = (*gene_snp_vec[i]).GetZ();
   }
 }
 
 
-void Gene::GetW(gsl_matrix* W, std::vector<Snp*>& gene_snp_vec){
+void Gene::GetW(Eigen::MatrixXd& W, std::vector<Snp*>& gene_snp_vec){
   
 #ifdef GetW_Debug
   Rcpp::Rcout<<"############# categ_count_vec_" << std::endl;
@@ -910,7 +868,7 @@ void Gene::GetW(gsl_matrix* W, std::vector<Snp*>& gene_snp_vec){
     int k=0;
     for(int j=0; j<categ_count_vec_.size(); j++){
       if(categ_count_vec_[j]!=0){
-        gsl_matrix_set(W, k, i, ((*gene_snp_vec[i]).GetCategWgt(j))*std::sqrt(((*gene_snp_vec[i]).GetInfo())) );
+        W(k, i) = ((*gene_snp_vec[i]).GetCategWgt(j)) * std::sqrt(((*gene_snp_vec[i]).GetInfo()));
         //gsl_matrix_set(W, k, i, ((*gene_snp_vec[i]).GetCategWgt(j)));
         k++;
       }
@@ -944,5 +902,3 @@ Snp* Gene::GetTopSNP(std::vector<Snp*>& gene_snp_vec){
   }
   return gene_snp_vec[top_index];
 }
-
-

@@ -4,8 +4,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-//#include <RcppGSL.h>
-#include <Rcpp.h>
+#include <RcppEigen.h>
 
 // forward declaration
 //struct BGZF;
@@ -20,8 +19,7 @@
 //#include <map>
 #include <fstream> //ofstream
 
-#include <gsl/gsl_vector.h>
-#include <gsl/gsl_matrix.h>
+#include <Eigen/Dense>
 
 #include "bgzf.h"
 
@@ -30,31 +28,31 @@ double CalWgtCov(std::vector<std::string>& x, std::vector<std::string>& y, std::
 double CalCor(std::vector<std::string>& x, std::vector<std::string>& y, std::vector<double>& pop_wgt_vec); 
 double CalCor(std::string& x, std::string& y);
 double CalCor(std::vector<unsigned char>& x, std::vector<unsigned char>& y);
-double CalCor(gsl_vector_view x, gsl_vector_view y);
+double CalCor(const Eigen::Ref<const Eigen::VectorXd>& x, const Eigen::Ref<const Eigen::VectorXd>& y);
 
 
-double CalCov(gsl_vector_view x, gsl_vector_view y);
-double CalVar(gsl_vector_view x);
-double CalMeanSumSq(gsl_matrix* m);
-void CalCorMat(gsl_matrix* result, gsl_matrix* m);
-void CalCovMat(gsl_matrix* result, gsl_matrix* m);
-void GetDiagMat(gsl_matrix* result, gsl_matrix* m);
-void MpMatMat(gsl_matrix* result, gsl_matrix* m1, gsl_matrix* m2);
-void MpNumMat(gsl_matrix* result, double num, gsl_matrix* m);
-void CholeskyMat(gsl_matrix* result, gsl_matrix* m);
-void SubMatMat(gsl_matrix* result, gsl_matrix* x1, gsl_matrix* x2);
-void AddNumMatDiag(gsl_matrix* x1, double num);
-void CnvrtCovToCor(gsl_matrix* corMat, gsl_matrix* covMat);
-void InvMat(gsl_matrix* inverse, gsl_matrix* m1);
-void MakePosDef(gsl_matrix* m1, double minAbsEig);
-int RmvPC(gsl_matrix* m1, double eigCutoff);
-int CountPC(gsl_matrix* m1, double eig_cutoff);
-void PrintVector(gsl_vector* x);
+double CalCov(const Eigen::Ref<const Eigen::VectorXd>& x, const Eigen::Ref<const Eigen::VectorXd>& y);
+double CalVar(const Eigen::Ref<const Eigen::VectorXd>& x);
+double CalMeanSumSq(const Eigen::Ref<const Eigen::MatrixXd>& m);
+void CalCorMat(Eigen::MatrixXd& result, const Eigen::Ref<const Eigen::MatrixXd>& m);
+void CalCovMat(Eigen::MatrixXd& result, const Eigen::Ref<const Eigen::MatrixXd>& m);
+void GetDiagMat(Eigen::MatrixXd& result, const Eigen::Ref<const Eigen::MatrixXd>& m);
+void MpMatMat(Eigen::MatrixXd& result, const Eigen::Ref<const Eigen::MatrixXd>& m1, const Eigen::Ref<const Eigen::MatrixXd>& m2);
+void MpNumMat(Eigen::MatrixXd& result, double num, const Eigen::Ref<const Eigen::MatrixXd>& m);
+void CholeskyMat(Eigen::MatrixXd& result, const Eigen::Ref<const Eigen::MatrixXd>& m);
+void SubMatMat(Eigen::MatrixXd& result, const Eigen::Ref<const Eigen::MatrixXd>& x1, const Eigen::Ref<const Eigen::MatrixXd>& x2);
+void AddNumMatDiag(Eigen::MatrixXd& x1, double num);
+void CnvrtCovToCor(Eigen::MatrixXd& corMat, const Eigen::Ref<const Eigen::MatrixXd>& covMat);
+void InvMat(Eigen::MatrixXd& inverse, const Eigen::Ref<const Eigen::MatrixXd>& m1);
+void MakePosDef(Eigen::MatrixXd& m1, double minAbsEig);
+int RmvPC(Eigen::MatrixXd& m1, double eigCutoff);
+int CountPC(const Eigen::Ref<const Eigen::MatrixXd>& m1, double eig_cutoff);
+void PrintVector(const Eigen::VectorXd& x);
 void PrintVector(std::vector<bool>& x);
 void PrintVector(std::vector<int>& x);
-void PrintVector(gsl_vector* x, std::ofstream& outFile);
-void PrintMatrix(gsl_matrix* x);
-void PrintMatrix(gsl_matrix* x, std::ofstream& outFile);
+void PrintVector(const Eigen::VectorXd& x, std::ofstream& outFile);
+void PrintMatrix(const Eigen::MatrixXd& x);
+void PrintMatrix(const Eigen::MatrixXd& x, std::ofstream& outFile);
 
 void SplitString(std::vector<std::string>& vec, std::string& str, char delim);  
 

@@ -61,9 +61,9 @@ head(input.data)
 
 We will use [the 33KG reference panel](https://statsleelab.github.io/gauss/articles/ref_33KG.html). Replace the file paths below with those of your actual reference panel files.
 ```{r prep_ref_path}
-reference_index_file <-"../ref/Human/33KG/33kg_index.gz"
-reference_data_file <- "../ref/Human/33KG/33kg_geno.gz"
-reference_pop_desc_file<-"../ref/Human/33KG/33kg_pop_desc.txt"
+reference_index_file <-"../ref/33KG/33kg_index.gz"
+reference_data_file <- "../ref/33KG/33kg_geno.gz"
+reference_pop_desc_file<-"../ref/33KG/33kg_pop_desc.txt"
 ```
 
 

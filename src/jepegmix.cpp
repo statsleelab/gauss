@@ -10,8 +10,6 @@ using namespace Rcpp;
 #include "gene.h"
 #include "gauss.h"
 #include "util.h"
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_cdf.h>
 
 
 //' JEPEGMIX: gene-level joint analysis of functional SNPs in cosmopolitan cohorts
@@ -161,4 +159,3 @@ DataFrame jepegmix(DataFrame pop_wgt_df,
                                    Named("top_snp_pval")=top_snp_pval_vec);
   return df;  
 }
-

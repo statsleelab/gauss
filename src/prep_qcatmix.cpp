@@ -32,7 +32,6 @@ using namespace Rcpp;
 //'         - cormat_add: A correlation matrix between additive-coded predicted SNPs and additive-coded measured SNPs,
 //'         - cormat_dom: A correlation matrix between dominant-coded predicted SNPs and additive-coded measured SNPs,
 //'         - cormat_rec: A correlation matrix between recessive-coded predicted SNPs and additive-coded measured SNPs.
-
 // [[Rcpp::export]]
 List prep_recessive_impute(int chr, 
                            long long int start_bp, 

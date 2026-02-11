@@ -1,24 +1,24 @@
 #' Estimate ancestry proportions from Z-scores
 #'
-#' Runs the zmix preparation (prep_zmix5) and constrained quadratic programming
+#' Runs the zmix preparation and constrained quadratic programming
 #' to estimate ancestry proportions at the population or superpopulation level.
 #'
 #' @param input_file File name of input data containing rsid, chr, bp, a1, a2, and z.
 #' @param reference_index_file File name of reference panel index data.
 #' @param reference_data_file File name of reference panel data.
 #' @param reference_pop_desc_file File name of reference panel population description data.
-#' @param percentile Percentile cutoff for normalized variance (see prep_zmix5).
-#' @param interval Interval for selecting SNPs (see prep_zmix5).
-#' @param level Resolution of ancestry proportions: "superpopulation" or "population".
+#' @param percentile Percentile cutoff for normalized variance.
+#' @param interval Interval for selecting SNPs.
+#' @param level Resolution of ancestry proportions: "population" or "superpopulation".
 #' @return A data.frame of ancestry proportions at the requested level.
 #' @export
 zmix <- function(input_file,
                  reference_index_file,
                  reference_data_file,
                  reference_pop_desc_file,
-                 percentile = 0.99,
-                 interval = 1,
-                 level = c("superpopulation", "population")) {
+                 percentile = 0.9,
+                 interval = 10,
+                 level = c("population","superpopulation")) {
   level <- match.arg(level)
 
   if (level == "superpopulation") {

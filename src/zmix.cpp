@@ -18,6 +18,9 @@ using namespace Rcpp;
 void read_input_zmix(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
 void read_ref_index_zmix(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& args);
 NumericVector cal_af_norm_var(std::vector<Snp*>& snp_vec, Arguments& args);
+double CalCorSup(const std::vector<std::string>& x,
+                 const std::vector<std::string>& y,
+                 const std::vector<int>& pop_idx);
 
 //' Calculate population weights using association Z-scores
 //' 
@@ -180,6 +183,162 @@ NumericVector prep_zmix5(std::string input_file,
     measured_snp_map.erase(it_msm++);      // delete map element
   }
   
+  return data_mat;
+}
+
+//' Calculate population weights using association Z-scores
+//'
+//' This function mirrors prep_zmix5 but computes correlations at the
+//' superpopulation level.
+//'
+//' @param input_file file name of input data containing rsid, chr, bp, a1, a2, and z
+//' @param reference_index_file file name of reference panel index data
+//' @param reference_data_file  file name of reference panel data
+//' @param reference_pop_desc_file file name of reference panel population description data
+//' @param interval stepping distance within the SNP vector for selecting the first SNP of each pair.
+//' @param percentile percentile cutoff for normalized variance
+//' @return R data frame containing superpopulation IDs and weights
+// [[Rcpp::export]]
+NumericMatrix prep_zmix5_sup(std::string input_file,
+                            std::string reference_index_file,
+                            std::string reference_data_file,
+                            std::string reference_pop_desc_file,
+                            Rcpp::Nullable<double> percentile = R_NilValue,
+                            Rcpp::Nullable<int> interval = R_NilValue){
+
+  Arguments args;
+  args.input_file = input_file;
+  args.reference_index_file = reference_index_file;
+  args.reference_data_file = reference_data_file;
+  args.reference_pop_desc_file = reference_pop_desc_file;
+
+  double pct;
+  if(percentile.isNotNull()){
+    pct = Rcpp::as<double>(percentile);
+  } else {
+    pct = 0.99;
+  }
+
+  if(interval.isNotNull()){
+    args.interval = Rcpp::as<int>(interval);
+  } else {
+    args.interval = 1;
+  }
+
+  read_ref_desc(args);
+
+#ifdef ZMIX_Debug
+  args.PrintArguments();
+#endif
+
+  std::map<MapKey, Snp*, LessThanMapKey> measured_snp_map;
+  std::map<MapKey, Snp*, LessThanMapKey>::iterator it_msm;
+  std::vector<Snp*> measured_snp_vec;
+
+  read_input_zmix(measured_snp_map, args);
+  read_ref_index_zmix(measured_snp_map, args);
+
+#ifdef ZMIX_Debug
+  Rcpp::Rcout<<"Measured snp map size: "<< measured_snp_map.size() <<std::endl;
+#endif
+
+  for(it_msm = measured_snp_map.begin(); it_msm != measured_snp_map.end(); ++it_msm){
+    int type = (it_msm->second)->GetType();
+    if(type == 1)
+      measured_snp_vec.push_back(it_msm->second);
+  }
+
+#ifdef ZMIX_Debug
+  Rcpp::Rcout<<"Num of measured SNPs used for calculations: "<< measured_snp_vec.size() <<std::endl;
+#endif
+
+  Rcpp::Rcout<<"Num of SNPs: "<<measured_snp_vec.size()<<std::endl;
+  Rcpp::Rcout<<"Interval length: "<<args.interval<<std::endl;
+  Rcpp::Rcout<<"Num of populations: "<<args.num_pops<<std::endl;
+
+  Rcpp::Rcout<<"Calculating population weights..."<<std::endl;
+
+  std::vector<Snp*> snp_vec;
+  for(int i=0;;i++){
+    int index = i*args.interval;
+    if(index < measured_snp_vec.size()){
+      snp_vec.push_back(measured_snp_vec[index]);
+    }else {
+      break;
+    }
+  }
+  Rcpp::Rcout<<"snp_vec size: "<<snp_vec.size()<<std::endl;
+
+  // find ancestry-informed SNPs
+  NumericVector snp_af_var_vec = cal_af_norm_var(snp_vec, args);
+  Environment pkg = Environment::namespace_env("stats");
+  Function quantile = pkg["quantile"];
+  NumericVector result = quantile(snp_af_var_vec, Named("probs")=pct);
+  double cutoff = result[0];
+
+  Rcpp::Rcout<<pct*100<<" percentile value: "<<cutoff<<std::endl;
+
+  std::vector<Snp*> snp_subvec;
+  for(int i=0;i<snp_vec.size();i++){
+    if(snp_af_var_vec[i] > cutoff){
+      snp_subvec.push_back(snp_vec[i]);
+    }
+  }
+  int snp_subvec_size = snp_subvec.size();
+  Rcpp::Rcout<<"# of ancestry informative markers: "<<snp_subvec_size<<std::endl;
+
+  std::map<std::string, int> sup_pop_index;
+  std::vector<std::string> sup_pop_vec;
+  std::vector<std::vector<int>> sup_pop_indices;
+  for(int i = 0; i < args.ref_sup_pop_vec.size(); i++){
+    const std::string& sp = args.ref_sup_pop_vec[i];
+    std::map<std::string, int>::iterator it = sup_pop_index.find(sp);
+    if(it == sup_pop_index.end()){
+      int idx = sup_pop_vec.size();
+      sup_pop_index[sp] = idx;
+      sup_pop_vec.push_back(sp);
+      sup_pop_indices.push_back(std::vector<int>());
+      sup_pop_indices[idx].push_back(i);
+    } else {
+      sup_pop_indices[it->second].push_back(i);
+    }
+  }
+  int num_sup_pops = sup_pop_vec.size();
+  Rcpp::Rcout<<"Num of superpopulations: "<<num_sup_pops<<std::endl;
+
+  for(int i=0; i<args.num_pops; i++){
+    args.pop_flag_vec.push_back(1);
+  }
+  ReadGenotype(snp_subvec, args);
+
+  int total_rows = (snp_subvec_size * (snp_subvec_size - 1)) / 2;
+  NumericMatrix data_mat(total_rows, 1 + num_sup_pops);
+  int row_index = 0;
+
+  for(int i = 0; i < snp_subvec_size; i++) {
+    std::vector<std::string>& snpi_geno_vec = snp_subvec[i]->GetGenotypeVec();
+    double snpi_z = snp_subvec[i]->GetZ();
+    for(int j = i + 1; j < snp_subvec_size; j++) {
+      std::vector<std::string>& snpj_geno_vec = snp_subvec[j]->GetGenotypeVec();
+      double snpj_z = snp_subvec[j]->GetZ();
+
+      data_mat(row_index, 0) = snpi_z * snpj_z;
+      for(int k = 0; k < num_sup_pops; k++) {
+        double cor = CalCorSup(snpi_geno_vec, snpj_geno_vec, sup_pop_indices[k]);
+        data_mat(row_index, k + 1) = cor;
+      }
+      row_index++;
+    }
+  }
+
+  FreeGenotype(snp_subvec);
+
+  for(it_msm = measured_snp_map.begin(); it_msm != measured_snp_map.end();){
+    (it_msm->second)->ClearSnp();
+    delete it_msm->second;
+    measured_snp_map.erase(it_msm++);
+  }
+
   return data_mat;
 }
 
@@ -1057,4 +1216,31 @@ NumericVector cal_af_norm_var(std::vector<Snp*>& snp_vec, Arguments& args){
   }
   bgzf_close(fp); //closes BGZF file connnection.
   return af1_norm_var_vec;
+}
+
+double CalCorSup(const std::vector<std::string>& x,
+                 const std::vector<std::string>& y,
+                 const std::vector<int>& pop_idx){
+  int num_samples = 0;
+  double sumx=0, sumy=0, sumxsq=0, sumysq=0, sumxy=0;
+  for(size_t i = 0; i < pop_idx.size(); i++){
+    int idx = pop_idx[i];
+    const std::string& xs = x[idx];
+    const std::string& ys = y[idx];
+    int m = xs.length();
+    for(int j = 0; j < m; j++){
+      double xij = (double)(xs[j]-'0');
+      double yij = (double)(ys[j]-'0');
+      sumx += xij;
+      sumy += yij;
+      sumxsq += xij*xij;
+      sumysq += yij*yij;
+      sumxy += xij*yij;
+    }
+    num_samples += m;
+  }
+  double numer = num_samples*sumxy - sumx*sumy;
+  double denor = std::sqrt((double)num_samples*sumxsq - sumx*sumx) *
+                 std::sqrt((double)num_samples*sumysq - sumy*sumy);
+  return numer / denor;
 }

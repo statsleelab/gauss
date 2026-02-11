@@ -217,6 +217,22 @@ prep_zmix5 <- function(input_file, reference_index_file, reference_data_file, re
 }
 
 #' Calculate population weights using association Z-scores
+#'
+#' This function mirrors prep_zmix5 but computes correlations at the
+#' superpopulation level.
+#'
+#' @param input_file file name of input data containing rsid, chr, bp, a1, a2, and z
+#' @param reference_index_file file name of reference panel index data
+#' @param reference_data_file  file name of reference panel data
+#' @param reference_pop_desc_file file name of reference panel population description data
+#' @param interval stepping distance within the SNP vector for selecting the first SNP of each pair.
+#' @param percentile percentile cutoff for normalized variance
+#' @return R data frame containing superpopulation IDs and weights
+prep_zmix5_sup <- function(input_file, reference_index_file, reference_data_file, reference_pop_desc_file, percentile = NULL, interval = NULL) {
+    .Call(`_gauss_prep_zmix5_sup`, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, percentile, interval)
+}
+
+#' Calculate population weights using association Z-scores
 #' 
 #' ZMIX4 employs a more selective approach by using a fixed offset to 
 #' determine the SNP pairs. For instance, if the offset is set to 3 and 

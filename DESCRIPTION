@@ -1,8 +1,8 @@
 Package: gauss
 Type: Package
 Title: Genome Analysis Using Summary Statistics
-Version: 1.0
-Date: 2021-10-12
+Version: 1.0.1
+Date: 2026-09-05
 Authors@R: person("Donghyung", "Lee", email = "leed13@miamioh.edu",
                   role = c("aut", "cre"))
 Description: gauss is a free and open-source R software package, which contains functions 

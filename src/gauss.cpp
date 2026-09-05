@@ -1288,16 +1288,17 @@ void ReadAnnotation(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& 
   
   // Check if the annotation file was opened successfully, if not, stop the program and print an error
   if(!in_annotation){
-    Rcpp::Rcout << "ERROR: can't open snp annotation data file '"<<annotation_file<<"'"<<std::endl;
-    exit(EXIT_FAILURE);
+    Rcpp::Rcout << std::endl;
+    Rcpp::stop("ERROR: can't open snp annotation data file '" + annotation_file + "'");
   }
-  
+
   std::string line;  // Variable to store each line from the file
   std::string rsid, a1, a2, geneid, categ;  // Variables to store SNP details
   int chr;                                  // Chromosome number
   int categ_num;                            // Category number
   long long int bp;                         // Base pair position
   double wgt;                               // Weight of the category
+  long long int num_unknown_categ = 0;      // Count of rows with an unrecognized category
   
   std::getline(in_annotation, line);  // Read and discard the header line
   
@@ -1315,7 +1316,11 @@ void ReadAnnotation(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& 
     it1 = snp_map.find(mkey1);  
     it2 = snp_map.find(mkey2);
     
-    // Assign numerical category values based on the annotation category
+    // Assign numerical category values based on the annotation category.
+    // categ_num must be initialized: an unrecognized category would otherwise leave
+    // it holding the previous row's value (or an indeterminate one on the first row),
+    // silently filing this SNP's weight under the wrong functional category.
+    categ_num = -1;
     if(categ == "PROTEIN")
       categ_num = 0;
     else if (categ == "TFBS")
@@ -1328,7 +1333,14 @@ void ReadAnnotation(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& 
       categ_num = 4;
     else if (categ == "TRANS_EQTL")
       categ_num = 5;
-    
+
+    // Skip rows whose category is not one of the six known ones, rather than
+    // assigning the weight to an arbitrary category.
+    if(categ_num < 0){
+      num_unknown_categ++;
+      continue;
+    }
+
     // If SNP exists in snp_map with normal allele order
     if((it1 != snp_map.end()) && (it2 == snp_map.end())){
       // Update the SNP with gene ID, category number, and weight
@@ -1358,6 +1370,14 @@ void ReadAnnotation(std::map<MapKey, Snp*, LessThanMapKey>& snp_map, Arguments& 
   // Close the annotation file after processing all lines
   in_annotation.close();
   Rcpp::Rcout<<std::endl;  // Print a newline to indicate completion
+
+  // Report skipped rows so a malformed or extended annotation file is visible
+  // rather than silently reducing the number of annotated SNPs.
+  if(num_unknown_categ > 0){
+    Rcpp::warning("skipped " + std::to_string(num_unknown_categ) +
+                  " annotation row(s) with an unrecognized category; expected one of "
+                  "PROTEIN, TFBS, WTH_HAIR, WTH_TARGET, CIS_EQTL, TRANS_EQTL");
+  }
 }
 
 

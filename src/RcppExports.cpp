@@ -234,6 +234,69 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cal_cor_pooled
+double cal_cor_pooled(std::vector<std::string> x, std::vector<std::string> y);
+RcppExport SEXP _gauss_cal_cor_pooled(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type x(xSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(cal_cor_pooled(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cal_cor_one
+double cal_cor_one(std::string x, std::string y);
+RcppExport SEXP _gauss_cal_cor_one(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type x(xSEXP);
+    Rcpp::traits::input_parameter< std::string >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(cal_cor_one(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cal_cor_wgt
+double cal_cor_wgt(std::vector<std::string> x, std::vector<std::string> y, std::vector<double> pop_wgt);
+RcppExport SEXP _gauss_cal_cor_wgt(SEXP xSEXP, SEXP ySEXP, SEXP pop_wgtSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type x(xSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type y(ySEXP);
+    Rcpp::traits::input_parameter< std::vector<double> >::type pop_wgt(pop_wgtSEXP);
+    rcpp_result_gen = Rcpp::wrap(cal_cor_wgt(x, y, pop_wgt));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cal_wgt_cov
+double cal_wgt_cov(std::vector<std::string> x, std::vector<std::string> y, std::vector<double> pop_wgt);
+RcppExport SEXP _gauss_cal_wgt_cov(SEXP xSEXP, SEXP ySEXP, SEXP pop_wgtSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type x(xSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type y(ySEXP);
+    Rcpp::traits::input_parameter< std::vector<double> >::type pop_wgt(pop_wgtSEXP);
+    rcpp_result_gen = Rcpp::wrap(cal_wgt_cov(x, y, pop_wgt));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cal_cor_sup
+double cal_cor_sup(std::vector<std::string> x, std::vector<std::string> y, std::vector<int> pop_idx);
+RcppExport SEXP _gauss_cal_cor_sup(SEXP xSEXP, SEXP ySEXP, SEXP pop_idxSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type x(xSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type y(ySEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type pop_idx(pop_idxSEXP);
+    rcpp_result_gen = Rcpp::wrap(cal_cor_sup(x, y, pop_idx));
+    return rcpp_result_gen;
+END_RCPP
+}
 // prep_zmix5
 NumericVector prep_zmix5(std::string input_file, std::string reference_index_file, std::string reference_data_file, std::string reference_pop_desc_file, Rcpp::Nullable<double> percentile, Rcpp::Nullable<int> interval);
 RcppExport SEXP _gauss_prep_zmix5(SEXP input_fileSEXP, SEXP reference_index_fileSEXP, SEXP reference_data_fileSEXP, SEXP reference_pop_desc_fileSEXP, SEXP percentileSEXP, SEXP intervalSEXP) {
@@ -343,6 +406,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_gauss_qcat", (DL_FUNC) &_gauss_qcat, 10},
     {"_gauss_qcatmix", (DL_FUNC) &_gauss_qcatmix, 10},
     {"_gauss_simulateLD", (DL_FUNC) &_gauss_simulateLD, 10},
+    {"_gauss_cal_cor_pooled", (DL_FUNC) &_gauss_cal_cor_pooled, 2},
+    {"_gauss_cal_cor_one", (DL_FUNC) &_gauss_cal_cor_one, 2},
+    {"_gauss_cal_cor_wgt", (DL_FUNC) &_gauss_cal_cor_wgt, 3},
+    {"_gauss_cal_wgt_cov", (DL_FUNC) &_gauss_cal_wgt_cov, 3},
+    {"_gauss_cal_cor_sup", (DL_FUNC) &_gauss_cal_cor_sup, 3},
     {"_gauss_prep_zmix5", (DL_FUNC) &_gauss_prep_zmix5, 6},
     {"_gauss_prep_zmix5_sup", (DL_FUNC) &_gauss_prep_zmix5_sup, 6},
     {"_gauss_prep_zmix4", (DL_FUNC) &_gauss_prep_zmix4, 6},

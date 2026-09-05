@@ -1,0 +1,4 @@
+Population_Abbreviation	Number_of_Subject	Super_Population	Population_Description
+PPA	20	SPX	Test population A
+PPB	20	SPX	Test population B
+PPC	20	SPY	Test population C

@@ -194,6 +194,26 @@ simulateLD <- function(chr, start_bp, end_bp, pop_wgt_df, sim_size, input_file, 
     .Call(`_gauss_simulateLD`, chr, start_bp, end_bp, pop_wgt_df, sim_size, input_file, reference_index_file, reference_data_file, reference_pop_desc_file, af1_cutoff)
 }
 
+.cal_cor_pooled <- function(x, y) {
+    .Call(`_gauss_cal_cor_pooled`, x, y)
+}
+
+.cal_cor_one <- function(x, y) {
+    .Call(`_gauss_cal_cor_one`, x, y)
+}
+
+.cal_cor_wgt <- function(x, y, pop_wgt) {
+    .Call(`_gauss_cal_cor_wgt`, x, y, pop_wgt)
+}
+
+.cal_wgt_cov <- function(x, y, pop_wgt) {
+    .Call(`_gauss_cal_wgt_cov`, x, y, pop_wgt)
+}
+
+.cal_cor_sup <- function(x, y, pop_idx) {
+    .Call(`_gauss_cal_cor_sup`, x, y, pop_idx)
+}
+
 #' Calculate population weights using association Z-scores
 #' 
 #' This function first finds ancestry-informed SNPs by computing a normalized variance,

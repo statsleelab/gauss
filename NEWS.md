@@ -37,12 +37,28 @@
   Users who need to reproduce results from gauss 1.0.1 or earlier should pin
   that version.
 
+* **`pop_wgt_df` is now validated, and mixing proportions that do not sum to
+  one are rescaled with a warning.** Equation (2) assumes `sum_k w_k = 1`; its
+  between-population term is a centred outer product, and above 1 it can go
+  negative far enough to make a variant's mixture variance negative, at which
+  point the square root in the LD normalisation produces `NaN` that spreads
+  through the whole LD matrix. The `m_k^2` inflation described above had been
+  masking this, so the two fixes belong together.
+
+  This is not hypothetical: the mixing proportions shipped with the package as
+  `data(PGC2_SCZ_ANC_Prop)`, used throughout the README and the vignettes, sum
+  to 1.061 rather than 1. `cpw2()` likewise does not rescale its own output.
+  Both now work, with a warning saying what was rescaled.
+
+  Populations named in `pop_wgt_df` that the reference panel does not carry are
+  reported by name instead of having their weight silently dropped; a mixture
+  in which no population matches the panel, a negative weight, and weights
+  summing to zero are all now clear errors.
+
 ## Known limitations
 
-* The mixing proportions passed as `pop_wgt_df` are not checked to sum to one,
-  which Equation (2) requires. Note that `cpw2()` does not rescale its own
-  output, so its weights should be normalised before being handed to
-  `distmix()` or `jepegmix()`.
+* `data(PGC2_SCZ_ANC_Prop)` sums to 1.061. It is left as published so that it
+  still matches the source analysis; the entry points rescale it.
 
 # gauss 1.0.1
 

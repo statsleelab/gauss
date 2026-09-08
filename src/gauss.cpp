@@ -8,6 +8,8 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <cmath>
+#include <set>
 #include "util.h"
 #include "bgzf.h"
 #include "snp.h"
@@ -1091,28 +1093,74 @@ void init_pop_flag_vec(Arguments& args) {
 //   3. If the population is found in `pop_wgt_map`, a flag value of 1 is appended to `pop_flag_vec` and the corresponding weight is added to `pop_wgt_vec`.
 //   4. If the population is not found, a flag value of 0 is appended to `pop_flag_vec`.
 void init_pop_flag_wgt_vec(Arguments& args) {
-  
+
   std::string pop;
-  
+  std::set<std::string> matched;
+
   // Iterate through each population in the reference panel (ref_pop_vec)
   for (int i = 0; i < args.num_pops; i++) {
     pop = args.ref_pop_vec[i];  // Get the population ID from the reference panel
-    
+
     // Check if the population exists in the population weight map (pop_wgt_map)
     if (args.pop_wgt_map.find(pop) != args.pop_wgt_map.end()) {  // If population is found in pop_wgt_map
-      
+
+      double wgt = args.pop_wgt_map[pop];
+      if (!R_finite(wgt) || wgt < 0) {
+        Rcpp::stop("ERROR: mixing proportion for population '" + pop +
+                   "' must be a finite non-negative number");
+      }
+
       // Add a flag value of 1 to pop_flag_vec and add the population's weight to pop_wgt_vec
       args.pop_flag_vec.push_back(1);  // Population is part of the study, set flag to 1
-      args.pop_wgt_vec.push_back(args.pop_wgt_map[pop]);  // Add the corresponding population weight to pop_wgt_vec
-      
+      args.pop_wgt_vec.push_back(wgt);  // Add the corresponding population weight to pop_wgt_vec
+      matched.insert(pop);
+
     } else {  // If population is not found in pop_wgt_map
-      
+
       // Add a flag value of 0 to pop_flag_vec (population not part of the study)
       args.pop_flag_vec.push_back(0);
-      
+
       // No weight is added to pop_wgt_vec for populations that are not found
       // args.pop_wgt_vec.push_back(0);  // Optional: This line is commented out, as it isn't needed
     }
+  }
+
+  // Report population names the panel does not carry, rather than dropping their
+  // weight silently and renormalising around the gap without saying so.
+  std::string unmatched;
+  for (std::map<std::string, double>::const_iterator it = args.pop_wgt_map.begin();
+       it != args.pop_wgt_map.end(); ++it) {
+    if (matched.find(it->first) == matched.end()) {
+      if (!unmatched.empty()) unmatched += ", ";
+      unmatched += it->first;
+    }
+  }
+  if (!unmatched.empty()) {
+    Rcpp::warning("pop_wgt_df names populations the reference panel does not contain, "
+                  "and their weights are ignored: " + unmatched);
+  }
+
+  if (args.pop_wgt_vec.empty()) {
+    Rcpp::stop("ERROR: none of the populations in pop_wgt_df exist in the reference panel");
+  }
+
+  // The mixture covariance (CalWgtCov, DISTMIX Eq. 2) assumes sum_k w_k == 1: its
+  // between-population term is a centred outer product, accumulated in a form that
+  // is only equivalent under that constraint. With sum_k w_k > 1 the term can go
+  // negative far enough to make a variant's mixture variance negative, and the
+  // sqrt() in the LD normalisation then yields NaN, which spreads through the whole
+  // LD matrix. So normalise here, and say so.
+  double sum_wgt = 0;
+  for (size_t k = 0; k < args.pop_wgt_vec.size(); k++) sum_wgt += args.pop_wgt_vec[k];
+  args.sum_pop_wgt = sum_wgt;
+
+  if (sum_wgt <= 0) {
+    Rcpp::stop("ERROR: the mixing proportions in pop_wgt_df must sum to a positive number");
+  }
+  if (std::abs(sum_wgt - 1.0) > 1e-8) {
+    for (size_t k = 0; k < args.pop_wgt_vec.size(); k++) args.pop_wgt_vec[k] /= sum_wgt;
+    Rcpp::warning("The mixing proportions in pop_wgt_df sum to " +
+                  std::to_string(sum_wgt) + ", not 1; they have been rescaled.");
   }
 }
 

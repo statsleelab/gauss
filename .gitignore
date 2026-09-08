@@ -13,3 +13,4 @@ ref
 .Rlib/
 gauss_*.tar.gz
 inst/dev-tests/
+tests/testthat/_problems/

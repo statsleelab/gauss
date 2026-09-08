@@ -51,6 +51,23 @@ test_that("the correlation matrix is exactly what the kernel produces", {
   expect_equal(res$cormat, expected)
 })
 
+test_that("the correlation matrix is Equation (2) of the DISTMIX paper", {
+  ## The end-to-end anchor: no C++ in the reference at all.  ref_wgt_cov() is
+  ## Eq. (2) transcribed from the paper and ref_wgt_cov_cor() applies the
+  ## paper's step 2 (divide by the genotype standard deviations), which is
+  ## exactly what computeLD() documents itself as producing.
+  res <- ld_run()
+  rows <- panel_row(res$snplist$bp)
+  dosage <- lapply(rows, panel_dosage)
+
+  expected <- outer(seq_along(rows), seq_along(rows), Vectorize(function(i, j) {
+    if (i == j) return(1)
+    ref_wgt_cov_cor(dosage[[i]], dosage[[j]], wgt)
+  }))
+
+  expect_equal(res$cormat, expected)
+})
+
 test_that("computeLD() reports the mixture allele frequency", {
   res <- ld_run()
   expected <- drop(panel_records()$af1[panel_row(res$snplist$bp), ] %*% wgt)

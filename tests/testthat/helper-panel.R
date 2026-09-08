@@ -114,24 +114,32 @@ ref_wgt_cor <- function(x, y, wgt) {
   (exy - ex * ey) / sqrt((ex2 - ex^2) * (ey2 - ey^2))
 }
 
-## The mixture covariance CalWgtCov() is documented to return:
-##   sum_k w_k Cov_k(x,y) + sum_k w_k mu_xk mu_yk
-##     - (sum_k w_k mu_xk)(sum_k w_k mu_yk)
+## The mixture covariance, transcribed from Equation (2) of the DISTMIX paper
+## (Lee et al., Bioinformatics 2015, doi:10.1093/bioinformatics/btv348, S2.1):
+##
+##   mu = sum_k w_k mu_k                                            (1)
+##   C  = sum_k w_k C_k + sum_k w_k (mu_k - mu)(mu_k - mu)^T        (2)
+##
+## with C_k the unbiased variance-covariance matrix of population k.  Written in
+## the paper's centred form on purpose: the expanded form the C++ code
+## accumulates is equivalent only when sum_k w_k == 1, and keeping the centred
+## version here means the test would catch it if that ever stopped holding.
 ref_wgt_cov <- function(x, y, wgt) {
-  mu_x <- vapply(x, mean, numeric(1))
-  mu_y <- vapply(y, mean, numeric(1))
-  sum(wgt * mapply(stats::cov, x, y)) +
-    sum(wgt * mu_x * mu_y) - sum(wgt * mu_x) * sum(wgt * mu_y)
+  mu_xk <- vapply(x, mean, numeric(1))
+  mu_yk <- vapply(y, mean, numeric(1))
+  mu_x <- sum(wgt * mu_xk)                                  # Eq. (1)
+  mu_y <- sum(wgt * mu_yk)
+  within <- sum(wgt * mapply(stats::cov, x, y))             # sum_k w_k C_k
+  between <- sum(wgt * (mu_xk - mu_x) * (mu_yk - mu_y))     # centred outer product
+  within + between
 }
 
-## What CalWgtCov() returns today: the within-population term is multiplied by
-## m^2, where m is that population's sample size.  See test-kernels.R.
-ref_wgt_cov_current <- function(x, y, wgt) {
-  m <- vapply(x, length, integer(1))
-  mu_x <- vapply(x, mean, numeric(1))
-  mu_y <- vapply(y, mean, numeric(1))
-  sum(wgt * m^2 * mapply(stats::cov, x, y)) +
-    sum(wgt * mu_x * mu_y) - sum(wgt * mu_x) * sum(wgt * mu_y)
+## The mixture correlation the paper's step 2 asks for: normalise C by the
+## genotype standard deviations.  This is what distmix() and computeLD() build
+## their LD matrices from.
+ref_wgt_cov_cor <- function(x, y, wgt) {
+  ref_wgt_cov(x, y, wgt) /
+    sqrt(ref_wgt_cov(x, x, wgt) * ref_wgt_cov(y, y, wgt))
 }
 
 ## Write `lines` to a temporary file and return its path.

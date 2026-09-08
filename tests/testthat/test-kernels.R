@@ -100,24 +100,53 @@ test_that("every kernel returns 1 for a variant against itself", {
   }
 })
 
-test_that("CalWgtCov returns the within-population term inflated by m^2", {
-  ## KNOWN DEFECT.  CalWgtCov() is documented -- and used -- as
-  ##   sum_k w_k Cov_k(x,y) + sum_k w_k mu_xk mu_yk
-  ##     - (sum_k w_k mu_xk)(sum_k w_k mu_yk)
-  ## but it scales the first term by m^2, m being the population's sample size.
-  ## Every mixture analysis (distmix, computeLD, jepegmix,
-  ## prep_recessive_impute) goes through it.
+test_that("CalWgtCov is Equation (2) of the DISTMIX paper", {
+  ## The mixture covariance every mixture analysis reduces to -- distmix,
+  ## computeLD, qcatmix, jepegmix, prep_recessive_impute.  ref_wgt_cov() is
+  ## Eq. (2) transcribed from the paper; see helper-panel.R.
   ##
-  ## The test pins the present behaviour so that correcting it is a deliberate,
-  ## visible change rather than a silent numeric shift.  When the kernel is
-  ## fixed, compare against ref_wgt_cov() instead and drop the expect_false().
+  ## This assertion is the whole reason the fixture exists: the kernel used to
+  ## scale the within-population term by m^2, which overrode the caller's
+  ## mixing proportions with panel sample sizes and numerically erased the
+  ## between-population term.
   for (i in variants) {
     x <- panel_dosage(i)
     y <- panel_dosage(i + 1L)
-    got <- .cal_wgt_cov(panel_geno_vec(i), panel_geno_vec(i + 1L), wgt)
+    expect_equal(.cal_wgt_cov(panel_geno_vec(i), panel_geno_vec(i + 1L), wgt),
+                 ref_wgt_cov(x, y, wgt), info = paste("variant", i))
+  }
+})
 
-    expect_equal(got, ref_wgt_cov_current(x, y, wgt), info = paste("variant", i))
-    expect_false(isTRUE(all.equal(got, ref_wgt_cov(x, y, wgt))))
+test_that("CalWgtCov is more than the within-population average", {
+  ## The between-population term is the reason mixture LD differs from
+  ## within-population LD.  Compare the kernel against a within-only weighted
+  ## average and require that the difference actually matters: under the m^2
+  ## defect the between term survived arithmetically but was suppressed by
+  ## 1/m^2 relative to the within term, so this ratio collapsed to ~1e-4.
+  rel <- vapply(seq_len(150L), function(i) {
+    x <- panel_dosage(i)
+    y <- panel_dosage(i + 1L)
+    got <- .cal_wgt_cov(panel_geno_vec(i), panel_geno_vec(i + 1L), wgt)
+    within_only <- sum(wgt * mapply(stats::cov, x, y))
+    abs((got - within_only) / got)
+  }, numeric(1))
+
+  ## Median over 150 variant pairs, not a per-pair bound: individual pairs can
+  ## legitimately have near-identical frequencies across populations.
+  expect_gt(stats::median(rel), 0.02)
+})
+
+test_that("a single population reduces to that population's covariance", {
+  ## With one population the between term vanishes and Eq. (2) collapses to
+  ## C_1, so the kernel must agree with stats::cov() exactly.
+  for (i in variants) {
+    for (k in seq_along(panel_pops)) {
+      g <- panel_geno_vec(i)[k]
+      h <- panel_geno_vec(i + 1L)[k]
+      expect_equal(.cal_wgt_cov(g, h, 1),
+                   stats::cov(panel_dosage(i)[[k]], panel_dosage(i + 1L)[[k]]),
+                   info = paste("variant", i, "population", panel_pops[k]))
+    }
   }
 })
 

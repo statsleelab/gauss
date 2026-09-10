@@ -140,3 +140,19 @@ test_that("ancestry estimates are stable", {
   expect_snapshot_value(round(res$Weight, 6), style = "deparse",
                         tolerance = 1e-5)
 })
+
+test_that("the shipped PGC2 ancestry proportions are a usable pop_wgt_df", {
+  ## data(PGC2_SCZ_ANC_Prop) is the canonical shape the README and vignettes
+  ## hand to distmix()/jepegmix(), so it has to satisfy what those require.
+  data(PGC2_SCZ_ANC_Prop, package = "gauss", envir = environment())
+
+  expect_s3_class(PGC2_SCZ_ANC_Prop, "data.frame")
+  expect_equal(ncol(PGC2_SCZ_ANC_Prop), 2L)
+  expect_named(PGC2_SCZ_ANC_Prop, c("pop", "wgt"))
+  expect_type(PGC2_SCZ_ANC_Prop[[1]], "character")
+  expect_type(PGC2_SCZ_ANC_Prop[[2]], "double")
+  expect_true(all(PGC2_SCZ_ANC_Prop$wgt > 0))
+  expect_false(anyDuplicated(PGC2_SCZ_ANC_Prop$pop) > 0)
+  ## Rescaled at source, so no entry point has to do it.
+  expect_equal(sum(PGC2_SCZ_ANC_Prop$wgt), 1, tolerance = 1e-12)
+})

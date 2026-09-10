@@ -14,7 +14,11 @@ using namespace Rcpp;
 
 //' JEPEGMIX: gene-level joint analysis of functional SNPs in cosmopolitan cohorts
 //' 
-//' @param pop_wgt_df R data frame containing population IDs and weights
+//' @param pop_wgt_df R data frame with the population abbreviation in the first column
+//'   and its mixing proportion in the second, read positionally. Proportions must be
+//'   non-negative; they are rescaled to sum to 1, which the mixture covariance assumes.
+//'   See \code{data(PGC2_SCZ_ANC_Prop)} for the expected shape. Note that \code{afmix()}
+//'   returns three columns, so its first column must be dropped first.
 //' @param input_file file name of GWAS summary statistics data containing rsid, chr, bp, a1, a2 and z
 //' @param annotation file name of the SNP annotation data set 
 //' @param reference_index_file file name of reference panel index data

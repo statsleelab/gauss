@@ -1149,7 +1149,12 @@ void init_pop_flag_wgt_vec(Arguments& args) {
   // is only equivalent under that constraint. With sum_k w_k > 1 the term can go
   // negative far enough to make a variant's mixture variance negative, and the
   // sqrt() in the LD normalisation then yields NaN, which spreads through the whole
-  // LD matrix. So normalise here, and say so.
+  // LD matrix.
+  //
+  // Rescaling is routine rather than exceptional: afmix() and cpw2() return
+  // unrescaled weights by construction, so this is a normal preprocessing step,
+  // reported on the console rather than raised as a warning. Only the scale
+  // changes; each population's share relative to the others is preserved.
   double sum_wgt = 0;
   for (size_t k = 0; k < args.pop_wgt_vec.size(); k++) sum_wgt += args.pop_wgt_vec[k];
   args.sum_pop_wgt = sum_wgt;
@@ -1159,8 +1164,8 @@ void init_pop_flag_wgt_vec(Arguments& args) {
   }
   if (std::abs(sum_wgt - 1.0) > 1e-8) {
     for (size_t k = 0; k < args.pop_wgt_vec.size(); k++) args.pop_wgt_vec[k] /= sum_wgt;
-    Rcpp::warning("The mixing proportions in pop_wgt_df sum to " +
-                  std::to_string(sum_wgt) + ", not 1; they have been rescaled.");
+    Rcpp::Rcout << "Mixing proportions sum to " << sum_wgt
+                << "; rescaled to sum to 1." << std::endl;
   }
 }
 

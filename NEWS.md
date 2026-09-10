@@ -37,28 +37,47 @@
   Users who need to reproduce results from gauss 1.0.1 or earlier should pin
   that version.
 
-* **`pop_wgt_df` is now validated, and mixing proportions that do not sum to
-  one are rescaled with a warning.** Equation (2) assumes `sum_k w_k = 1`; its
-  between-population term is a centred outer product, and above 1 it can go
-  negative far enough to make a variant's mixture variance negative, at which
-  point the square root in the LD normalisation produces `NaN` that spreads
-  through the whole LD matrix. The `m_k^2` inflation described above had been
-  masking this, so the two fixes belong together.
+* **`pop_wgt_df` is now validated, and every function that takes ancestry
+  proportions rescales them to sum to one before doing any work.** Equation (2)
+  assumes `sum_k w_k = 1`; its between-population term is a centred outer
+  product, and above 1 it can go negative far enough to make a variant's
+  mixture variance negative, at which point the square root in the LD
+  normalisation produces `NaN` that spreads through the whole LD matrix. The
+  `m_k^2` inflation described above had been masking this, so the two fixes
+  belong together.
 
-  This is not hypothetical: the mixing proportions shipped with the package as
-  `data(PGC2_SCZ_ANC_Prop)`, used throughout the README and the vignettes, sum
-  to 1.061 rather than 1. `cpw2()` likewise does not rescale its own output.
-  Both now work, with a warning saying what was rescaled.
+  This was not hypothetical: the mixing proportions shipped as
+  `data(PGC2_SCZ_ANC_Prop)`, used throughout the README and the vignettes,
+  summed to 1.061. On the real 33KG panel that produced 402 `NaN` entries
+  across every row of a 202-variant LD matrix once the covariance was
+  corrected.
+
+  Rescaling is reported on the console rather than raised as a warning:
+  `afmix()` and `cpw2()` return unrescaled weights by construction, so this is
+  ordinary preprocessing, not an exceptional condition. Only the scale changes
+  — each population's share relative to the others is preserved, and passing
+  the same proportions at any scale gives identical results.
 
   Populations named in `pop_wgt_df` that the reference panel does not carry are
   reported by name instead of having their weight silently dropped; a mixture
-  in which no population matches the panel, a negative weight, and weights
-  summing to zero are all now clear errors.
+  in which no population matches the panel, a negative or non-finite weight,
+  and weights summing to zero are all now clear errors.
 
-## Known limitations
+## Data
 
-* `data(PGC2_SCZ_ANC_Prop)` sums to 1.061. It is left as published so that it
-  still matches the source analysis; the entry points rescale it.
+* `data(PGC2_SCZ_ANC_Prop)` is now rescaled to sum to 1 (it summed to 1.061).
+  Only the scale changed: every population's share relative to the others, and
+  the set of 21 populations, are exactly as published. The derivation is now
+  recorded in `data-raw/make_PGC2_SCZ_ANC_Prop.R`, and the help page documents
+  the provenance and the column meanings.
+
+## Documentation
+
+* The `pop_wgt_df` argument is documented properly for `distmix()`,
+  `computeLD()`, `qcatmix()`, `jepegmix()`, `simulateLD()` and
+  `prep_recessive_impute()`: that it is read positionally, that the weights are
+  rescaled, and that `afmix()` returns three columns whose first must be
+  dropped before use.
 
 # gauss 1.0.1
 

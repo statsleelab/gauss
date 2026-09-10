@@ -78,35 +78,35 @@ test_that("a duplicated study variant is reported", {
   }
 })
 
-test_that("mixing proportions that do not sum to one are rescaled, with a warning", {
+test_that("mixing proportions are rescaled to sum to one", {
   ## DISTMIX Eq. (2) assumes sum_k w_k = 1.  Above 1 the between-population term
   ## can go negative far enough to make a variant's mixture variance negative,
-  ## and the sqrt() in the LD normalisation then returns NaN.
-  unscaled <- panel_wgt_df(wgt = c(0.5, 0.3, 0.2) * 1.061)
+  ## and the sqrt() in the LD normalisation then returns NaN.  afmix() and
+  ## cpw2() return unrescaled weights by construction, so rescaling here is a
+  ## normal preprocessing step, not an exception.
+  ld <- function(w) {
+    quietly(gauss::computeLD(chr = 1L, start_bp = 50000L, end_bp = 150000L,
+                             pop_wgt_df = w, input_file = fx$z,
+                             reference_index_file = fx$index,
+                             reference_data_file = fx$data,
+                             reference_pop_desc_file = fx$pop_desc))
+  }
+  ref <- ld(panel_wgt_df())
 
-  expect_warning(
-    res <- quietly(gauss::computeLD(chr = 1L, start_bp = 50000L, end_bp = 150000L,
-                                    pop_wgt_df = unscaled, input_file = fx$z,
-                                    reference_index_file = fx$index,
-                                    reference_data_file = fx$data,
-                                    reference_pop_desc_file = fx$pop_desc)),
-    "sum to"
-  )
-  expect_false(anyNA(res$cormat))
-
-  ## Rescaling has to give exactly the normalised answer.
-  ref <- quietly(gauss::computeLD(chr = 1L, start_bp = 50000L, end_bp = 150000L,
-                                  pop_wgt_df = panel_wgt_df(), input_file = fx$z,
-                                  reference_index_file = fx$index,
-                                  reference_data_file = fx$data,
-                                  reference_pop_desc_file = fx$pop_desc))
-  expect_equal(res$cormat, ref$cormat)
+  ## Same proportions at any scale must give exactly the same answer, with no
+  ## NaN from a negative mixture variance.
+  for (scale in c(1.061, 100, 0.25)) {
+    res <- ld(panel_wgt_df(wgt = c(0.5, 0.3, 0.2) * scale))
+    expect_false(anyNA(res$cormat), info = paste("scale", scale))
+    expect_equal(res$cormat, ref$cormat, info = paste("scale", scale))
+  }
 })
 
-test_that("weights that already sum to one are left alone", {
+test_that("rescaling is reported but is not a warning", {
   expect_no_warning(
     quietly(gauss::computeLD(chr = 1L, start_bp = 50000L, end_bp = 150000L,
-                             pop_wgt_df = panel_wgt_df(), input_file = fx$z,
+                             pop_wgt_df = panel_wgt_df(wgt = c(0.5, 0.3, 0.2) * 1.061),
+                             input_file = fx$z,
                              reference_index_file = fx$index,
                              reference_data_file = fx$data,
                              reference_pop_desc_file = fx$pop_desc))

@@ -520,6 +520,31 @@ int BgzfGetLine(BGZF* fp, std::string& line){
   return c;
 }
 
+/**
+ * @brief Seeks to a variant's genotype record, failing loudly if it cannot.
+ *
+ * `fpos` is the BGZF virtual offset stored in the reference panel index. A SNP
+ * that is not in the panel never gets one and keeps Snp's default of -1, and
+ * bgzf_seek() returns -1 both for that and for a genuine seek failure -- which
+ * no call site used to check. The stream was then left wherever it happened to
+ * be and the caller parsed whatever record it landed on, so a variant absent
+ * from the panel silently acquired another variant's allele frequency.
+ *
+ * Callers must not reach here with a type-2 SNP; that is a bug in the caller,
+ * not a recoverable input error, and the message says so.
+ */
+void BgzfSeekRecord(BGZF* fp, long long int fpos) {
+  if (fpos < 0) {
+    Rcpp::stop("ERROR: attempted to read a reference panel record for a variant that "
+               "has no record (file offset " + std::to_string(fpos) + ")");
+  }
+  if (bgzf_seek(fp, static_cast<int64_t>(fpos), SEEK_SET) < 0) {
+    Rcpp::stop("ERROR: cannot seek to reference panel record at file offset " +
+               std::to_string(fpos) +
+               "; the index file and the genotype file may not belong together");
+  }
+}
+
 /*
 void CalPopWgtVec(std::vector<Snp*>& snp_vec, BGZF* fp, Options& opts){
   

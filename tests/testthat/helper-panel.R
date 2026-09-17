@@ -24,6 +24,7 @@ panel_file <- function(name) {
 panel <- function() {
   list(
     index       = panel_file("testpanel_index.gz"),
+    index_bad   = panel_file("testpanel_index_badfpos.gz"),
     data        = panel_file("testpanel_geno.gz"),
     pop_desc    = panel_file("testpanel_pop_desc.txt"),
     z           = panel_file("testpanel_zscore.txt"),

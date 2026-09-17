@@ -151,7 +151,7 @@ void afmix_vec(std::vector<Snp*>& snp_vec, Arguments& args){
       af1_mat(j, 0) = snp_subvec[j]->GetAf1Study();
       //Rcpp::Rcout<<"af1study :"<<snp_subvec[j]->GetAf1Study();
       std::string line;
-      bgzf_seek(fp, (*snp_subvec[j]).GetFpos(), SEEK_SET);
+      BgzfSeekRecord(fp, (*snp_subvec[j]).GetFpos());
       BgzfGetLine(fp, line);
       //Rcpp::Rcout<<line<<std::endl;
       std::istringstream buffer(line);

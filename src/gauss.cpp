@@ -555,12 +555,28 @@ void MakeSnpVec(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMapKe
   
   std::map<MapKey, Snp*, LessThanMapKey>::iterator it_sm;  // Iterator for snp_map
   double af1ref = 0;  // Variable to store the reference allele frequency
+  long long int num_type2 = 0;  // SNPs measured by the study but absent from the panel
   
   // Loop through each SNP in snp_map
   for(it_sm = snp_map.begin(); it_sm != snp_map.end(); ++it_sm){
     
+    // A type-2 SNP is in the user's input but not in the reference panel, so it has
+    // no genotype record and its fpos is still the constructor default of -1.
+    // Seeking to it used to fail silently and the next read returned whichever
+    // record the stream happened to sit on, giving the SNP another variant's allele
+    // frequency -- which then decided, non-deterministically, whether it appeared in
+    // the output at all. There is no panel frequency to report, so it is NA; the SNP
+    // is passed through to the output, and every analysis already excludes type 2
+    // from the linear algebra.
+    if((it_sm->second)->GetType() == 2){
+      (it_sm->second)->SetAf1Ref(NA_REAL);
+      snp_vec.push_back(it_sm->second);
+      num_type2++;
+      continue;
+    }
+    
     // Seek to the SNP's position in the reference file using its stored file position (fpos)
-    bgzf_seek(fp, (it_sm->second)->GetFpos(), SEEK_SET);
+    BgzfSeekRecord(fp, (it_sm->second)->GetFpos());
     
     std::string line;
     BgzfGetLine(fp, line);  // Read the line containing the SNP's genotype data
@@ -599,6 +615,12 @@ void MakeSnpVec(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMapKe
     if( (af1ref > args.af1_cutoff) && (af1ref < (1 - args.af1_cutoff)) ){
       snp_vec.push_back(it_sm->second);
     }      
+  }
+  
+  if(num_type2 > 0){
+    Rcpp::Rcout << num_type2 << " variant(s) in the input are not in the reference panel; "
+                << "reported with type = 2 and excluded from the LD computation."
+                << std::endl;
   }
   
   // Close the BGZF file after processing
@@ -641,6 +663,7 @@ void MakeSnpVecMix(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMa
   
   // Iterator to traverse through the SNP map (snp_map)
   std::map<MapKey, Snp*, LessThanMapKey>::iterator it_sm;
+  long long int num_type2 = 0;  // SNPs measured by the study but absent from the panel
   
   // Loop through each SNP in the snp_map
   for (it_sm = snp_map.begin(); it_sm != snp_map.end(); ++it_sm) {
@@ -649,8 +672,17 @@ void MakeSnpVecMix(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMa
     double af1_mix = 0;          // Weighted allele frequency (af1_mix) initialization
     std::string line;            // String to hold a line from the reference data file
     
+    // See MakeSnpVec: a type-2 SNP has no panel record to seek to, so it carries no
+    // mixture allele frequency and is passed through to the output as NA.
+    if ((it_sm->second)->GetType() == 2) {
+      (it_sm->second)->SetAf1Mix(NA_REAL);
+      snp_vec.push_back(it_sm->second);
+      num_type2++;
+      continue;
+    }
+    
     // Use the stored file position (fpos) to seek to the SNP's location in the BGZF file
-    bgzf_seek(fp, (it_sm->second)->GetFpos(), SEEK_SET);
+    BgzfSeekRecord(fp, (it_sm->second)->GetFpos());
     
     // Read the line containing genotype data and allele frequencies
     BgzfGetLine(fp, line);
@@ -688,6 +720,12 @@ void MakeSnpVecMix(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMa
       // Add the SNP to the snp_vec vector if it passes the cutoff criteria
       snp_vec.push_back(it_sm->second);
     }
+  }
+  
+  if (num_type2 > 0) {
+    Rcpp::Rcout << num_type2 << " variant(s) in the input are not in the reference panel; "
+                << "reported with type = 2 and excluded from the LD computation."
+                << std::endl;
   }
   
   // Closes the BGZF file after processing all SNPs
@@ -743,7 +781,7 @@ void ReadGenotype(std::vector<Snp*>& snp_vec, Arguments& args) {
       std::string line;  // String to store a line from the reference data file
       
       // Use the stored file position (fpos) to seek to the SNP's location in the reference file
-      bgzf_seek(fp, (*it_sv)->GetFpos(), SEEK_SET);
+      BgzfSeekRecord(fp, (*it_sv)->GetFpos());
       
       // Read the line corresponding to the SNP from the reference file
       BgzfGetLine(fp, line);
@@ -831,7 +869,7 @@ void ReadGenotypeOne(Snp* snp, Arguments& args) {
     std::string line;  // String to store a line from the reference data file
     
     // Use the stored file position (fpos) to seek to the SNP's location in the reference file
-    bgzf_seek(fp, snp->GetFpos(), SEEK_SET);
+    BgzfSeekRecord(fp, snp->GetFpos());
     
     // Read the line corresponding to the SNP from the reference file
     BgzfGetLine(fp, line);

@@ -98,19 +98,87 @@ test_that("dist() accepts a superpopulation as the study population", {
   expect_false(isTRUE(all.equal(sup$z, res$z)))
 })
 
-test_that("dist() tolerates study variants that are absent from the panel", {
-  ## Real GWAS input always contains variants the panel does not carry.
-  res <- dist_run()
-  with_extra <- quietly(gauss::dist(chr = region$chr, start_bp = region$start,
-                                    end_bp = region$end, wing_size = region$wing,
-                                    study_pop = "PPA",
-                                    input_file = fx$z_unmatched,
-                                    reference_index_file = fx$index,
-                                    reference_data_file = fx$data,
-                                    reference_pop_desc_file = fx$pop_desc))
+dist_unmatched <- function() {
+  quietly(gauss::dist(chr = region$chr, start_bp = region$start,
+                      end_bp = region$end, wing_size = region$wing,
+                      study_pop = "PPA", input_file = fx$z_unmatched,
+                      reference_index_file = fx$index,
+                      reference_data_file = fx$data,
+                      reference_pop_desc_file = fx$pop_desc))
+}
 
-  expect_equal(with_extra$bp, res$bp)
-  expect_equal(with_extra$z, res$z)
+test_that("study variants absent from the panel are reported as type 2", {
+  ## Real GWAS input always contains variants the panel does not carry. They
+  ## have no genotype record, so they carry no panel allele frequency and take
+  ## no part in the imputation -- but they are the user's own measurements and
+  ## are passed through to the output.
+  res <- dist_unmatched()
+  extra <- res[res$type == 2L, ]
+  study <- utils::read.table(fx$z_unmatched, header = TRUE,
+                             stringsAsFactors = FALSE)
+  study <- study[grepl("^rsx", study$rsid), ]
+
+  expect_equal(nrow(extra), nrow(study))
+  expect_equal(extra$rsid, study$rsid)
+  expect_equal(extra$bp, study$bp)
+  ## No panel record means no panel frequency: NA, not a number read off some
+  ## other variant's record.
+  expect_true(all(is.na(extra$af1ref)))
+  ## The study's own Z-score reaches the output untouched.
+  expect_equal(extra$z, study$z)
+  expect_equal(extra$info, rep(1, nrow(extra)))
+})
+
+test_that("unmatched variants do not perturb the imputation", {
+  ## The decisive invariant: adding variants the panel does not carry must
+  ## leave every panel variant's result exactly as it was.
+  res <- dist_run()
+  with_extra <- dist_unmatched()
+  panel_rows <- with_extra[with_extra$type != 2L, ]
+
+  expect_equal(panel_rows$rsid, res$rsid)
+  expect_equal(panel_rows$z, res$z)
+  expect_equal(panel_rows$info, res$info)
+  expect_equal(panel_rows$af1ref, res$af1ref)
+})
+
+test_that("the output is deterministic when the panel is missing variants", {
+  ## The seek to a non-existent record used to fail unchecked, leaving the
+  ## stream wherever it happened to be, so which rows appeared and what
+  ## frequency they carried varied between runs.
+  expect_equal(dist_unmatched(), dist_unmatched())
+})
+
+test_that("an index entry with no genotype record is a clear error", {
+  ## Guards the checked seek itself.  A negative file offset can only mean the
+  ## index and the genotype file do not belong together; it used to be passed
+  ## to bgzf_seek() unchecked, and the caller then parsed whatever record the
+  ## stream was sitting on.
+  expect_error(
+    quietly(gauss::dist(chr = region$chr, start_bp = region$start,
+                        end_bp = region$end, wing_size = region$wing,
+                        study_pop = "PPA", input_file = fx$z,
+                        reference_index_file = fx$index_bad,
+                        reference_data_file = fx$data,
+                        reference_pop_desc_file = fx$pop_desc)),
+    "no record"
+  )
+})
+
+test_that("distmix() reports unmatched variants with an NA mixture frequency", {
+  res <- quietly(gauss::distmix(chr = region$chr, start_bp = region$start,
+                                end_bp = region$end, wing_size = region$wing,
+                                pop_wgt_df = panel_wgt_df(),
+                                input_file = fx$z_unmatched,
+                                reference_index_file = fx$index,
+                                reference_data_file = fx$data,
+                                reference_pop_desc_file = fx$pop_desc))
+  extra <- res[res$type == 2L, ]
+  ref <- distmix_run()
+
+  expect_equal(nrow(extra), 5L)
+  expect_true(all(is.na(extra$af1mix)))
+  expect_equal(res$z[res$type != 2L], ref$z)
 })
 
 test_that("dist() results are stable", {

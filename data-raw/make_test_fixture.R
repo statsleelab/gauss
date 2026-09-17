@@ -18,6 +18,7 @@
 ##   testpanel_zscore_unmatched.txt study Z-scores incl. SNPs absent from panel
 ##   testpanel_af1.txt              study allele frequencies (afmix / cpw2)
 ##   testpanel_annotation.txt       SNP annotation (jepeg / jepegmix)
+##   testpanel_index_badfpos.gz     index with fpos = -1 at bp 100,000
 
 set.seed(20260905)
 
@@ -261,6 +262,18 @@ writeLines(c(
           gene_id, annot_categ,
           format(annot_wgt, scientific = FALSE, trim = TRUE))
 ), file.path(out_dir, "testpanel_annotation.txt"))
+
+## A copy of the index whose entry at bp = 100,000 points at no genotype record.
+## Reading a variant's record starts with a seek to the `fpos` the index gives; a
+## negative one can only mean the index and the genotype file do not belong
+## together, and the failure used to go unchecked. The position is inside the
+## window the tests analyse, so the bad entry is actually reached rather than
+## filtered out beforehand. Used by the error-path tests.
+bad_index <- index_lines
+bad_row <- which(bp == 100000L)
+stopifnot(length(bad_row) == 1L)
+bad_index[bad_row] <- sub("[0-9]+$", "-1", bad_index[bad_row])
+invisible(write_bgzf(file.path(out_dir, "testpanel_index_badfpos.gz"), bad_index))
 
 cat("fixture written to ", out_dir, "\n", sep = "")
 print(file.info(list.files(out_dir, full.names = TRUE))["size"])

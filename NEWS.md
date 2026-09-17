@@ -37,6 +37,34 @@
   Users who need to reproduce results from gauss 1.0.1 or earlier should pin
   that version.
 
+* **Variants that the reference panel does not carry are handled correctly.**
+  `MakeSnpVec()` and `MakeSnpVecMix()` looped over every SNP in the map,
+  including those present in the user's input but absent from the panel. Such a
+  SNP has no genotype record, so its stored file offset is still the default
+  `-1`; `bgzf_seek()` failed, no call site checked the return value, and the
+  next read returned whichever record the stream happened to be sitting on. The
+  variant therefore acquired an unrelated variant's allele frequency, and that
+  number then decided — via the minor-allele-frequency cutoff, on evidence
+  belonging to a different variant — whether it appeared in the output at all.
+
+  Such variants are now passed through to the output with `type = 2` and an
+  `NA` allele frequency, which is what every analysis already assumed: each one
+  carries an explicit "if (type == 2) do nothing" branch excluding them from the
+  linear algebra. Their own Z-score reaches the output untouched, and the count
+  is reported on the console.
+
+  This adds rows to `dist()`, `distmix()`, `qcat()`, `qcatmix()`, `prep_qcat()`
+  and `prep_recessive_impute()` output — one per input variant in the reporting
+  window that the panel lacks — and those rows carry `NA` in the `af1ref` /
+  `af1mix` column. Results for panel variants are unchanged: on a 1 Mb window of
+  chromosome 22 against the 33KG panel, one variant of 5869 is recovered this
+  way and the other 5868 rows are identical.
+
+* **Every seek into the reference panel is checked.** A file offset that is
+  negative, or a seek that fails, now raises an error naming the offset instead
+  of silently leaving the stream somewhere else and parsing the wrong record.
+  This covers all seven live call sites.
+
 * **`pop_wgt_df` is now validated, and every function that takes ancestry
   proportions rescales them to sum to one before doing any work.** Equation (2)
   assumes `sum_k w_k = 1`; its between-population term is a centred outer

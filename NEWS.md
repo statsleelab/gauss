@@ -132,6 +132,14 @@
   reference — in place of the `package.skeleton()` placeholder text that had
   been shipping since the first release.
 
+* The five data sets the vignettes use have help pages for the first time:
+  `JEPEG_SNP_Annotation.v1.0`, `PGC2_3Mb`, `PGC2_Chr22_ilmn1M_AF1`,
+  `PGC2_Chr22_ilmn1M_Z` and `PGC3_SCZ_ilmn1M_Z`. Each records its columns, its
+  extent, which function it is the example input for, and the study it comes
+  from — PGC SCZ2 (Nature 511:421-427) for the `PGC2_*` sets, PGC SCZ3 (Nature
+  604:502-508) for `PGC3_SCZ_ilmn1M_Z`, and the JEPEG paper (Bioinformatics
+  31:1176-1182) for the annotation.
+
 # gauss 1.0.1
 
 ## Bug fixes

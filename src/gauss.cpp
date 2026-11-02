@@ -8,6 +8,8 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <cmath>
+#include <set>
 #include "util.h"
 #include "bgzf.h"
 #include "snp.h"
@@ -553,12 +555,28 @@ void MakeSnpVec(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMapKe
   
   std::map<MapKey, Snp*, LessThanMapKey>::iterator it_sm;  // Iterator for snp_map
   double af1ref = 0;  // Variable to store the reference allele frequency
+  long long int num_type2 = 0;  // SNPs measured by the study but absent from the panel
   
   // Loop through each SNP in snp_map
   for(it_sm = snp_map.begin(); it_sm != snp_map.end(); ++it_sm){
     
+    // A type-2 SNP is in the user's input but not in the reference panel, so it has
+    // no genotype record and its fpos is still the constructor default of -1.
+    // Seeking to it used to fail silently and the next read returned whichever
+    // record the stream happened to sit on, giving the SNP another variant's allele
+    // frequency -- which then decided, non-deterministically, whether it appeared in
+    // the output at all. There is no panel frequency to report, so it is NA; the SNP
+    // is passed through to the output, and every analysis already excludes type 2
+    // from the linear algebra.
+    if((it_sm->second)->GetType() == 2){
+      (it_sm->second)->SetAf1Ref(NA_REAL);
+      snp_vec.push_back(it_sm->second);
+      num_type2++;
+      continue;
+    }
+    
     // Seek to the SNP's position in the reference file using its stored file position (fpos)
-    bgzf_seek(fp, (it_sm->second)->GetFpos(), SEEK_SET);
+    BgzfSeekRecord(fp, (it_sm->second)->GetFpos());
     
     std::string line;
     BgzfGetLine(fp, line);  // Read the line containing the SNP's genotype data
@@ -597,6 +615,12 @@ void MakeSnpVec(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMapKe
     if( (af1ref > args.af1_cutoff) && (af1ref < (1 - args.af1_cutoff)) ){
       snp_vec.push_back(it_sm->second);
     }      
+  }
+  
+  if(num_type2 > 0){
+    Rcpp::Rcout << num_type2 << " variant(s) in the input are not in the reference panel; "
+                << "reported with type = 2 and excluded from the LD computation."
+                << std::endl;
   }
   
   // Close the BGZF file after processing
@@ -639,6 +663,7 @@ void MakeSnpVecMix(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMa
   
   // Iterator to traverse through the SNP map (snp_map)
   std::map<MapKey, Snp*, LessThanMapKey>::iterator it_sm;
+  long long int num_type2 = 0;  // SNPs measured by the study but absent from the panel
   
   // Loop through each SNP in the snp_map
   for (it_sm = snp_map.begin(); it_sm != snp_map.end(); ++it_sm) {
@@ -647,8 +672,17 @@ void MakeSnpVecMix(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMa
     double af1_mix = 0;          // Weighted allele frequency (af1_mix) initialization
     std::string line;            // String to hold a line from the reference data file
     
+    // See MakeSnpVec: a type-2 SNP has no panel record to seek to, so it carries no
+    // mixture allele frequency and is passed through to the output as NA.
+    if ((it_sm->second)->GetType() == 2) {
+      (it_sm->second)->SetAf1Mix(NA_REAL);
+      snp_vec.push_back(it_sm->second);
+      num_type2++;
+      continue;
+    }
+    
     // Use the stored file position (fpos) to seek to the SNP's location in the BGZF file
-    bgzf_seek(fp, (it_sm->second)->GetFpos(), SEEK_SET);
+    BgzfSeekRecord(fp, (it_sm->second)->GetFpos());
     
     // Read the line containing genotype data and allele frequencies
     BgzfGetLine(fp, line);
@@ -686,6 +720,12 @@ void MakeSnpVecMix(std::vector<Snp*>& snp_vec, std::map<MapKey, Snp*, LessThanMa
       // Add the SNP to the snp_vec vector if it passes the cutoff criteria
       snp_vec.push_back(it_sm->second);
     }
+  }
+  
+  if (num_type2 > 0) {
+    Rcpp::Rcout << num_type2 << " variant(s) in the input are not in the reference panel; "
+                << "reported with type = 2 and excluded from the LD computation."
+                << std::endl;
   }
   
   // Closes the BGZF file after processing all SNPs
@@ -741,7 +781,7 @@ void ReadGenotype(std::vector<Snp*>& snp_vec, Arguments& args) {
       std::string line;  // String to store a line from the reference data file
       
       // Use the stored file position (fpos) to seek to the SNP's location in the reference file
-      bgzf_seek(fp, (*it_sv)->GetFpos(), SEEK_SET);
+      BgzfSeekRecord(fp, (*it_sv)->GetFpos());
       
       // Read the line corresponding to the SNP from the reference file
       BgzfGetLine(fp, line);
@@ -829,7 +869,7 @@ void ReadGenotypeOne(Snp* snp, Arguments& args) {
     std::string line;  // String to store a line from the reference data file
     
     // Use the stored file position (fpos) to seek to the SNP's location in the reference file
-    bgzf_seek(fp, snp->GetFpos(), SEEK_SET);
+    BgzfSeekRecord(fp, snp->GetFpos());
     
     // Read the line corresponding to the SNP from the reference file
     BgzfGetLine(fp, line);
@@ -1091,28 +1131,79 @@ void init_pop_flag_vec(Arguments& args) {
 //   3. If the population is found in `pop_wgt_map`, a flag value of 1 is appended to `pop_flag_vec` and the corresponding weight is added to `pop_wgt_vec`.
 //   4. If the population is not found, a flag value of 0 is appended to `pop_flag_vec`.
 void init_pop_flag_wgt_vec(Arguments& args) {
-  
+
   std::string pop;
-  
+  std::set<std::string> matched;
+
   // Iterate through each population in the reference panel (ref_pop_vec)
   for (int i = 0; i < args.num_pops; i++) {
     pop = args.ref_pop_vec[i];  // Get the population ID from the reference panel
-    
+
     // Check if the population exists in the population weight map (pop_wgt_map)
     if (args.pop_wgt_map.find(pop) != args.pop_wgt_map.end()) {  // If population is found in pop_wgt_map
-      
+
+      double wgt = args.pop_wgt_map[pop];
+      if (!R_finite(wgt) || wgt < 0) {
+        Rcpp::stop("ERROR: mixing proportion for population '" + pop +
+                   "' must be a finite non-negative number");
+      }
+
       // Add a flag value of 1 to pop_flag_vec and add the population's weight to pop_wgt_vec
       args.pop_flag_vec.push_back(1);  // Population is part of the study, set flag to 1
-      args.pop_wgt_vec.push_back(args.pop_wgt_map[pop]);  // Add the corresponding population weight to pop_wgt_vec
-      
+      args.pop_wgt_vec.push_back(wgt);  // Add the corresponding population weight to pop_wgt_vec
+      matched.insert(pop);
+
     } else {  // If population is not found in pop_wgt_map
-      
+
       // Add a flag value of 0 to pop_flag_vec (population not part of the study)
       args.pop_flag_vec.push_back(0);
-      
+
       // No weight is added to pop_wgt_vec for populations that are not found
       // args.pop_wgt_vec.push_back(0);  // Optional: This line is commented out, as it isn't needed
     }
+  }
+
+  // Report population names the panel does not carry, rather than dropping their
+  // weight silently and renormalising around the gap without saying so.
+  std::string unmatched;
+  for (std::map<std::string, double>::const_iterator it = args.pop_wgt_map.begin();
+       it != args.pop_wgt_map.end(); ++it) {
+    if (matched.find(it->first) == matched.end()) {
+      if (!unmatched.empty()) unmatched += ", ";
+      unmatched += it->first;
+    }
+  }
+  if (!unmatched.empty()) {
+    Rcpp::warning("pop_wgt_df names populations the reference panel does not contain, "
+                  "and their weights are ignored: " + unmatched);
+  }
+
+  if (args.pop_wgt_vec.empty()) {
+    Rcpp::stop("ERROR: none of the populations in pop_wgt_df exist in the reference panel");
+  }
+
+  // The mixture covariance (CalWgtCov, DISTMIX Eq. 2) assumes sum_k w_k == 1: its
+  // between-population term is a centred outer product, accumulated in a form that
+  // is only equivalent under that constraint. With sum_k w_k > 1 the term can go
+  // negative far enough to make a variant's mixture variance negative, and the
+  // sqrt() in the LD normalisation then yields NaN, which spreads through the whole
+  // LD matrix.
+  //
+  // Rescaling is routine rather than exceptional: afmix() and cpw2() return
+  // unrescaled weights by construction, so this is a normal preprocessing step,
+  // reported on the console rather than raised as a warning. Only the scale
+  // changes; each population's share relative to the others is preserved.
+  double sum_wgt = 0;
+  for (size_t k = 0; k < args.pop_wgt_vec.size(); k++) sum_wgt += args.pop_wgt_vec[k];
+  args.sum_pop_wgt = sum_wgt;
+
+  if (sum_wgt <= 0) {
+    Rcpp::stop("ERROR: the mixing proportions in pop_wgt_df must sum to a positive number");
+  }
+  if (std::abs(sum_wgt - 1.0) > 1e-8) {
+    for (size_t k = 0; k < args.pop_wgt_vec.size(); k++) args.pop_wgt_vec[k] /= sum_wgt;
+    Rcpp::Rcout << "Mixing proportions sum to " << sum_wgt
+                << "; rescaled to sum to 1." << std::endl;
   }
 }
 

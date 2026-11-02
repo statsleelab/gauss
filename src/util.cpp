@@ -78,24 +78,36 @@ double CalCor(std::vector<std::string>& x, std::vector<std::string>& y){
  * character (typically '0', '1', or '2') represents the count of the reference allele 
  * for an individual.
  * 
+ * This is Equation (2) of the DISTMIX paper (Lee et al., Bioinformatics 2015,
+ * doi:10.1093/bioinformatics/btv348, Section 2.1):
+ *
+ *     mu = sum_k w_k mu_k                                              (1)
+ *     C  = sum_k w_k C_k  +  sum_k w_k (mu_k - mu)(mu_k - mu)^T        (2)
+ *
+ * where C_k is the variance-covariance matrix of population k and the weights satisfy
+ * sum_k w_k = 1. The first term is the within-population covariance; the second is the
+ * between-population term, and it is the reason a mixture LD matrix differs from a
+ * within-population one. The (mu_k - mu) outer product is accumulated here in its
+ * expanded form, sum_k w_k mu_xk mu_yk - (sum_k w_k mu_xk)(sum_k w_k mu_yk), which is
+ * equivalent only because sum_k w_k = 1.
+ *
  * For each population, the function:
- *  - Computes the sum of genotype counts from x and y.
- *  - Computes the sum of cross-products of the genotype counts.
- *  - Uses the formula with an unbiased correction factor: (m/(m-1)) * (m * sumxy - sumx * sumy),
- *    where m is the number of individuals (length of the genotype string).
- *  - Multiplies the result by the corresponding population weight from pop_wgt_vec.
- * 
- * The function then adjusts for the weighted means of the populations by combining the 
- * accumulated values and returns the final weighted covariance.
- * 
+ *  - Computes the sums of genotype counts from x and y, and of their cross-products.
+ *  - Forms the unbiased covariance C_k = (m*sumxy - sumx*sumy) / (m*(m-1)), where m is
+ *    the number of individuals (length of the genotype string).
+ *  - Multiplies it by the corresponding population weight from pop_wgt_vec.
+ *
  * @param x A vector of strings, each containing genotype calls (as digits) for a SNP in a specific population.
  * @param y A vector of strings, each containing genotype calls (as digits) for a paired SNP corresponding to the populations in x.
  * @param pop_wgt_vec A vector of population weights corresponding to each population in x and y.
- * 
+ *
  * @return double The computed weighted covariance between the genotype data vectors.
- * 
- * @note The function assumes that each genotype string has a length greater than 1. 
- * 
+ *
+ * @note The function assumes that each genotype string has a length greater than 1;
+ *       m == 1 divides by zero.
+ * @note The caller is responsible for sum_k w_k == 1. Nothing here checks it, and the
+ *       between-population term is wrong if it does not hold.
+ *
  * @warning Ensure that the genotype strings only contain valid digits ('0', '1', or '2').
  */
 //This function is used when --mix flag is specified.
@@ -114,8 +126,10 @@ double CalWgtCov(std::vector<std::string>& x, std::vector<std::string>& y, std::
       sumy += yij;
       sumxy += xij*yij;
     }
-    double factor = ((double)m) / (m - 1); // ensure floating-point division
-    wsumcov += wgt_val*factor*(m*sumxy-sumx*sumy);
+    // C_k, the unbiased within-population covariance. (m*sumxy - sumx*sumy) is
+    // m*(m-1)*C_k, so both factors have to divide out; omitting them left the
+    // within-population term inflated by m^2.
+    wsumcov += wgt_val*(m*sumxy-sumx*sumy)/(static_cast<double>(m)*(m-1));
     wsum_mi_mj += wgt_val*(sumx/m)*(sumy/m);
     wsum_mi += wgt_val*(sumx/m);
     wsum_mj += wgt_val*(sumy/m);
@@ -504,6 +518,31 @@ int BgzfGetLine(BGZF* fp, std::string& line){
     line += static_cast<char>(c);
   }
   return c;
+}
+
+/**
+ * @brief Seeks to a variant's genotype record, failing loudly if it cannot.
+ *
+ * `fpos` is the BGZF virtual offset stored in the reference panel index. A SNP
+ * that is not in the panel never gets one and keeps Snp's default of -1, and
+ * bgzf_seek() returns -1 both for that and for a genuine seek failure -- which
+ * no call site used to check. The stream was then left wherever it happened to
+ * be and the caller parsed whatever record it landed on, so a variant absent
+ * from the panel silently acquired another variant's allele frequency.
+ *
+ * Callers must not reach here with a type-2 SNP; that is a bug in the caller,
+ * not a recoverable input error, and the message says so.
+ */
+void BgzfSeekRecord(BGZF* fp, long long int fpos) {
+  if (fpos < 0) {
+    Rcpp::stop("ERROR: attempted to read a reference panel record for a variant that "
+               "has no record (file offset " + std::to_string(fpos) + ")");
+  }
+  if (bgzf_seek(fp, static_cast<int64_t>(fpos), SEEK_SET) < 0) {
+    Rcpp::stop("ERROR: cannot seek to reference panel record at file offset " +
+               std::to_string(fpos) +
+               "; the index file and the genotype file may not belong together");
+  }
 }
 
 /*

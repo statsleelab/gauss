@@ -1,8 +1,8 @@
 Package: gauss
 Type: Package
 Title: Genome Analysis Using Summary Statistics
-Version: 1.0.1
-Date: 2026-09-05
+Version: 1.1.0
+Date: 2026-11-02
 Authors@R: person("Donghyung", "Lee", email = "leed13@miamioh.edu",
                   role = c("aut", "cre"))
 Description: gauss is a free and open-source R software package, which contains functions 
@@ -10,15 +10,18 @@ Description: gauss is a free and open-source R software package, which contains 
   meta-analyses from cohorts of diverse ethnic backgrounds, using a next generation reference panel consists of 32,953 samples of 29 populations.
 License: GPL (>= 2)
 Imports: Rcpp (>= 1.0.7),
-         RcppEigen,
-         quadprog
+         quadprog,
+         stats,
+         utils
 LinkingTo: Rcpp, 
            RcppEigen
 Encoding: UTF-8
-RoxygenNote: 7.3.3
 URL: https://github.com/statsleelab/gauss
 BugReports: https://github.com/statsleelab/gauss/issues
 Suggests: 
     rmarkdown,
-    knitr
+    knitr,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.1.0

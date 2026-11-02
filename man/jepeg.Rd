@@ -19,6 +19,17 @@ jepeg(
 
 \item{input_file}{file name of GWAS summary statistics data containing rsid, chr, bp, a1, a2 and z}
 
+\item{annotation_file}{file name of the SNP annotation data: a whitespace-delimited
+table with a header line and the columns \code{rsid}, \code{chr}, \code{bp},
+\code{a1}, \code{a2}, \code{geneid}, \code{categ}, \code{wgt}. Variants are
+matched to the study data by \code{(chr, bp, a1, a2)} in either allele order, never
+by \code{rsid}, so \code{rsid} may be given as \code{.}. \code{categ} must be one
+of \code{PROTEIN}, \code{TFBS}, \code{WTH_HAIR}, \code{WTH_TARGET},
+\code{CIS_EQTL} or \code{TRANS_EQTL}, reported in the result as \code{PFS},
+\code{TFB}, \code{STR}, \code{TAR}, \code{CIS} and \code{TRN} respectively; rows
+carrying any other value are skipped and counted in a warning. \code{wgt} is the
+variant's weight within its category.}
+
 \item{reference_index_file}{file name of reference panel index data}
 
 \item{reference_data_file}{file name of reference panel data}
@@ -26,8 +37,6 @@ jepeg(
 \item{reference_pop_desc_file}{file name of reference panel population description data}
 
 \item{af1_cutoff}{cutoff of reference allele, a1, frequency}
-
-\item{annotation}{file name of the SNP annotation data set}
 }
 \value{
 R dataframe containing geneid, chisq, df, jepeg_pval, num_snp, top_categ, top_categ_pval, top_snp, and top_snp_pval

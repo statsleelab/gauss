@@ -24,7 +24,11 @@ simulateLD(
 
 \item{end_bp}{end base pair position of prediction window}
 
-\item{pop_wgt_df}{R data frame containing population IDs and weights}
+\item{pop_wgt_df}{R data frame with the population abbreviation in the first column
+and its mixing proportion in the second, read positionally. Proportions must be
+non-negative; they are rescaled to sum to 1, which the mixture covariance assumes.
+See \code{data(PGC2_SCZ_ANC_Prop)} for the expected shape. Note that \code{afmix()}
+returns three columns, so its first column must be dropped first.}
 
 \item{sim_size}{Number of simulated subjects}
 

@@ -1,0 +1,54 @@
+name: R-CMD-check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  R-CMD-check:
+    runs-on: ${{ matrix.config.os }}
+    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {os: ubuntu-latest,  r: 'release'}
+          - {os: ubuntu-latest,  r: 'devel', http-user-agent: 'release'}
+          - {os: macos-latest,   r: 'release'}
+          - {os: windows-latest, r: 'release'}
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+      # Snapshot tests only run when this is set.
+      NOT_CRAN: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.config.r }}
+          http-user-agent: ${{ matrix.config.http-user-agent }}
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          # The vignettes execute at build time: they need packages that are
+          # not declared as dependencies and read ../ref/33KG/, a multi-gigabyte
+          # panel that is not distributed with the package.  Until that is
+          # sorted out they are neither built nor checked here.
+          build_args: 'c("--no-manual", "--no-build-vignettes")'
+          args: 'c("--no-manual", "--ignore-vignettes")'
+          error-on: '"error"'
+          upload-snapshots: true

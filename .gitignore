@@ -6,10 +6,10 @@ src/*.o
 src/*.so
 src/*.dll
 src/etc
-src/Makevars
 docs/figure
 ref
 
 .Rlib/
 gauss_*.tar.gz
 inst/dev-tests/
+tests/testthat/_problems/

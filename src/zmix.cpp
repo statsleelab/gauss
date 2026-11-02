@@ -1191,7 +1191,7 @@ NumericVector cal_af_norm_var(std::vector<Snp*>& snp_vec, Arguments& args){
   for(std::vector<Snp*>::iterator it_sv = snp_vec.begin(); it_sv != snp_vec.end(); ++it_sv){
     NumericVector af1_vec;
     std::string line;
-    bgzf_seek(fp, (*it_sv)->GetFpos(), SEEK_SET);
+    BgzfSeekRecord(fp, (*it_sv)->GetFpos());
     BgzfGetLine(fp, line);
     std::istringstream buffer(line);
     //skipping genotypes

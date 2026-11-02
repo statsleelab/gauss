@@ -4,5 +4,12 @@
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
-^src/Makevars$
-
+^data-raw$
+^\.github$
+^ref$
+^notes$
+^CLAUDE\.md$
+^inst/dev-tests$
+^\.DS_Store$
+^src/zmixrcpp\.cpp_$
+^src/etc$

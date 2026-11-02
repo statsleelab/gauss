@@ -62,6 +62,7 @@ void FlipGenotype(std::string& genotype);
 void FlipGenotypeVec(std::vector<std::string>& genotype_vec);
 
 int BgzfGetLine(BGZF* fp, std::string& line);
+void BgzfSeekRecord(BGZF* fp, long long int fpos);
 
 //void CalPopWgtVec(std::vector<Snp*>& snp_vec, BGZF* fp, Options& opts);
 

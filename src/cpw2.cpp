@@ -147,7 +147,7 @@ void cpw2_vec(std::vector<Snp*>& snp_vec, Arguments& args){
       af1_mat(j, 0) = std::asin(std::sqrt(snp_subvec[j]->GetAf1Study())); //use arcsine square root transformation to stabilize the variance    
       //Rcpp::Rcout<<"af1study :"<<snp_subvec[j]->GetAf1Study();
       std::string line;
-      bgzf_seek(fp, (*snp_subvec[j]).GetFpos(), SEEK_SET);
+      BgzfSeekRecord(fp, (*snp_subvec[j]).GetFpos());
       BgzfGetLine(fp, line);
       //Rcpp::Rcout<<line<<std::endl;
       std::istringstream buffer(line);

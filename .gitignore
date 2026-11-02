@@ -6,7 +6,6 @@ src/*.o
 src/*.so
 src/*.dll
 src/etc
-src/Makevars
 docs/figure
 ref
 

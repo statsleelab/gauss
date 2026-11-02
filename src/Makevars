@@ -1,0 +1,5 @@
+# RcppEigen's headers come in through LinkingTo; no extra include path is needed.
+# rcpp_eigen_wrap.h is force-included to silence Eigen's own warnings in every
+# translation unit. Plain `=` rather than `+=`: `+=` is a GNU make extension and
+# nothing else sets this variable.
+PKG_CXXFLAGS = -include rcpp_eigen_wrap.h

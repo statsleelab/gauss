@@ -1,0 +1,37 @@
+#' gauss: Genome Analysis Using Summary Statistics
+#'
+#' Analyses summary statistics from genome-wide association studies of cohorts
+#' with mixed ancestry, against an external reference panel of 32,953 samples
+#' drawn from 29 populations. The panel is read directly off disk by position,
+#' so it is never loaded into memory and is not distributed with the package.
+#'
+#' The entry points fall into four groups:
+#'
+#' \describe{
+#'   \item{Imputation of unmeasured variants}{\code{\link{dist}} for a single
+#'     population or superpopulation, \code{\link{distmix}} for an arbitrary
+#'     ancestry mixture.}
+#'   \item{Gene-level association}{\code{\link{jepeg}} and
+#'     \code{\link{jepegmix}}, which aggregate functional annotations into a
+#'     single statistic per gene.}
+#'   \item{Region-level association}{\code{\link{qcat}} and
+#'     \code{\link{qcatmix}}.}
+#'   \item{Ancestry and linkage disequilibrium}{\code{\link{afmix}} and
+#'     \code{\link{zmix}} estimate mixing proportions from the study's own
+#'     allele frequencies or Z-scores; \code{\link{computeLD}} returns the
+#'     ancestry-informed LD matrix the other functions use internally.}
+#' }
+#'
+#' Functions whose name ends in \code{mix} take a \code{pop_wgt_df} of mixing
+#' proportions and are read positionally: the first column must name the
+#' population and the second must carry its weight. See
+#' \code{data(PGC2_SCZ_ANC_Prop)} for the expected shape.
+#'
+#' @references
+#' Lee D, Williamson VS, Bigdeli TB, Riley BP, Fanous AH, Vladimirov VI,
+#' Bacanu SA (2015). DIST: direct imputation of summary statistics for
+#' unmeasured SNPs. \emph{Bioinformatics} 31(19):3099-3104.
+#' \doi{10.1093/bioinformatics/btv348}
+#'
+#' @keywords internal
+"_PACKAGE"

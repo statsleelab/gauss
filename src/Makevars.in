@@ -1,3 +1,0 @@
-# RcppEigen uses LinkingTo for include paths; no extra flags needed.
-# Silence noisy Eigen warnings during package builds.
-PKG_CXXFLAGS += -include rcpp_eigen_wrap.h

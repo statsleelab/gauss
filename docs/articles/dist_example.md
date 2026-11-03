@@ -22,9 +22,9 @@ multi-ethnic cohorts.
 
 # Load necessary packages
 library(gauss)
-library(tidyverse)
+library(dplyr)
+library(ggplot2)
 library(data.table)
-library(kableExtra)
 ```
 
 ## Preparing the Input Data
@@ -55,7 +55,7 @@ For this example, we will use the Psychiatric Genomic Consortium’s Phase
 ``` r
 
 # Path to the input file
-input_file <- "../data/PGC2_3Mb.txt"
+input_file <- system.file("data", "PGC2_3Mb.txt", package = "gauss")
 
 # Input file should include six columns (rsid, chr, bp, a1, a2, and z)
 input.data <- fread(input_file, header = TRUE)
@@ -79,10 +79,20 @@ files.
 
 ``` r
 
-reference_index_file <-"../ref/33KG/33kg_index.gz"
-reference_data_file <- "../ref/33KG/33kg_geno.gz"
-reference_pop_desc_file<-"../ref/33KG/33kg_pop_desc.txt"
+# The 33KG panel is not shipped with GAUSS.  Point GAUSS_REF_33KG at your own
+# copy of it -- or replace panel_dir with its path -- to run the analysis.
+panel_dir <- Sys.getenv("GAUSS_REF_33KG", unset = "")
+
+reference_index_file    <- file.path(panel_dir, "33kg_index.gz")
+reference_data_file     <- file.path(panel_dir, "33kg_geno.gz")
+reference_pop_desc_file <- file.path(panel_dir, "33kg_pop_desc.txt")
 ```
+
+The panel is 43 GB, so it is not available when this vignette is built.
+The analyses below therefore run only where a copy of the panel is
+present. Everywhere else their results are read back from the copies
+saved in the package, so the tables and the plot are the same either
+way.
 
 ## The `dist()` function
 
@@ -157,7 +167,7 @@ res <- dist(chr=10,
 
 ``` r
 
-head(res) %>% kable("html")
+head(res) %>% knitr::kable("html")
 ```
 
 | rsid        | chr |        bp | a1  | a2  |  af1ref |          z |      pval |      info | type |
@@ -227,13 +237,13 @@ Here, we load pre-generated ancestry proportion data:
 # Load the ancestry proportion data
 data("PGC2_SCZ_ANC_Prop") # data frame name: PGC2_SCZ_ANC_Prop
 head(PGC2_SCZ_ANC_Prop)
-#>   pop   wgt
-#> 1 ACB 0.006
-#> 2 ASW 0.036
-#> 3 BEB 0.005
-#> 4 CCE 0.008
-#> 5 CCS 0.004
-#> 6 CDX 0.018
+#>   pop         wgt
+#> 1 ACB 0.005655042
+#> 2 ASW 0.033930254
+#> 3 BEB 0.004712535
+#> 4 CCE 0.007540057
+#> 5 CCS 0.003770028
+#> 6 CDX 0.016965127
 ```
 
 Now, let’s proceed to use
@@ -261,17 +271,17 @@ res.mix <- distmix(chr=10,
 
 ``` r
 
-head(res.mix) %>% kable("html")
+head(res.mix) %>% knitr::kable("html")
 ```
 
 | rsid        | chr |        bp | a1  | a2  |    af1mix |          z |      pval |      info | type |
 |:------------|----:|----------:|:----|:----|----------:|-----------:|----------:|----------:|-----:|
-| rs117589665 |  10 | 104000008 | G   | A   | 0.0498071 |  3.7654380 | 0.0001663 | 0.9502816 |    0 |
-| rs530689457 |  10 | 104000125 | T   | C   | 0.0025437 | -1.5946817 | 0.1107834 | 0.1066791 |    0 |
-| rs74469897  |  10 | 104000130 | A   | G   | 0.0019094 | -0.3681266 | 0.7127788 | 0.0353468 |    0 |
-| rs115917085 |  10 | 104000143 | G   | T   | 0.0017765 | -0.5970168 | 0.5504962 | 0.0405042 |    0 |
-| rs9664049   |  10 | 104000307 | T   | C   | 0.6636273 | -0.4611119 | 0.6447184 | 0.9857299 |    0 |
-| rs149691625 |  10 | 104000837 | T   | C   | 0.0046659 | -2.7223779 | 0.0064814 | 0.0791714 |    0 |
+| rs117589665 |  10 | 104000008 | G   | A   | 0.0469435 |  3.8008771 | 0.0001442 | 0.9371023 |    0 |
+| rs530689457 |  10 | 104000125 | T   | C   | 0.0023975 | -1.1466617 | 0.2515215 | 0.0607903 |    0 |
+| rs74469897  |  10 | 104000130 | A   | G   | 0.0017996 |  0.0927720 | 0.9260847 | 0.4473213 |    0 |
+| rs115917085 |  10 | 104000143 | G   | T   | 0.0016744 |  0.0764990 | 0.9390221 | 0.4588422 |    0 |
+| rs9664049   |  10 | 104000307 | T   | C   | 0.6254734 | -0.4872037 | 0.6261140 | 0.9823812 |    0 |
+| rs149691625 |  10 | 104000837 | T   | C   | 0.0043977 | -2.5984786 | 0.0093638 | 0.1063164 |    0 |
 
 ### Manhattan Plot
 
@@ -289,18 +299,15 @@ ggplot(res.mix.info, aes(x = bp, y = -log10(pval),
   geom_hline(aes(yintercept = -log10(gwas.sig)), 
              linetype = "dashed", 
              color = "black", 
-             size = 1.5) +
+             linewidth = 1.5) +
   scale_color_gradient(low = "blue", high = "red") +
   labs(x = "Base Pair Position",
        y = "-Log10(p-value)",
        color = "Info",
        shape = "Type") +
   theme_minimal()
-#> Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
-#> ℹ Please use `linewidth` instead.
-#> This warning is displayed once per session.
-#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-#> generated.
+#> Warning: Removed 4 rows containing missing values or values outside the scale range
+#> (`geom_point()`).
 ```
 
 ![](dist_example_files/figure-html/unnamed-chunk-4-1.png)

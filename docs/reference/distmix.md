@@ -41,7 +41,13 @@ distmix(
 
 - pop_wgt_df:
 
-  R data frame containing population IDs and weights
+  R data frame with the population abbreviation in the first column and
+  its mixing proportion in the second, read positionally. Proportions
+  must be non-negative; they are rescaled to sum to 1, which the mixture
+  covariance assumes. See `data(PGC2_SCZ_ANC_Prop)` for the expected
+  shape. Note that
+  [`afmix()`](https://github.com/statsleelab/gauss/reference/afmix.md)
+  returns three columns, so its first column must be dropped first.
 
 - input_file:
 

@@ -23,9 +23,9 @@ The growing availability of larger, more ethnically diverse reference panels has
 ```{r setup, warning=FALSE, message=FALSE}
 # Load necessary packages
 library(gauss)
-library(tidyverse)
+library(dplyr)
+library(ggplot2)
 library(data.table)
-library(kableExtra)
 ```
 
 ## Preparing the Input Data
@@ -50,7 +50,7 @@ For this example, we will use the Psychiatric Genomic Consortium's Phase 2 Schiz
 
 ```{r prep_input}
 # Path to the input file
-input_file <- "../data/PGC2_3Mb.txt"
+input_file <- system.file("data", "PGC2_3Mb.txt", package = "gauss")
 
 # Input file should include six columns (rsid, chr, bp, a1, a2, and z)
 input.data <- fread(input_file, header = TRUE)
@@ -61,9 +61,30 @@ head(input.data)
 
 We will use [the 33KG reference panel](https://statsleelab.github.io/gauss/articles/ref_33KG.html). Replace the file paths below with those of your actual reference panel files.
 ```{r prep_ref_path}
-reference_index_file <-"../ref/33KG/33kg_index.gz"
-reference_data_file <- "../ref/33KG/33kg_geno.gz"
-reference_pop_desc_file<-"../ref/33KG/33kg_pop_desc.txt"
+# The 33KG panel is not shipped with GAUSS.  Point GAUSS_REF_33KG at your own
+# copy of it -- or replace panel_dir with its path -- to run the analysis.
+panel_dir <- Sys.getenv("GAUSS_REF_33KG", unset = "")
+
+reference_index_file    <- file.path(panel_dir, "33kg_index.gz")
+reference_data_file     <- file.path(panel_dir, "33kg_geno.gz")
+reference_pop_desc_file <- file.path(panel_dir, "33kg_pop_desc.txt")
+```
+
+The panel is 43 GB, so it is not available when this vignette is built. The
+analyses below therefore run only where a copy of the panel is present.
+Everywhere else their results are read back from the copies saved in the
+package, so the tables and the plot are the same either way.
+
+```{r panel_fallback, include = FALSE}
+vignette_result <- function(name) {
+  path <- system.file("extdata", paste0("vignette_", name, ".rds"),
+                      package = "gauss")
+  if (!nzchar(path)) {
+    stop("no saved result for '", name, "'; regenerate the vignette results ",
+         "with data-raw/make_vignette_results.R")
+  }
+  readRDS(path)
+}
 ```
 
 
@@ -105,7 +126,7 @@ The `dist()` function returns a data frame with following columns:
 ### Example Usage
 
 In this example, we will execute the `dist()` function to impute association Z-scores of missing SNPs in a 1Mb genomic region (Chromosome 10: 104 - 105 Mb) of PGC SCZ2 study. For the sake of this example, let's assume that the study cohort consists of participants of European descent, represented as "EUR." Therefore, we'll set `study_pop = "EUR"` to utilize genotype data for European subjects from the 33KG reference panel.
-```{r run_function, message=FALSE, warning=FALSE, results='hide'}
+```{r run_function, message=FALSE, warning=FALSE, results='hide', eval = dir.exists(Sys.getenv("GAUSS_REF_33KG"))}
 af1_cutoff = 0.001
 
 res <- dist(chr=10, 
@@ -122,8 +143,12 @@ res <- dist(chr=10,
 
 ### Results
 
+```{r run_function_saved, include = FALSE, eval = !dir.exists(Sys.getenv("GAUSS_REF_33KG"))}
+res <- vignette_result("dist")
+```
+
 ```{r}
-head(res) %>% kable("html")
+head(res) %>% knitr::kable("html")
 ```
 
 ## The `distmix()` function
@@ -160,7 +185,7 @@ head(PGC2_SCZ_ANC_Prop)
 ```
 
 Now, let's proceed to use `distmix()` for imputing association Z-scores of missing SNPs in a 1Mb genomic region on Chromosome 10, ranging from 104 to 105 Mb.
-```{r run_function2, message=FALSE, warning=FALSE, results='hide'}
+```{r run_function2, message=FALSE, warning=FALSE, results='hide', eval = dir.exists(Sys.getenv("GAUSS_REF_33KG"))}
 af1_cutoff = 0.001
 
 res.mix <- distmix(chr=10, 
@@ -177,8 +202,12 @@ res.mix <- distmix(chr=10,
 
 ### Results
 
+```{r run_function2_saved, include = FALSE, eval = !dir.exists(Sys.getenv("GAUSS_REF_33KG"))}
+res.mix <- vignette_result("distmix")
+```
+
 ```{r}
-head(res.mix) %>% kable("html")
+head(res.mix) %>% knitr::kable("html")
 ```
 
 ### Manhattan Plot
@@ -196,7 +225,7 @@ ggplot(res.mix.info, aes(x = bp, y = -log10(pval),
   geom_hline(aes(yintercept = -log10(gwas.sig)), 
              linetype = "dashed", 
              color = "black", 
-             size = 1.5) +
+             linewidth = 1.5) +
   scale_color_gradient(low = "blue", high = "red") +
   labs(x = "Base Pair Position",
        y = "-Log10(p-value)",

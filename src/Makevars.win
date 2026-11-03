@@ -3,3 +3,9 @@
 # translation unit. Plain `=` rather than `+=`: `+=` is a GNU make extension and
 # nothing else sets this variable.
 PKG_CXXFLAGS = -include rcpp_eigen_wrap.h
+
+# bgzf.c reads the BGZF reference panel through zlib. ELF and Mach-O leave
+# undefined symbols in a shared object to be resolved at load time, from the
+# zlib R itself links, so omitting this still builds on Linux and macOS; a
+# Windows DLL must resolve everything at link time and does not.
+PKG_LIBS = -lz

@@ -44,11 +44,11 @@ jobs:
 
       - uses: r-lib/actions/check-r-package@v2
         with:
-          # The vignettes execute at build time: they need packages that are
-          # not declared as dependencies and read ../ref/33KG/, a multi-gigabyte
-          # panel that is not distributed with the package.  Until that is
-          # sorted out they are neither built nor checked here.
-          build_args: 'c("--no-manual", "--no-build-vignettes")'
-          args: 'c("--no-manual", "--ignore-vignettes")'
+          # The vignettes are built and checked here.  They call the analysis
+          # functions only where a copy of the 33KG panel is present, which it
+          # is not on a runner, so they fall back to the saved results in
+          # inst/extdata and build without it.
+          build_args: 'c("--no-manual")'
+          args: 'c("--no-manual")'
           error-on: '"error"'
           upload-snapshots: true

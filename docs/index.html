@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Genome Analysis Using Summary Statistics • gauss</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Genome Analysis Using Summary Statistics">
 <meta name="description" content="gauss is a free and open-source R software package, which contains functions for analyzing summary statistics from large-scale genome-wide association studies (GWAS) meta-analyses from cohorts of diverse ethnic backgrounds, using a next generation reference panel consists of 32,953 samples of 29 populations.">
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">gauss</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -88,7 +88,7 @@
 <p>You can install the development version of gauss from GitHub with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"statsleelab/gauss"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/install-deprecated.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"statsleelab/gauss"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="suggested-workflow">Suggested Workflow<a class="anchor" aria-label="anchor" href="#suggested-workflow"></a>
@@ -96,7 +96,7 @@
 <p><img src="reference/figures/GAUSS_Flowchart_bioinfo.png" alt="" width="100%" style="display: block; margin: auto;"></p>
 <p>GAUSS functions utilize five core input datasets: i) Association Z-score Data (highlighted in blue), consisting of six columns of variables: SNP ID (rsid), chromosome number (chr), base pair position (bp), reference allele (a1), alternative allele (a2), and Z-score (z); ii) Allele Frequency Data (colored in red), encapsulating rsid, chr, bp, a1, a2, and reference allele frequency (af1); iii) Ethnic Mixing Proportion Data (colored in green), comprising population name abbreviations and corresponding mixing proportions; iv) SNP Annotation Data (colored in orange), offering functional annotation information of SNPs; v) Reference Panel Data (colored in yellow), e.g., <a href="https://statsleelab.github.io/gauss/articles/ref_33KG.html" class="external-link">33KG Panel</a> offering genotype information for a significant pool of 32,953 individuals from 29 diverse ethnic groups.</p>
 <p>Initially, users should determine whether their input summary statistics data originate from mixed ethnicity cohorts. If they do not (suggesting the data comes from a homogeneous cohort), users can use a variety of analysis functions specific to homogeneous cohorts, including <code><a href="reference/computeLD.html">computeLD()</a></code> for LD estimation, <code><a href="reference/dist.html">dist()</a></code> for imputing Z-scores of missing SNPs, and <code><a href="reference/jepeg.html">jepeg()</a></code> for conducting trascriptome-wide associaton study (TWAS). These functions primarily require Association Z-score Data and Reference Panel Data.</p>
-<p>Conversely, if the data derive from mixed ethnicity cohorts and the ethnic mixing proportions are known, GAUSS provides a range of tools for multi-ethnic cohort analysis. These encompass <code><a href="reference/computeLD.html">computeLD()</a></code> for LD estimation, <code><a href="reference/distmix.html">distmix()</a></code> for Z-score imputation, and <code><a href="reference/jepegmix.html">jepegmix()</a></code> for TWAS. These tools require Association Z-score Data, Reference Panel Data, and Mixing Proportion Data. If ethnic mixing proportions are not known, they should be estimated using either the <code><a href="reference/afmix.html">afmix()</a></code> function (if Allele Frequency Data is available) or the <code>zmix()</code> function (if it is not). Upon determining the ethnic mixing proportions, users can apply the genome analysis functions designed for multi-ethnic cohorts.</p>
+<p>Conversely, if the data derive from mixed ethnicity cohorts and the ethnic mixing proportions are known, GAUSS provides a range of tools for multi-ethnic cohort analysis. These encompass <code><a href="reference/computeLD.html">computeLD()</a></code> for LD estimation, <code><a href="reference/distmix.html">distmix()</a></code> for Z-score imputation, and <code><a href="reference/jepegmix.html">jepegmix()</a></code> for TWAS. These tools require Association Z-score Data, Reference Panel Data, and Mixing Proportion Data. If ethnic mixing proportions are not known, they should be estimated using either the <code><a href="reference/afmix.html">afmix()</a></code> function (if Allele Frequency Data is available) or the <code><a href="reference/zmix.html">zmix()</a></code> function (if it is not). Upon determining the ethnic mixing proportions, users can apply the genome analysis functions designed for multi-ethnic cohorts.</p>
 <p>Small colored squares on arrows pointing to GAUSS functions denote the required input data sets for each function. For instance, an arrow pointing to the afmix() function is marked by two colored squares (red and yellow), indicating that this function utilizes both Allele Frequency Data and Reference Panel Data as inputs.</p>
 <p>For more detailed examples that demonstrate each functionality, please visit <a href="https://statsleelab.github.io/gauss/" class="external-link">GAUSS vignettes</a></p>
 </div>
@@ -143,7 +143,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

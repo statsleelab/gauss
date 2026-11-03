@@ -24,9 +24,8 @@ in conducting TWAS.
 
 # Load necessary packages
 library(gauss)
-library(tidyverse)
+library(dplyr)
 library(data.table)
-library(kableExtra)
 ```
 
 ## Preparing the Input Data
@@ -58,7 +57,7 @@ For this example, we will use the Psychiatric Genomic Consortium’s Phase
 ``` r
 
 # Path to the input file
-input_file <- "../data/PGC2_Chr22_ilmn1M_Z.txt"
+input_file <- system.file("data", "PGC2_Chr22_ilmn1M_Z.txt", package = "gauss")
 
 # Input file should include six columns (rsid, chr, bp, a1, a2, and z)
 input.data <- fread(input_file, header = TRUE)
@@ -81,7 +80,8 @@ shown below:
 ``` r
 
 # Paths to the annotation file (replace these with your actual paths)
-annotation_file <- "../data/JEPEG_SNP_Annotation.v1.0.txt"
+annotation_file <- system.file("data", "JEPEG_SNP_Annotation.v1.0.txt",
+                               package = "gauss")
 ```
 
 ### Reference Panel Data
@@ -93,10 +93,19 @@ panel files.
 
 ``` r
 
-reference_index_file <-"../ref/33KG/33kg_index.gz"
-reference_data_file <- "../ref/33KG/33kg_geno.gz"
-reference_pop_desc_file<-"../ref/33KG/33kg_pop_desc.txt"
+# The 33KG panel is not shipped with GAUSS.  Point GAUSS_REF_33KG at your own
+# copy of it -- or replace panel_dir with its path -- to run the analysis.
+panel_dir <- Sys.getenv("GAUSS_REF_33KG", unset = "")
+
+reference_index_file    <- file.path(panel_dir, "33kg_index.gz")
+reference_data_file     <- file.path(panel_dir, "33kg_geno.gz")
+reference_pop_desc_file <- file.path(panel_dir, "33kg_pop_desc.txt")
 ```
+
+The panel is 43 GB, so it is not available when this vignette is built.
+The analyses below therefore run only where a copy of the panel is
+present. Everywhere else their results are read back from the copies
+saved in the package, so the tables are the same either way.
 
 ## The `jepeg()` function
 
@@ -159,15 +168,14 @@ res <- jepeg(study_pop = "GBR",
              reference_index_file = reference_index_file,
              reference_data_file = reference_data_file,
              reference_pop_desc_file = reference_pop_desc_file)
-
-res <- res[order(res$jepeg_pval),]
 ```
 
 ### `jepeg()` Results
 
 ``` r
 
-head(res) %>% kable("html")
+res <- res[order(res$jepeg_pval),]
+head(res) %>% knitr::kable("html")
 ```
 
 |  | geneid | chisq | df | jepeg_pval | num_snp | top_categ | top_categ_pval | top_snp | top_snp_pval |
@@ -228,13 +236,13 @@ Here, we load pre-generated ancestry proportion data:
 # Load the ancestry proportion data
 data("PGC2_SCZ_ANC_Prop") # data frame name: PGC2_SCZ_ANC_Prop
 head(PGC2_SCZ_ANC_Prop)
-#>   pop   wgt
-#> 1 ACB 0.006
-#> 2 ASW 0.036
-#> 3 BEB 0.005
-#> 4 CCE 0.008
-#> 5 CCS 0.004
-#> 6 CDX 0.018
+#>   pop         wgt
+#> 1 ACB 0.005655042
+#> 2 ASW 0.033930254
+#> 3 BEB 0.004712535
+#> 4 CCE 0.007540057
+#> 5 CCS 0.003770028
+#> 6 CDX 0.016965127
 ```
 
 Now, let’s proceed to use
@@ -253,25 +261,24 @@ res <- jepegmix(pop_wgt_df = PGC2_SCZ_ANC_Prop,
                 reference_data_file = reference_data_file,
                 reference_pop_desc_file = reference_pop_desc_file,
                 af1_cutoff = af1_cutoff)
-
-res <- res[order(res$jepeg_pval),]
 ```
 
 ### `jepegmix()` Results
 
 ``` r
 
-head(res) %>% kable("html")
+res <- res[order(res$jepeg_pval),]
+head(res) %>% knitr::kable("html")
 ```
 
 |  | geneid | chisq | df | jepeg_pval | num_snp | top_categ | top_categ_pval | top_snp | top_snp_pval |
 |:---|:---|---:|---:|---:|---:|:---|---:|:---|---:|
-| 92 | DPYD | 38.41841 | 1 | 0.00e+00 | 1 | TRN | 0.00e+00 | rs3788568 | 0.0e+00 |
-| 75 | CXCL14 | 33.81352 | 1 | 0.00e+00 | 2 | TRN | 0.00e+00 | rs133047 | 0.0e+00 |
-| 101 | EP300 | 29.29304 | 1 | 1.00e-07 | 1 | PFS | 1.00e-07 | rs20551 | 0.0e+00 |
-| 361 | WBP2NL | 24.71140 | 1 | 7.00e-07 | 2 | PFS | 7.00e-07 | rs2301521 | 1.0e-07 |
-| 206 | NDUFA6 | 24.39774 | 1 | 8.00e-07 | 1 | PFS | 8.00e-07 | rs1801311 | 2.0e-07 |
-| 365 | ZBED4 | 19.38566 | 1 | 1.07e-05 | 1 | PFS | 1.07e-05 | rs910799 | 3.9e-06 |
+| 93 | DPYD | 38.41841 | 1 | 0.00e+00 | 1 | TRN | 0.00e+00 | rs3788568 | 0.0e+00 |
+| 76 | CXCL14 | 33.55021 | 1 | 0.00e+00 | 2 | TRN | 0.00e+00 | rs133047 | 0.0e+00 |
+| 102 | EP300 | 29.29304 | 1 | 1.00e-07 | 1 | PFS | 1.00e-07 | rs20551 | 0.0e+00 |
+| 362 | WBP2NL | 24.71178 | 1 | 7.00e-07 | 2 | PFS | 7.00e-07 | rs2301521 | 1.0e-07 |
+| 207 | NDUFA6 | 24.39774 | 1 | 8.00e-07 | 1 | PFS | 8.00e-07 | rs1801311 | 2.0e-07 |
+| 366 | ZBED4 | 19.38566 | 1 | 1.07e-05 | 1 | PFS | 1.07e-05 | rs910799 | 3.9e-06 |
 
 ## References
 

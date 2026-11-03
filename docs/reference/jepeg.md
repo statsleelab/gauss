@@ -28,6 +28,18 @@ jepeg(
   file name of GWAS summary statistics data containing rsid, chr, bp,
   a1, a2 and z
 
+- annotation_file:
+
+  file name of the SNP annotation data: a whitespace-delimited table
+  with a header line and the columns `rsid`, `chr`, `bp`, `a1`, `a2`,
+  `geneid`, `categ`, `wgt`. Variants are matched to the study data by
+  `(chr, bp, a1, a2)` in either allele order, never by `rsid`, so `rsid`
+  may be given as `.`. `categ` must be one of `PROTEIN`, `TFBS`,
+  `WTH_HAIR`, `WTH_TARGET`, `CIS_EQTL` or `TRANS_EQTL`, reported in the
+  result as `PFS`, `TFB`, `STR`, `TAR`, `CIS` and `TRN` respectively;
+  rows carrying any other value are skipped and counted in a warning.
+  `wgt` is the variant's weight within its category.
+
 - reference_index_file:
 
   file name of reference panel index data
@@ -43,10 +55,6 @@ jepeg(
 - af1_cutoff:
 
   cutoff of reference allele, a1, frequency
-
-- annotation:
-
-  file name of the SNP annotation data set
 
 ## Value
 

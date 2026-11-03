@@ -1,5 +1,5 @@
 pandoc: 3.8.3
-pkgdown: 2.2.0
+pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   afmix_example: afmix_example.html
@@ -9,7 +9,7 @@ articles:
   jepeg_example: jepeg_example.html
   ref_1KG: ref_1KG.html
   ref_33KG: ref_33KG.html
-last_built: 2026-01-11T01:17Z
+last_built: 2026-11-03T01:22Z
 urls:
   reference: https://github.com/statsleelab/gauss/reference
   article: https://github.com/statsleelab/gauss/articles

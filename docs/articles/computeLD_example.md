@@ -21,10 +21,9 @@ cohort.
 
 # Load necessary packages
 library(gauss)
-library(reshape2)
-library(tidyverse)
+library(dplyr)
+library(ggplot2)
 library(data.table)
-library(kableExtra)
 ```
 
 ## Overview of computeLD()
@@ -82,13 +81,13 @@ function:
 # Load the ancestry proportion data
 data("PGC2_SCZ_ANC_Prop") # data frame name: PGC2_SCZ_ANC_Prop
 head(PGC2_SCZ_ANC_Prop)
-#>   pop   wgt
-#> 1 ACB 0.006
-#> 2 ASW 0.036
-#> 3 BEB 0.005
-#> 4 CCE 0.008
-#> 5 CCS 0.004
-#> 6 CDX 0.018
+#>   pop         wgt
+#> 1 ACB 0.005655042
+#> 2 ASW 0.033930254
+#> 3 BEB 0.004712535
+#> 4 CCE 0.007540057
+#> 5 CCS 0.003770028
+#> 6 CDX 0.016965127
 ```
 
 ### Association Z-score Data
@@ -103,7 +102,7 @@ We assign the path to the association Z-score data file here:
 ``` r
 
 # Define the path to the input file
-input_file <- "../data/PGC2_3Mb.txt"
+input_file <- system.file("data", "PGC2_3Mb.txt", package = "gauss")
 
 # Input file should include six columns (rsid, chr, bp, a1, a2, and z)
 input_data <- fread(input_file, header = TRUE)
@@ -124,11 +123,19 @@ Next, we assign the paths to reference panel data files:
 
 ``` r
 
-# Paths to the reference files (replace these with your actual paths)
-reference_index_file <-"../ref/33KG/33kg_index.gz"
-reference_data_file <- "../ref/33KG/33kg_geno.gz"
-reference_pop_desc_file<-"../ref/33KG/33kg_pop_desc.txt"
+# The 33KG panel is not shipped with GAUSS.  Point GAUSS_REF_33KG at your own
+# copy of it -- or replace panel_dir with its path -- to run the analysis.
+panel_dir <- Sys.getenv("GAUSS_REF_33KG", unset = "")
+
+reference_index_file    <- file.path(panel_dir, "33kg_index.gz")
+reference_data_file     <- file.path(panel_dir, "33kg_geno.gz")
+reference_pop_desc_file <- file.path(panel_dir, "33kg_pop_desc.txt")
 ```
+
+The panel is 43 GB, so it is not available when this vignette is built.
+The analysis below therefore runs only where a copy of the panel is
+present. Everywhere else its results are read back from the copy saved
+in the package, so the table and the heatmap are the same either way.
 
 ## Running computeLD()
 
@@ -159,25 +166,25 @@ Let’s display the first few entries of the results:
 
 ``` r
 
-head(res$snplist) %>% kable("html")
+head(res$snplist) %>% knitr::kable("html")
 ```
 
 | rsid       | chr |        bp | a1  | a2  |    af1mix |
 |:-----------|----:|----------:|:----|:----|----------:|
-| rs3758549  |  10 | 104004195 | A   | G   | 0.1928059 |
-| rs1541046  |  10 | 104005386 | A   | G   | 0.6625196 |
-| rs2296887  |  10 | 104005410 | C   | T   | 0.1591055 |
-| rs10748818 |  10 | 104015279 | G   | A   | 0.1664600 |
-| rs1628530  |  10 | 104029307 | C   | A   | 0.1235526 |
-| rs17114433 |  10 | 104043015 | G   | A   | 0.0247393 |
+| rs3758549  |  10 | 104004195 | A   | G   | 0.1817209 |
+| rs1541046  |  10 | 104005386 | A   | G   | 0.6244294 |
+| rs2296887  |  10 | 104005410 | C   | T   | 0.1499580 |
+| rs10748818 |  10 | 104015279 | G   | A   | 0.1568898 |
+| rs1628530  |  10 | 104029307 | C   | A   | 0.1164492 |
+| rs17114433 |  10 | 104043015 | G   | A   | 0.0233169 |
 
 ``` r
 
 head(res$cormat[1:3,1:3])
 #>            [,1]      [,2]       [,3]
-#> [1,]  1.0000000 0.3862754 -0.2043553
-#> [2,]  0.3862754 1.0000000  0.3080552
-#> [3,] -0.2043553 0.3080552  1.0000000
+#> [1,]  1.0000000 0.3526043 -0.2072342
+#> [2,]  0.3526043 1.0000000  0.3274303
+#> [3,] -0.2072342 0.3274303  1.0000000
 ```
 
 Finally, we generate a heatmap to visually represent the LD estimates:
@@ -186,7 +193,10 @@ Finally, we generate a heatmap to visually represent the LD estimates:
 
 cormat <- res$cormat
 diag(cormat) <- NA
-cormelt <- reshape2::melt(cormat, na.rm = TRUE)
+cormelt <- data.frame(Var1  = as.vector(row(cormat)),
+                      Var2  = as.vector(col(cormat)),
+                      value = as.vector(cormat))
+cormelt <- cormelt[!is.na(cormelt$value), ]
 
 p1 <- ggplot(data = cormelt, aes(x = Var1, y = Var2, fill = value)) +
   geom_tile() +

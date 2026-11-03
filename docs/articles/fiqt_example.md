@@ -31,40 +31,25 @@ library(gauss)
 #> The following object is masked from 'package:stats':
 #> 
 #>     dist
-library(tidyverse)
-#> ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-#> ✔ dplyr     1.1.4     ✔ readr     2.1.6
-#> ✔ forcats   1.0.1     ✔ stringr   1.6.0
-#> ✔ ggplot2   4.0.1     ✔ tibble    3.3.0
-#> ✔ lubridate 1.9.4     ✔ tidyr     1.3.2
-#> ✔ purrr     1.2.0
-#> ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-#> ✖ dplyr::filter() masks stats::filter()
-#> ✖ dplyr::lag()    masks stats::lag()
-#> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+library(dplyr)
+#> 
+#> Attaching package: 'dplyr'
+#> The following objects are masked from 'package:stats':
+#> 
+#>     filter, lag
+#> The following objects are masked from 'package:base':
+#> 
+#>     intersect, setdiff, setequal, union
+library(ggplot2)
 library(data.table)
 #> 
 #> Attaching package: 'data.table'
-#> 
-#> The following objects are masked from 'package:lubridate':
-#> 
-#>     hour, isoweek, isoyear, mday, minute, month, quarter, second, wday,
-#>     week, yday, year
-#> 
 #> The following objects are masked from 'package:dplyr':
 #> 
 #>     between, first, last
+#> The following object is masked from 'package:base':
 #> 
-#> The following object is masked from 'package:purrr':
-#> 
-#>     transpose
-library(kableExtra)
-#> 
-#> Attaching package: 'kableExtra'
-#> 
-#> The following object is masked from 'package:dplyr':
-#> 
-#>     group_rows
+#>     %notin%
 ```
 
 ## Example
@@ -77,7 +62,7 @@ only.
 
 ``` r
 
-input_file <- "../data/PGC3_SCZ_ilmn1M_Z.txt"
+input_file <- system.file("data", "PGC3_SCZ_ilmn1M_Z.txt", package = "gauss")
 pgc3 <- fread(input_file)
 head(pgc3)
 #>          rsid   chr        bp     a1     a2          z
@@ -101,7 +86,7 @@ pgc3$z.wca <- fiqt(pgc3$z)
 
 ``` r
 
-head(pgc3) %>% kable("html")
+head(pgc3) %>% knitr::kable("html")
 ```
 
 | rsid       | chr |        bp | a1  | a2  |          z |      z.wca |

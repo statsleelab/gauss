@@ -91,7 +91,8 @@ for TWAS. These tools require Association Z-score Data, Reference Panel
 Data, and Mixing Proportion Data. If ethnic mixing proportions are not
 known, they should be estimated using either the
 [`afmix()`](https://github.com/statsleelab/gauss/reference/afmix.md)
-function (if Allele Frequency Data is available) or the `zmix()`
+function (if Allele Frequency Data is available) or the
+[`zmix()`](https://github.com/statsleelab/gauss/reference/zmix.md)
 function (if it is not). Upon determining the ethnic mixing proportions,
 users can apply the genome analysis functions designed for multi-ethnic
 cohorts.

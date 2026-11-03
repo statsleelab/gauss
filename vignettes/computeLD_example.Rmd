@@ -23,10 +23,9 @@ Linkage disequilibrium (LD) quantifies the degree of non-random association betw
 ```{r setup, warning=FALSE, message=FALSE}
 # Load necessary packages
 library(gauss)
-library(reshape2)
-library(tidyverse)
+library(dplyr)
+library(ggplot2)
 library(data.table)
-library(kableExtra)
 ```
 
 ## Overview of computeLD()
@@ -74,7 +73,7 @@ The association Z-score data file should be a space-delimited text file includin
 We assign the path to the association Z-score data file here:
 ```{r prep_input}
 # Define the path to the input file
-input_file <- "../data/PGC2_3Mb.txt"
+input_file <- system.file("data", "PGC2_3Mb.txt", package = "gauss")
 
 # Input file should include six columns (rsid, chr, bp, a1, a2, and z)
 input_data <- fread(input_file, header = TRUE)
@@ -85,10 +84,30 @@ head(input_data)
 
 Next, we assign the paths to reference panel data files:
 ```{r prep_ref_path}
-# Paths to the reference files (replace these with your actual paths)
-reference_index_file <-"../ref/33KG/33kg_index.gz"
-reference_data_file <- "../ref/33KG/33kg_geno.gz"
-reference_pop_desc_file<-"../ref/33KG/33kg_pop_desc.txt"
+# The 33KG panel is not shipped with GAUSS.  Point GAUSS_REF_33KG at your own
+# copy of it -- or replace panel_dir with its path -- to run the analysis.
+panel_dir <- Sys.getenv("GAUSS_REF_33KG", unset = "")
+
+reference_index_file    <- file.path(panel_dir, "33kg_index.gz")
+reference_data_file     <- file.path(panel_dir, "33kg_geno.gz")
+reference_pop_desc_file <- file.path(panel_dir, "33kg_pop_desc.txt")
+```
+
+The panel is 43 GB, so it is not available when this vignette is built. The
+analysis below therefore runs only where a copy of the panel is present.
+Everywhere else its results are read back from the copy saved in the package,
+so the table and the heatmap are the same either way.
+
+```{r panel_fallback, include = FALSE}
+vignette_result <- function(name) {
+  path <- system.file("extdata", paste0("vignette_", name, ".rds"),
+                      package = "gauss")
+  if (!nzchar(path)) {
+    stop("no saved result for '", name, "'; regenerate the vignette results ",
+         "with data-raw/make_vignette_results.R")
+  }
+  readRDS(path)
+}
 ```
 
 
@@ -96,7 +115,7 @@ reference_pop_desc_file<-"../ref/33KG/33kg_pop_desc.txt"
 
 With the necessary arguments and data prepared, we can now estimate the Linkage Disequilibrium for a specific genomic region using the `computeLD()` function. For this example, we focus on a 1Mb genomic region located at Chromosome 10: 104-105 Mb.
 
-```{r run_function, message=FALSE, warning=FALSE, results='hide'}
+```{r run_function, message=FALSE, warning=FALSE, results='hide', eval = dir.exists(Sys.getenv("GAUSS_REF_33KG"))}
 af1_cutoff = 0.001
 
 res <- computeLD(chr=10, 
@@ -110,11 +129,15 @@ res <- computeLD(chr=10,
                  af1_cutoff = af1_cutoff)
 ```
 
+```{r run_function_saved, include = FALSE, eval = !dir.exists(Sys.getenv("GAUSS_REF_33KG"))}
+res <- vignette_result("computeLD")
+```
+
 ## Examining the Results
 
 Let's display the first few entries of the results:
 ```{r}
-head(res$snplist) %>% kable("html")
+head(res$snplist) %>% knitr::kable("html")
 head(res$cormat[1:3,1:3])
 ```
 
@@ -122,7 +145,10 @@ Finally, we generate a heatmap to visually represent the LD estimates:
 ```{r heatmap, fig.height=6, fig.width=6, warning=FALSE}
 cormat <- res$cormat
 diag(cormat) <- NA
-cormelt <- reshape2::melt(cormat, na.rm = TRUE)
+cormelt <- data.frame(Var1  = as.vector(row(cormat)),
+                      Var2  = as.vector(col(cormat)),
+                      value = as.vector(cormat))
+cormelt <- cormelt[!is.na(cormelt$value), ]
 
 p1 <- ggplot(data = cormelt, aes(x = Var1, y = Var2, fill = value)) +
   geom_tile() +

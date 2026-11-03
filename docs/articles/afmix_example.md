@@ -20,7 +20,6 @@ function.
 library(gauss)
 library(dplyr)
 library(data.table)
-library(kableExtra)
 ```
 
 ## Overview of afmix()
@@ -59,7 +58,7 @@ Below, we specify the path to the allele frequency data file.
 ``` r
 
 # Path to the input file
-input_file <- "../data/PGC2_Chr22_ilmn1M_AF1.txt"
+input_file <- system.file("data", "PGC2_Chr22_ilmn1M_AF1.txt", package = "gauss")
 
 # Input file should include six columns (rsid, chr, bp, a1, a2, and af1)
 input.data <- fread(input_file, header = TRUE)
@@ -82,11 +81,19 @@ panel](https://statsleelab.github.io/gauss/articles/ref_33KG.html).
 
 ``` r
 
-# Paths to the reference files (replace these with your actual paths)
-reference_index_file <-"../ref/33KG/33kg_index.gz"
-reference_data_file <- "../ref/33KG/33kg_geno.gz"
-reference_pop_desc_file<-"../ref/33KG/33kg_pop_desc.txt"
+# The 33KG panel is not shipped with GAUSS.  Point GAUSS_REF_33KG at your own
+# copy of it -- or replace panel_dir with its path -- to run the analysis.
+panel_dir <- Sys.getenv("GAUSS_REF_33KG", unset = "")
+
+reference_index_file    <- file.path(panel_dir, "33kg_index.gz")
+reference_data_file     <- file.path(panel_dir, "33kg_geno.gz")
+reference_pop_desc_file <- file.path(panel_dir, "33kg_pop_desc.txt")
 ```
+
+The panel is 43 GB, so it is not available when this vignette is built.
+The analysis below therefore runs only where a copy of the panel is
+present. Everywhere else its results are read back from the copy saved
+in the package, so the tables are the same either way.
 
 ## Running afmix()
 
@@ -109,7 +116,7 @@ Here, we display the estimated ancestry proportions in a HTML table.
 
 ``` r
 
-wgt.df %>% kable("html")
+wgt.df %>% knitr::kable("html")
 ```
 
 | sup.pop | pop |   wgt |
@@ -146,7 +153,7 @@ present the results in a table.
 wgt.df %>%
   group_by(sup.pop) %>%
   summarise(wgt=sum(wgt), .groups="drop") %>%
-  kable("html")
+  knitr::kable("html")
 ```
 
 | sup.pop |   wgt |

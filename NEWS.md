@@ -1,3 +1,51 @@
+# gauss 1.1.1
+
+## Bug fixes
+
+* **The package could not be built on Windows.** `src/bgzf.c` reads the
+  reference panel through zlib, but nothing passed `-lz` to the linker, so
+  `ld` reported `deflate`, `deflateEnd`, `deflateInit2_`, `crc32`,
+  `inflateInit2_`, `inflate` and `inflateEnd` as undefined and the install
+  failed outright.
+
+  ELF and Mach-O leave undefined symbols in a shared object to be resolved at
+  load time, and R has already linked zlib by then, so Linux and macOS built
+  either way and the omission was invisible there. A Windows DLL has to
+  resolve every symbol at link time.
+
+  The dependency used to arrive through `PKG_LIBS = $(GSL_LIBS)` and was lost
+  in 1.1.0, when hand-written `src/Makevars` and `src/Makevars.win` replaced
+  the configure-generated `src/Makevars.in`. Both now set `PKG_LIBS = -lz`.
+
+## Build and packaging
+
+* **The vignettes build without the reference panel.** `R CMD build` executes
+  them, and every analysis they ran needed the 33KG panel -- 43 GB that are
+  not distributed -- so a clean checkout could not build the package at all.
+
+  Each analysis call is now gated on `GAUSS_REF_33KG`. Where it points at a
+  panel the real call runs; where it does not, the result that call produced
+  is read back from `inst/extdata`. Everything downstream renders from
+  whichever result arrives, so the tables and figures are the same either way.
+  `data-raw/make_vignette_results.R` regenerates the saved results.
+
+* `Suggests` now declares what the vignettes use: `ggplot2`, `dplyr` and
+  `data.table`. `tidyverse`, `kableExtra` and `reshape2` were dropped rather
+  than declared -- `kableExtra::kable()` is `knitr::kable()` re-exported,
+  `tidyverse` was pulled in for `ggplot2` and `dplyr` alone, and `reshape2`
+  covered one `melt()` of a matrix with no dimnames.
+
+* The vignettes are built and checked on CI again, on Linux, macOS and Windows.
+
+## Documentation
+
+* The pkgdown site is rebuilt. It had not been since January, so it still
+  published the ancestry-weighted numbers that the 1.1.0 mixture covariance
+  fix replaced, and was missing the data set help pages, the changelog and the
+  corrected package author.
+
+* The changelog is reachable from the navigation bar.
+
 # gauss 1.1.0
 
 ## Bug fixes

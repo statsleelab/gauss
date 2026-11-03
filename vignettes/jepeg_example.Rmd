@@ -23,9 +23,8 @@ Transcriptome-Wide Association Studies (TWAS) serve as a powerful framework for 
 ```{r setup, warning=FALSE, message=FALSE}
 # Load necessary packages
 library(gauss)
-library(tidyverse)
+library(dplyr)
 library(data.table)
-library(kableExtra)
 ```
 
 ## Preparing the Input Data
@@ -51,7 +50,7 @@ For this example, we will use the Psychiatric Genomic Consortium's Phase 2 Schiz
 
 ```{r prep_input}
 # Path to the input file
-input_file <- "../data/PGC2_Chr22_ilmn1M_Z.txt"
+input_file <- system.file("data", "PGC2_Chr22_ilmn1M_Z.txt", package = "gauss")
 
 # Input file should include six columns (rsid, chr, bp, a1, a2, and z)
 input.data <- fread(input_file, header = TRUE)
@@ -64,16 +63,38 @@ The SNP Annotation Data should be placed in an accessible directory, as shown be
 
 ```{r prep_anno_path}
 # Paths to the annotation file (replace these with your actual paths)
-annotation_file <- "../data/JEPEG_SNP_Annotation.v1.0.txt"
+annotation_file <- system.file("data", "JEPEG_SNP_Annotation.v1.0.txt",
+                               package = "gauss")
 ```
 
 ### Reference Panel Data
 
 We will be using [the 33KG reference panel](https://statsleelab.github.io/gauss/articles/ref_33KG.html). Make sure to replace the file paths below with those of your actual reference panel files.
 ```{r prep_ref_path}
-reference_index_file <-"../ref/33KG/33kg_index.gz"
-reference_data_file <- "../ref/33KG/33kg_geno.gz"
-reference_pop_desc_file<-"../ref/33KG/33kg_pop_desc.txt"
+# The 33KG panel is not shipped with GAUSS.  Point GAUSS_REF_33KG at your own
+# copy of it -- or replace panel_dir with its path -- to run the analysis.
+panel_dir <- Sys.getenv("GAUSS_REF_33KG", unset = "")
+
+reference_index_file    <- file.path(panel_dir, "33kg_index.gz")
+reference_data_file     <- file.path(panel_dir, "33kg_geno.gz")
+reference_pop_desc_file <- file.path(panel_dir, "33kg_pop_desc.txt")
+```
+
+The panel is 43 GB, so it is not available when this vignette is built. The
+analyses below therefore run only where a copy of the panel is present.
+Everywhere else their results are read back from the copies saved in the
+package, so the tables are the same either way.
+
+```{r panel_fallback, include = FALSE}
+vignette_result <- function(name) {
+  path <- system.file("extdata", paste0("vignette_", name, ".rds"),
+                      package = "gauss")
+  if (!nzchar(path)) {
+    stop("no saved result for '", name, "'; regenerate the vignette results ",
+         "with data-raw/make_vignette_results.R")
+  }
+  readRDS(path)
+}
 ```
 
 ## The `jepeg()` function
@@ -111,7 +132,7 @@ The `jepeg()` function returns a data frame with following columns:
 
 In this example, we will use the `jepeg()` function to perform a TWAS analysis utilizing summary statistics from the PGC SCZ2 GWAS dataset. Assuming our study cohort consists of participants of British descent, we will specify `study_pop = "GBR"`. This will ensure the function employs genotype data for individuals from Britain, specifically England and Scotland, as sourced from the 33KG reference panel.
 
-```{r run_function, message=FALSE, warning=FALSE, results='hide'}
+```{r run_function, message=FALSE, warning=FALSE, results='hide', eval = dir.exists(Sys.getenv("GAUSS_REF_33KG"))}
 af1_cutoff = 0.001
 
 res <- jepeg(study_pop = "GBR",
@@ -120,14 +141,17 @@ res <- jepeg(study_pop = "GBR",
              reference_index_file = reference_index_file,
              reference_data_file = reference_data_file,
              reference_pop_desc_file = reference_pop_desc_file)
+```
 
-res <- res[order(res$jepeg_pval),]
+```{r run_function_saved, include = FALSE, eval = !dir.exists(Sys.getenv("GAUSS_REF_33KG"))}
+res <- vignette_result("jepeg")
 ```
 
 ### `jepeg()` Results
 
 ```{r}
-head(res) %>% kable("html")
+res <- res[order(res$jepeg_pval),]
+head(res) %>% knitr::kable("html")
 ```
 
 
@@ -164,7 +188,7 @@ head(PGC2_SCZ_ANC_Prop)
 
 Now, let's proceed to use `jepegmix()` to conduct TWAS. Here, we assume the study cohort includes participants from diverse ethnic backgrounds.
 
-```{r run_function2, message=FALSE, warning=FALSE, results='hide'}
+```{r run_function2, message=FALSE, warning=FALSE, results='hide', eval = dir.exists(Sys.getenv("GAUSS_REF_33KG"))}
 af1_cutoff = 0.001
 
 res <- jepegmix(pop_wgt_df = PGC2_SCZ_ANC_Prop,
@@ -174,14 +198,17 @@ res <- jepegmix(pop_wgt_df = PGC2_SCZ_ANC_Prop,
                 reference_data_file = reference_data_file,
                 reference_pop_desc_file = reference_pop_desc_file,
                 af1_cutoff = af1_cutoff)
+```
 
-res <- res[order(res$jepeg_pval),]
+```{r run_function2_saved, include = FALSE, eval = !dir.exists(Sys.getenv("GAUSS_REF_33KG"))}
+res <- vignette_result("jepegmix")
 ```
 
 ### `jepegmix()` Results
 
 ```{r}
-head(res) %>% kable("html")
+res <- res[order(res$jepeg_pval),]
+head(res) %>% knitr::kable("html")
 ```
 
 ## References

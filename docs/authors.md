@@ -10,12 +10,12 @@ Source:
 [`DESCRIPTION`](https://github.com/statsleelab/gauss/blob/HEAD/DESCRIPTION)
 
 Lee D (2026). *gauss: Genome Analysis Using Summary Statistics*. R
-package version 1.0, <https://github.com/statsleelab/gauss>.
+package version 1.1.1, <https://github.com/statsleelab/gauss>.
 
     @Manual{,
       title = {gauss: Genome Analysis Using Summary Statistics},
       author = {Donghyung Lee},
       year = {2026},
-      note = {R package version 1.0},
+      note = {R package version 1.1.1},
       url = {https://github.com/statsleelab/gauss},
     }

@@ -22,9 +22,9 @@ In many genetic association studies that involve extensive multiple testing, it'
 ## Load necessary packages
 ```{r setup}
 library(gauss)
-library(tidyverse)
+library(dplyr)
+library(ggplot2)
 library(data.table)
-library(kableExtra)
 ```
 
 ## Example
@@ -32,7 +32,7 @@ library(kableExtra)
 In this example, we'll correct for the "Winner's Curse" bias using the fiqt() function applied to summary statistics from the Psychiatric Genomics Consortium Schizophrenia Phase 3 study. For demonstration purposes, we have limited our analysis to SNPs from the Illumina 1M Chip only.
 
 ```{r}
-input_file <- "../data/PGC3_SCZ_ilmn1M_Z.txt"
+input_file <- system.file("data", "PGC3_SCZ_ilmn1M_Z.txt", package = "gauss")
 pgc3 <- fread(input_file)
 head(pgc3)
 ```
@@ -46,7 +46,7 @@ pgc3$z.wca <- fiqt(pgc3$z)
 ### Results
 
 ```{r}
-head(pgc3) %>% kable("html")
+head(pgc3) %>% knitr::kable("html")
 ```
 
 ### Original Z-scores vs FIQT Z-score noncentrality estimates

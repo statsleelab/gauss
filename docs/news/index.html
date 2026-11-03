@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">gauss</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,6 +30,7 @@
     <li><a class="dropdown-item" href="../articles/ref_1KG.html">1KG Panel</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Functions</a></li>
+<li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="nav-link" id="pkgdown-search-button" href="../#"><span class="fa fa-search"></span></a></li>
 <li class="nav-item"><a class="nav-link" href="https://github.com/statsleelab/gauss"><span class="fa fa-github fa-lg"></span></a></li>
       </ul></div>
@@ -44,6 +45,31 @@
       <small>Source: <a href="https://github.com/statsleelab/gauss/blob/HEAD/NEWS.md"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.1" id="gauss-111">gauss 1.1.1<a class="anchor" aria-label="anchor" href="#gauss-111"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-1-1-1">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-1-1"></a></h3>
+<ul><li>
+<p><strong>The package could not be built on Windows.</strong> <code>src/bgzf.c</code> reads the reference panel through zlib, but nothing passed <code>-lz</code> to the linker, so <code>ld</code> reported <code>deflate</code>, <code>deflateEnd</code>, <code>deflateInit2_</code>, <code>crc32</code>, <code>inflateInit2_</code>, <code>inflate</code> and <code>inflateEnd</code> as undefined and the install failed outright.</p>
+<p>ELF and Mach-O leave undefined symbols in a shared object to be resolved at load time, and R has already linked zlib by then, so Linux and macOS built either way and the omission was invisible there. A Windows DLL has to resolve every symbol at link time.</p>
+<p>The dependency used to arrive through <code>PKG_LIBS = $(GSL_LIBS)</code> and was lost in 1.1.0, when hand-written <code>src/Makevars</code> and <code>src/Makevars.win</code> replaced the configure-generated <code>src/Makevars.in</code>. Both now set <code>PKG_LIBS = -lz</code>.</p>
+</li>
+</ul></div>
+<div class="section level3">
+<h3 id="build-and-packaging-1-1-1">Build and packaging<a class="anchor" aria-label="anchor" href="#build-and-packaging-1-1-1"></a></h3>
+<ul><li>
+<p><strong>The vignettes build without the reference panel.</strong> <code>R CMD build</code> executes them, and every analysis they ran needed the 33KG panel – 43 GB that are not distributed – so a clean checkout could not build the package at all.</p>
+<p>Each analysis call is now gated on <code>GAUSS_REF_33KG</code>. Where it points at a panel the real call runs; where it does not, the result that call produced is read back from <code>inst/extdata</code>. Everything downstream renders from whichever result arrives, so the tables and figures are the same either way. <code>data-raw/make_vignette_results.R</code> regenerates the saved results.</p>
+</li>
+<li><p><code>Suggests</code> now declares what the vignettes use: <code>ggplot2</code>, <code>dplyr</code> and <code>data.table</code>. <code>tidyverse</code>, <code>kableExtra</code> and <code>reshape2</code> were dropped rather than declared – <code><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kableExtra::kable()</a></code> is <code><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">knitr::kable()</a></code> re-exported, <code>tidyverse</code> was pulled in for <code>ggplot2</code> and <code>dplyr</code> alone, and <code>reshape2</code> covered one <code><a href="https://rdrr.io/pkg/data.table/man/melt.data.table.html" class="external-link">melt()</a></code> of a matrix with no dimnames.</p></li>
+<li><p>The vignettes are built and checked on CI again, on Linux, macOS and Windows.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-1-1-1">Documentation<a class="anchor" aria-label="anchor" href="#documentation-1-1-1"></a></h3>
+<ul><li><p>The pkgdown site is rebuilt. It had not been since January, so it still published the ancestry-weighted numbers that the 1.1.0 mixture covariance fix replaced, and was missing the data set help pages, the changelog and the corrected package author.</p></li>
+<li><p>The changelog is reachable from the navigation bar.</p></li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.1.0" id="gauss-110">gauss 1.1.0<a class="anchor" aria-label="anchor" href="#gauss-110"></a></h2>
 <div class="section level3">

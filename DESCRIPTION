@@ -21,7 +21,10 @@ BugReports: https://github.com/statsleelab/gauss/issues
 Suggests: 
     rmarkdown,
     knitr,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    data.table,
+    dplyr,
+    ggplot2
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.1.0
